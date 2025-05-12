@@ -1,0 +1,57 @@
+<div class="mt-4">
+  <h3>Giỏ hàng của bạn</h3>
+
+  {{#if cart.items.length}}
+    <table class="table mt-4">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tên sản phẩm</th>
+          <th>Giá</th>
+          <th>Số lượng</th>
+          <th>Thành tiền</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each cart.items}}
+          <tr>
+            <th>{{@index}}</th>
+            <td>{{this.name}}</td>
+            <td>{{formatCurrency this.price}}</td>
+            <td>
+              <form method="POST" action="/cart/decrease/{{this._id}}" style="display: inline;">
+                <button class="btn btn-sm btn-secondary" type="submit">-</button>
+              </form>
+              <span class="mx-2">{{this.quantity}}</span>
+              <form method="POST" action="/cart/increase/{{this._id}}" style="display: inline;">
+                <button class="btn btn-sm btn-secondary" type="submit">+</button>
+              </form>
+            </td>
+            <td>{{multiply this.price this.quantity}}</td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                data-toggle="modal"
+                data-id="{{this._id}}"
+                data-target="#delete-item-modal"
+              >
+                Xóa
+              </button>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class="mt-4">
+      <p><strong>Tổng số lượng:</strong> {{totalQuantity}}</p>
+      <p><strong>Tổng tiền:</strong> {{formatCurrency totalPrice}}</p>
+    </div>
+
+    <a href="/cart/payment" class="btn btn-success">Thanh toán</a>
+  {{else}}
+    <p>🛒 Giỏ hàng của bạn đang trống.</p>
+  {{/if}}
+</div>

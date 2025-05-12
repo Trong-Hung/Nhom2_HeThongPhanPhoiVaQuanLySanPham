@@ -1,0 +1,40 @@
+<div class="mt-4">
+  <h3>Cảm ơn bạn đã đặt hàng!</h3>
+  <p>Chúng tôi đã nhận được đơn hàng của bạn và đang xử lý. Dưới đây là thông tin đơn hàng:</p>
+
+  <h4>Thông tin thanh toán</h4>
+  <p><strong>Họ tên:</strong> {{name}}</p>
+  <p><strong>Số điện thoại:</strong> {{phone}}</p>
+  <p><strong>Địa chỉ:</strong> {{address}}</p>
+
+  <h4>Sản phẩm trong đơn hàng</h4>
+  <table class="table mt-4">
+    <thead>
+      <tr>
+        <th scope="col">Tên sản phẩm</th>
+        <th scope="col">Giá</th>
+        <th scope="col">Số lượng</th>
+        <th scope="col">Tổng tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each order.items}}
+        <tr>
+          <td>{{this.name}}</td>
+          <td>{{formatCurrency this.price}}</td>
+          <td>{{this.quantity}}</td>
+          <td>{{multiply this.price this.quantity}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="row mt-4">
+    <div class="col-6">
+      <p><strong>Tổng số lượng:</strong> {{totalQuantity}}</p>
+    </div>
+    <div class="col-6 text-right">
+      <p><strong>Tổng tiền:</strong> {{totalPrice}}</p>
+    </div>
+  </div>
+</div>

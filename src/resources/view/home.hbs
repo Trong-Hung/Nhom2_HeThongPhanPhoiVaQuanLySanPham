@@ -1,0 +1,24 @@
+<div class="mt-4">
+  <h1>Danh sách sản phẩm</h1>
+  <div class="row">
+    
+    {{#each sanphams}}
+      <div class="col-sm-6 col-lg-3">
+        <div class="card card-sanpham-item">
+          <a href="/sanpham/{{this.slug}}">
+            <img class="card-img-top" src="{{this.image}}" alt="Ảnh minh họa">
+          </a>
+          <div class="card-body">
+            <a href="/sanpham/{{this.slug}}">
+              <h5 class="card-title">{{this.name}}</h5>
+            </a>
+            <p class="card-text">{{this.price}} VNĐ</p>
+            <form action="/cart/add/{{this._id}}" method="POST">
+              <button type="submit" class="btn btn-primary">Thêm vào giỏ</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+</div>

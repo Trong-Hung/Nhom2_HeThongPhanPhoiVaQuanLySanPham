@@ -1,0 +1,23 @@
+<div class="mt-4">
+  <h3>Sản phẩm</h3>
+
+<form method="POST" action="/sanpham/{{sanpham._id}}?_method=PUT" enctype="multipart/form-data">
+
+    <input type="hidden" name="_method" value="PUT" />
+
+    <label for="name">Tên sản phẩm</label>
+    <input type="text" id="name" name="name" value="{{sanpham.name}}" required />
+
+    <label for="description">Mô tả</label>
+    <input type="text" id="description" name="description" value="{{sanpham.description}}" required />
+
+    <label for="price">Giá</label>
+    <input type="text" id="price" name="price" value="{{sanpham.price}}" required />
+
+    <label for="image">Chọn ảnh minh họa</label>
+    <input type="file" id="image" name="image" />
+
+    <button type="submit">Cập nhật sản phẩm</button>
+</form>
+
+</div>

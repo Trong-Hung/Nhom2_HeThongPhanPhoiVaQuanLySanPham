@@ -1,0 +1,13 @@
+<form method="POST" action="/auth/register">
+  <input type="text" name="username" placeholder="Tên người dùng" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="password" placeholder="Mật khẩu" required>
+
+  <label for="role">Vai trò:</label>
+  <select name="role" id="role">
+    <option value="user" selected>Người dùng</option>
+    <option value="admin">Quản trị viên</option>
+  </select>
+
+  <button type="submit">Đăng ký</button>
+</form>

@@ -1,0 +1,37 @@
+@import "variables";
+
+.card-course-item {
+  margin-top: 20px;
+}
+.col-lg-3 {
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+.mt-040 {
+  padding: 30px;
+}
+.card-img-top {
+  width: 100%;
+  height: 200px; /* Đặt chiều cao cố định để ảnh thành hình vuông */
+  object-fit: cover; /* Cắt ảnh để hiển thị phần trung tâm */
+  margin-bottom: 20px;
+}
+
+.banner-container {
+  width: 100%;
+  display: flex;
+  justify-content: center; /* ✅ Căn giữa ngang */
+  align-items: center; /* ✅ Căn giữa dọc */
+  text-align: center;
+  padding: 20px 0;
+}
+
+.banner-img {
+  width: 100%;
+  max-width: 1800px;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
