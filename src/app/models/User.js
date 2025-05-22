@@ -1,26 +1,36 @@
-// src/app/models/User.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const userSchema = new mongoose.Schema({
-  username: {
+const UserSchema = new Schema({
+  name: String,
+  email: { type: String, unique: true, required: true },
+  password: String,
+  role: {
     type: String,
-    required: true,
+    enum: ["admin", "shipper", "user"],
+    default: "user",
   },
-  email: {
+  status: {
     type: String,
-    required: true,
-    unique: true,  // Đảm bảo email là duy nhất
+    enum: ["Chờ xác nhận", "Hoạt động"],
+    default: "Chờ xác nhận",
   },
-  password: {
+  verificationToken: String,
+
+  // 🔥 Cập nhật thông tin địa chỉ để lưu "name" thay vì "code"
+  phone: String,
+  province: String, // Lưu tên tỉnh/thành phố thay vì code
+  district: String, // Lưu tên quận/huyện
+  ward: String, // Lưu tên phường/xã
+  detail: String, // Địa chỉ chi tiết
+
+  region: {
     type: String,
-    required: true,
-  },
-   role: {
-    type: String,
-    enum: ['user', 'admin', 'shipper'],
-    default: 'user',
-  },
+    enum: ["Miền Bắc", "Miền Trung", "Miền Nam"],
+    required: function() { return this.role === "shipper"; }, // 📌 Chỉ yêu cầu nếu là shipper
+  }
 });
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+
+
+module.exports = mongoose.model("User", UserSchema);

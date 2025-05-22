@@ -1,0 +1,29 @@
+<h2>Quản lý tài khoản</h2>
+
+<h3>Admins</h3>
+<ul>
+  {{#each admins}}
+    <li>
+      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}}</a>
+    </li>
+  {{/each}}
+</ul>
+
+<h3>Shippers</h3>
+<ul>
+  {{#each shippers}}
+    <li>
+      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}} ({{this.status}})</a>
+    </li>
+  {{/each}}
+</ul>
+
+<h3>Users</h3>
+<ul>
+  {{#each users}}
+    <li>
+      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}}</a>
+    </li>
+  {{/each}}
+</ul>
+

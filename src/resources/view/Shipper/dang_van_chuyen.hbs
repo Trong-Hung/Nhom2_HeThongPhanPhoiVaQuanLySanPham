@@ -1,0 +1,16 @@
+<h2>Đơn hàng đang vận chuyển</h2>
+
+<ul>
+  {{#each orders}}
+    <li>
+      Mã đơn:
+      {{this._id}}
+      - Địa chỉ:
+      {{this.address}}
+      - Trạng thái:
+      {{this.status}}
+      <a href="/shipper/maps/{{this._id}}" class="btn btn-primary">Chỉ đường</a>
+
+    </li>
+  {{/each}}
+</ul>

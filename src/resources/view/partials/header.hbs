@@ -1,96 +1,10 @@
-{{!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-
-  <a class="navbar-brand d-flex align-items-center" href="/">
-    <img
-      src="/IMG/logo.png"
-      alt="logo"
-      style="height: 30px; width: auto; margin-right: 10px;"
-    />
-    TRONG HUNG
-  </a>
-  <button
-    class="navbar-toggler"
-    type="button"
-    data-toggle="collapse"
-    data-target="#navbarSupportedContent"
-    aria-controls="navbarSupportedContent"
-    aria-expanded="false"
-    aria-label="Toggle navigation"
-  >
-    <span class="navbar-toggler-icon"></span>
-  </button>
-
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="/">Trang chủ
-          <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/sanpham/create">Thêm sản phẩm</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/auth/Register">Đăng ký</a>
-      </li>
-      <li class="nav-item">
-        <nav>
-  {{#if user}}
-    <span>Xin chào, {{user.username}}</span>
-    <a href="/auth/logout">Đăng xuất</a>
-        {{/if}}
-    {{/if}}
-    
-
-  {{else}}
-    <a href="/auth/login">Đăng nhập</a>
-  {{/if}}
-</nav>
-
-      </li>
-      <li class="nav-item dropdown">
-        <a
-          class="nav-link dropdown-toggle"
-          href="#"
-          id="navbarDropdown"
-          role="button"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-        >
-          Thêm
-        </a>
-        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="/sanpham/create">Thêm sản phẩm</a>
-          <a class="dropdown-item" href="../me/stored/sanpham">Quản lý</a>
-          <div class="dropdown-divider"></div>
-          <a class="dropdown-item" href="#">Đăng xuất</a>
-        </div>
-      </li>
-
-    </ul>
-    <form class="form-inline my-2 my-lg-0">
-      <input
-        class="form-control mr-sm-2"
-        type="search"
-        placeholder="Tìm kiếm sản phẩm"
-      />
-      <button
-        class="btn btn-outline-success my-2 my-sm-0"
-        type="submit"
-      >Tìm</button>
-    </form>
-  </div>
-</nav> --}}
-
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand d-flex align-items-center" href="/">
     <img src="/IMG/logo.png" alt="logo" style="height: 30px; width: auto; margin-right: 10px;" />
     TRONG HUNG
   </a>
 
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-    aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 
@@ -99,21 +13,46 @@
       <li class="nav-item">
         <a class="nav-link" href="/">Trang chủ</a>
       </li>
+
       <li class="nav-item">
-        <a class="nav-link" href="/cart/giohang">Gior hàng</a>
+        <a class="nav-link" href="/cart/giohang">Giỏ hàng</a>
       </li>
 
+      {{#if user}}
+        {{#if (eq user.role "user")}}
+          <li class="nav-item">
+            <a class="nav-link" href="/donhang">Đơn hàng của tôi</a>
+          </li>
+        {{/if}}
+        {{#if (eq user.role "shipper")}}
+          <li class="nav-item">
+            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp xếp</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang vận chuyển</a>
+          </li>
+        {{/if}}
+        {{#if (eq user.role "admin")}}
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/qldonhang">Quản lý đơn hàng</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/quanlytaikhoan">Quản lý tài khoản</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/taotaikhoan">Tạo tài khoản</a>
+          </li>
+        {{/if}}
+      {{/if}}
+
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-          data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Thêm
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Tài khoản
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           {{#if user}}
-            
-            {{#if (eq user.role "admin")}}
-              <a class="dropdown-item" href="/sanpham/create">Thêm sản phẩm</a>
-              <a class="dropdown-item" href="/me/stored/sanpham">Sản phẩm của tôi</a>
+            {{#if (eq user.role "user")}}
+              <a class="dropdown-item" href="/auth/profile">Cập nhật thông tin</a>
             {{/if}}
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="/auth/logout">Đăng xuất</a>
@@ -123,8 +62,6 @@
           {{/if}}
         </div>
       </li>
-
-      
     </ul>
 
     <form class="form-inline my-2 my-lg-0">
@@ -132,14 +69,10 @@
       <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm</button>
     </form>
 
-    
-
     {{#if user}}
       <span class="navbar-text text-white ml-3">
         Xin chào, {{user.username}}!
       </span>
     {{/if}}
-
-
   </div>
 </nav>

@@ -1,0 +1,12 @@
+<h2>Đơn hàng đang sắp xếp</h2>
+
+<ul>
+  {{#each orders}}
+    <li>
+      Mã đơn: {{this._id}} - Địa chỉ: {{this.address}} - Trạng thái: {{this.status}}
+      <form action="/shipper/confirm/{{this._id}}" method="POST">
+        <button type="submit" class="btn btn-success">Nhận giao hàng</button>
+      </form>
+    </li>
+  {{/each}}
+</ul>

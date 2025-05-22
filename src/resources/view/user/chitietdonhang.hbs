@@ -1,0 +1,32 @@
+<h2>Chi tiết đơn hàng</h2>
+
+<p><strong>Mã đơn hàng:</strong> {{order._id}}</p>
+<p><strong>Trạng thái:</strong> {{order.status}}</p>
+<p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+<p><strong>Địa chỉ nhận hàng:</strong> {{order.address}}</p>
+
+{{#if (eq order.status "Chờ xác nhận")}}
+  <form action="/donhang/cancel/{{order._id}}" method="POST">
+    <input type="text" name="reason" placeholder="Nhập lý do hủy" required>
+    <button type="submit" class="btn btn-danger">Hủy đơn hàng</button>
+  </form>
+{{/if}}
+
+{{#if (eq order.status "Đã giao")}}
+  <form action="/donhang/confirm-received/{{order._id}}" method="POST">
+    <button type="submit" class="btn btn-success">Đã nhận hàng</button>
+  </form>
+{{/if}}
+
+{{#if (eq order.status "Đã hủy")}}
+  <p class="text-danger"><strong>Lý do hủy:</strong> {{order.cancelReason}}</p>
+{{/if}}
+
+<h3>Sản phẩm trong đơn hàng</h3>
+<ul>
+  {{#each order.items}}
+    <li>{{this.name}} - {{this.quantity}} x {{this.price}}</li>
+  {{/each}}
+</ul>
+
+<a href="/donhang">Quay lại danh sách đơn hàng</a>

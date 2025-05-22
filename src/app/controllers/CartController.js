@@ -1,10 +1,13 @@
 const Sanpham = require("../models/Sanpham");
+const DonHang = require("../models/DonHang");
 const { mongooseToObject } = require("../../util/mongoose");
 const {
   getProvinceName,
   getDistrictName,
   getWardName,
 } = require("../../util/addressHelper");
+
+const { getRegionByProvince } = require("../../util/regions");
 
 const fs = require("fs");
 const path = require("path");
@@ -20,7 +23,6 @@ class CartController {
         return res.status(404).send("Không tìm thấy sản phẩm");
       }
 
-      // Nếu chưa có giỏ hàng trong session thì tạo mới
       if (!req.session.cart) {
         req.session.cart = {
           items: [],
@@ -28,7 +30,6 @@ class CartController {
         };
       }
 
-      // Kiểm tra nếu sản phẩm đã có trong giỏ hàng thì tăng số lượng lên 1
       const existingItemIndex = req.session.cart.items.findIndex(
         (item) => item._id.toString() === productId
       );
@@ -57,17 +58,9 @@ class CartController {
   // Hiển thị giỏ hàng
   viewCart(req, res) {
     const cart = req.session.cart || { items: [], totalPrice: 0 };
-
-    // Tính tổng số lượng
-    const totalQuantity = cart.items.reduce(
-      (total, item) => total + item.quantity,
-      0
-    );
-
-    // Tính tổng tiền
+    const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
     const totalPrice = cart.totalPrice;
 
-    // Render giỏ hàng với tổng số lượng và tổng tiền
     res.render("cart/giohang", {
       cart,
       totalQuantity,
@@ -75,14 +68,10 @@ class CartController {
     });
   }
 
-  // Thanh toán - Hiển thị trang thanh toán
+  // Hiển thị trang thanh toán
   viewCheckout(req, res) {
     const cart = req.session.cart || { items: [], totalPrice: 0 };
-    const totalQuantity = cart.items.reduce(
-      (total, item) => total + item.quantity,
-      0
-    );
-
+    const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
     const formattedTotalPrice = cart.totalPrice.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -92,63 +81,78 @@ class CartController {
     res.render("cart/payment", {
       cart,
       totalQuantity,
-      totalPrice: formattedTotalPrice, // Truyền đã format
+      totalPrice: formattedTotalPrice,
     });
   }
 
   // Xử lý thanh toán
-  // Controller xử lý thanh toán
-  async processCheckout(req, res) {
-    const { name, phone, province, district, ward, detail } = req.body;
+ async processCheckout(req, res) {
+  const { name, phone, province, district, ward, detail } = req.body;
+  console.log("📌 Dữ liệu nhận từ request:", req.body);
 
-    try {
-      const provinceName = await getProvinceName(province);
-      const districtName = await getDistrictName(district);
-      const wardName = await getWardName(ward, district);
 
-      if (!provinceName || !districtName || !wardName) {
-        return res.status(400).send("Lỗi khi lấy thông tin địa chỉ.");
-      }
+  const provinceName = await getProvinceName(province);
+const districtName = await getDistrictName(district);
+const wardName = await getWardName(ward, district);
 
-      const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
-      const cart = req.session.cart;
+console.log("📌 Tỉnh:", provinceName);
+console.log("📌 Huyện:", districtName);
+console.log("📌 Xã:", wardName);
 
-      if (!cart || cart.items.length === 0) {
-        return res.redirect("/cart/giohang");
-      }
+  try {
+    const provinceName = await getProvinceName(province);
+    console.log("📌 Kiểm tra tỉnh/thành phố trước khi gọi `getRegionByProvince`:", provinceName);
 
-      if (!name || !address || !phone) {
-        return res.status(400).send("Vui lòng nhập đầy đủ thông tin");
-      }
+    const region = getRegionByProvince(provinceName);
+    console.log("📌 Kết quả xác định vùng miền:", region);
 
-      const totalQuantity = cart.items.reduce(
-        (total, item) => total + item.quantity,
-        0
-      );
-      const formattedTotalPrice = cart.totalPrice.toLocaleString("vi-VN", {
-        style: "currency",
-        currency: "VND",
-        minimumFractionDigits: 0,
-      });
-
-      // Sau khi chuẩn bị dữ liệu, xoá giỏ hàng
-      req.session.cart = null;
-
-      res.render("cart/thankyou", {
-        name,
-        phone,
-        address,
-        order: cart, // 👈 Truyền giỏ hàng để hiển thị sản phẩm
-        totalQuantity,
-        totalPrice: formattedTotalPrice,
-      });
-    } catch (err) {
-      console.error("Lỗi khi xử lý thanh toán:", err);
-      res.status(500).send("Lỗi hệ thống");
+    if (!provinceName || !region || region === "Không xác định") {
+      return res.status(400).send("❌ Lỗi xác định vùng miền.");
     }
-  }
 
-  // Tăng số lượng
+   const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`; // ✅ Sử dụng tên địa phương đúng
+
+
+    console.log("📌 Địa chỉ trước khi lưu đơn hàng:", address);
+
+    const cart = req.session.cart;
+    if (!cart || cart.items.length === 0) {
+      return res.redirect("/cart/giohang");
+    }
+
+    if (!req.session.user) {
+      return res.status(403).send("❌ Bạn cần đăng nhập để đặt hàng.");
+    }
+
+    const userId = req.session.user._id;
+    const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
+
+    const order = new DonHang({
+      userId,
+      name,
+      phone,
+      address, // 🔥 Địa chỉ đầy đủ
+      region,  // 🔥 Vùng miền đã xác định
+      items: cart.items,
+      totalQuantity,
+      totalPrice: cart.totalPrice,
+      status: "Chờ xác nhận",
+    });
+
+    await order.save();
+    console.log("✅ Đơn hàng đã được tạo:", order);
+
+    req.session.cart = null;
+    res.render("cart/thankyou", { name, phone, address, order: cart });
+  } catch (err) {
+    console.error("❌ Lỗi khi xử lý thanh toán:", err);
+    res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
+  }
+}
+
+
+
+
   increaseQuantity(req, res) {
     const productId = req.params.id;
     const cart = req.session.cart;
@@ -164,7 +168,6 @@ class CartController {
     res.redirect("/cart/giohang");
   }
 
-  // Giảm số lượng
   decreaseQuantity(req, res) {
     const productId = req.params.id;
     const cart = req.session.cart;
@@ -176,7 +179,6 @@ class CartController {
       item.quantity -= 1;
       cart.totalPrice -= item.price;
     } else if (item && item.quantity === 1) {
-      // Nếu còn 1 thì xóa luôn sản phẩm khỏi giỏ
       cart.items = cart.items.filter((i) => i._id.toString() !== productId);
       cart.totalPrice -= item.price;
     }
@@ -184,7 +186,6 @@ class CartController {
     res.redirect("/cart/giohang");
   }
 
-  // Xóa sản phẩm khỏi giỏ hàng
   removeFromCart(req, res) {
     const productId = req.params.id;
 
@@ -193,9 +194,7 @@ class CartController {
     }
 
     const cart = req.session.cart;
-    const index = cart.items.findIndex(
-      (item) => item._id.toString() === productId
-    );
+    const index = cart.items.findIndex((item) => item._id.toString() === productId);
 
     if (index > -1) {
       const removedItem = cart.items.splice(index, 1)[0];
