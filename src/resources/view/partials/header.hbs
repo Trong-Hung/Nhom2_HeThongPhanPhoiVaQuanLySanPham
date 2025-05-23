@@ -1,10 +1,22 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <a class="navbar-brand d-flex align-items-center" href="/">
-    <img src="/IMG/logo.png" alt="logo" style="height: 30px; width: auto; margin-right: 10px;" />
+    <img
+      src="/IMG/logo.png"
+      alt="logo"
+      style="height: 30px; width: auto; margin-right: 10px;"
+    />
     TRONG HUNG
   </a>
 
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    data-target="#navbarNavDropdown"
+    aria-controls="navbarNavDropdown"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
     <span class="navbar-toggler-icon"></span>
   </button>
 
@@ -26,10 +38,12 @@
         {{/if}}
         {{#if (eq user.role "shipper")}}
           <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp xếp</a>
+            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp
+              xếp</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang vận chuyển</a>
+            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang
+              vận chuyển</a>
           </li>
         {{/if}}
         {{#if (eq user.role "admin")}}
@@ -46,13 +60,26 @@
       {{/if}}
 
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <a
+          class="nav-link dropdown-toggle"
+          href="#"
+          id="navbarDropdownMenuLink"
+          role="button"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
           Tài khoản
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           {{#if user}}
+
             {{#if (eq user.role "user")}}
               <a class="dropdown-item" href="/auth/profile">Cập nhật thông tin</a>
+            {{/if}}
+            {{#if (eq user.role "admin")}}
+              <a class="dropdown-item" href="/me/stored/sanpham">Quản lý sản phẩm</a>
+              <a class="dropdown-item" href="/sanpham/create">Thêm sản phẩm</a>
             {{/if}}
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="/auth/logout">Đăng xuất</a>
@@ -65,13 +92,21 @@
     </ul>
 
     <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="search" placeholder="Tìm kiếm sản phẩm" />
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm</button>
+      <input
+        class="form-control mr-sm-2"
+        type="search"
+        placeholder="Tìm kiếm sản phẩm"
+      />
+      <button
+        class="btn btn-outline-success my-2 my-sm-0"
+        type="submit"
+      >Tìm</button>
     </form>
 
     {{#if user}}
       <span class="navbar-text text-white ml-3">
-        Xin chào, {{user.username}}!
+        Xin chào,
+        {{user.username}}!
       </span>
     {{/if}}
   </div>
