@@ -1,15 +1,24 @@
 const axios = require("axios");
 
 async function getDirectionsAPI(warehouseLocation, destinationLocation) {
- const apiKey = "AIzaSyA5PPIbdl1rM3U6uIT3IDQ8DjA2Bnb-oEc"; // 🔥 Cập nhật API key đúng
-const url = `https://routes.googleapis.com/directions/v2:computeRoutes?origin=10.762622,106.660172&destination=31/8/7/10 Đường số 17, Phường Hiệp Bình Chánh, Thành phố Thủ Đức, Thành phố Hồ Chí Minh&key=${apiKey}`;
+  const apiKey = "AIzaSyCTWnlSZ4UONj_irTHEV-FKG3QguIEmSeo"; // Thay bằng API key của bạn
+  const origin = encodeURIComponent(warehouseLocation);
+  const destination = encodeURIComponent(destinationLocation);
+
+  const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}`;
 
   try {
     console.log(`📌 Gửi request tìm đường: ${url}`);
     const response = await axios.get(url);
 
+    // Log toàn bộ response để debug chi tiết
+    console.log("📥 Response data:", JSON.stringify(response.data, null, 2));
+
     if (!response.data || response.data.status !== "OK") {
-      console.error(`❌ Lỗi từ Google Maps API: ${response.data?.error_message || "Không rõ nguyên nhân"}`);
+      console.error("❌ Lỗi từ Google Maps API:");
+      console.error("  - status:", response.data?.status);
+      console.error("  - error_message:", response.data?.error_message);
+      console.error("  - full response:", JSON.stringify(response.data, null, 2));
       return null;
     }
 
@@ -22,7 +31,11 @@ const url = `https://routes.googleapis.com/directions/v2:computeRoutes?origin=10
     console.log("✅ Lộ trình tốt nhất:", route.summary);
     return route;
   } catch (error) {
-    console.error(`❌ Lỗi khi gọi API tìm đường: ${error.message}`);
+    console.error("❌ Lỗi khi gọi API tìm đường:", error.message);
+    if (error.response) {
+      console.error("  - status code:", error.response.status);
+      console.error("  - response data:", JSON.stringify(error.response.data, null, 2));
+    }
     return null;
   }
 }
