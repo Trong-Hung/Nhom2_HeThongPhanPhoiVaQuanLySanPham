@@ -1,21 +1,21 @@
 const axios = require("axios");
 
 async function getDirectionsAPI(warehouseLocation, destinationLocation) {
-  const apiKey = "AIzaSyCTWnlSZ4UONj_irTHEV-FKG3QguIEmSeo"; // Thay bằng API key của bạn
+  const apiKey = "AIzaSyC6vntdcrVhQ4VvUXFTv5QPo5cbn1EgPi4"; // Thay bằng API key của bạn
   const origin = encodeURIComponent(warehouseLocation);
   const destination = encodeURIComponent(destinationLocation);
 
   const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}`;
 
   try {
-    console.log(`📌 Gửi request tìm đường: ${url}`);
+    console.log(`gửi request tìm đường: ${url}`);
     const response = await axios.get(url);
 
     // Log toàn bộ response để debug chi tiết
-    console.log("📥 Response data:", JSON.stringify(response.data, null, 2));
+    console.log("esponse data:", JSON.stringify(response.data, null, 2));
 
     if (!response.data || response.data.status !== "OK") {
-      console.error("❌ Lỗi từ Google Maps API:");
+      console.error("lỗi từ Google Maps API:");
       console.error("  - status:", response.data?.status);
       console.error("  - error_message:", response.data?.error_message);
       console.error("  - full response:", JSON.stringify(response.data, null, 2));
@@ -24,14 +24,14 @@ async function getDirectionsAPI(warehouseLocation, destinationLocation) {
 
     const route = response.data.routes[0];
     if (!route) {
-      console.log("❌ Không tìm thấy tuyến đường.");
+      console.log("Không tìm thấy tuyến đường.");
       return null;
     }
 
     console.log("✅ Lộ trình tốt nhất:", route.summary);
     return route;
   } catch (error) {
-    console.error("❌ Lỗi khi gọi API tìm đường:", error.message);
+    console.error("Lỗi khi gọi API tìm đường:", error.message);
     if (error.response) {
       console.error("  - status code:", error.response.status);
       console.error("  - response data:", JSON.stringify(error.response.data, null, 2));

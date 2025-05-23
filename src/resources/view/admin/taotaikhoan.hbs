@@ -9,11 +9,35 @@
   <input type="password" id="password" name="password" required>
 
   <label for="role">Vai trò:</label>
-  <select id="role" name="role">
+  <select id="role" name="role" onchange="toggleRegion()">
     <option value="user">User</option>
     <option value="shipper">Shipper</option>
     <option value="admin">Admin</option>
   </select>
 
+  <!-- 🔥 Trường chọn vùng miền, chỉ hiển thị nếu role là "shipper" -->
+  <div id="regionContainer" style="display: none;">
+    <label for="region">Vùng miền:</label>
+    <select id="region" name="region">
+      <option value="Miền Bắc">Miền Bắc</option>
+      <option value="Miền Trung">Miền Trung</option>
+      <option value="Miền Nam">Miền Nam</option>
+    </select>
+  </div>
+
   <button type="submit">Tạo tài khoản</button>
 </form>
+
+<script>
+  function toggleRegion() {
+    const role = document.getElementById("role").value;
+    const regionContainer = document.getElementById("regionContainer");
+
+    // 📌 Hiển thị trường "region" nếu vai trò là "shipper"
+    if (role === "shipper") {
+      regionContainer.style.display = "block";
+    } else {
+      regionContainer.style.display = "none";
+    }
+  }
+</script>

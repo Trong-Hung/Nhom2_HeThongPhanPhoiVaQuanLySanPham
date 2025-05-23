@@ -143,34 +143,42 @@ async manageAccounts(req, res) {
 }
 
 
-  async createAccount(req, res) {
-    try {
-      if (req.session.user.role !== "admin") {
-        return res.status(403).send("Bạn không có quyền tạo tài khoản.");
-      }
-
-      const { name, email, password, role } = req.body;
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).send("Email đã tồn tại.");
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role,
-        status: role === "shipper" ? "Chờ xác nhận" : "Hoạt động",
-      });
-
-      await newUser.save();
-      res.redirect("/admin/quanlytaikhoan");
-    } catch (err) {
-      console.error("❌ Lỗi khi tạo tài khoản:", err);
-      res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
+ async createAccount(req, res) {
+  try {
+    if (!req.session.user || req.session.user.role !== "admin") {
+      return res.status(403).send("❌ Bạn không có quyền tạo tài khoản.");
     }
+
+    const { name, email, password, role, region } = req.body;
+
+    if (role === "shipper" && !region) {
+      return res.status(400).send("❌ Region là bắt buộc đối với Shipper!");
+    }
+
+    const existingUser = await User.findOne({ email: email.trim() });
+    if (existingUser) {
+      return res.status(400).send("❌ Email đã tồn tại.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password.trim(), 10);
+    const newUser = new User({
+      name: name.trim(),
+      email: email.trim(),
+      password: hashedPassword,
+      role,
+      status: "Hoạt động", // 📌 Mặc định tài khoản shipper sẽ là "Hoạt động"
+      region: role === "shipper" ? region : undefined,
+    });
+
+    await newUser.save();
+    res.redirect("/admin/quanlytaikhoan");
+  } catch (err) {
+    console.error("❌ Lỗi khi tạo tài khoản:", err);
+    res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
   }
+}
+
+
 
 
   
