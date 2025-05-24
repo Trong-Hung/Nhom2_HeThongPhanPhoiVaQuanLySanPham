@@ -1,7 +1,8 @@
 const DonHang = require("../models/DonHang");
 const User = require("../models/User");
 const axios = require("axios");
-const { getDirectionsAPI } = require("../../util/googleMapSHelper");
+
+const { getRoute, geocode } = require("../../util/mapService");
 
 
 
@@ -105,40 +106,97 @@ class ShipperController {
 
   // 🔥 API chỉ đường từ vị trí shipper đến địa chỉ giao hàng
 
+
+
+
+
+
+
+  // 🔥 Các phương thức trong class của bạn
+
 async getDirections(req, res) {
-  try {
-    const orderId = req.params.id;
-    const order = await DonHang.findById(orderId);
+    try {
+        const orderId = req.params.id;
+        const order = await DonHang.findById(orderId);
 
-    if (!order || order.status !== "Đang vận chuyển") {
-      return res.status(404).send("❌ Đơn hàng chưa được nhận hoặc không hợp lệ.");
+        if (!order || order.status !== "Đang vận chuyển") {
+            console.error("❌ Đơn hàng chưa được nhận hoặc không hợp lệ.");
+            return res.status(404).send("❌ Đơn hàng chưa được nhận hoặc không hợp lệ.");
+        }
+
+        let warehouseLocation = "Quận 1, Thành phố Hồ Chí Minh";
+        let destinationLocation = order.address;
+
+        console.log("📌 Địa chỉ giao hàng:", destinationLocation);
+
+        const warehouseCoords = await geocode(warehouseLocation);
+        const destinationCoords = await geocode(destinationLocation);
+
+        if (!warehouseCoords || !destinationCoords) {
+            console.error("❌ Không thể lấy tọa độ!");
+            return res.status(404).send("Không thể lấy tọa độ.");
+        }
+
+        console.log("📌 Tọa độ xuất phát:", warehouseCoords);
+        console.log("📌 Tọa độ điểm giao hàng:", destinationCoords);
+
+        // 🔥 Gửi request tìm đường với `steps=true` để lấy hướng dẫn di chuyển
+        const route = await getRoute(
+            `${warehouseCoords.lat},${warehouseCoords.lon}`,
+            `${destinationCoords.lat},${destinationCoords.lon}`,
+            { steps: true, overview: "full", geometries: "geojson" } // 🔥 Bật hướng dẫn chi tiết
+        );
+
+        if (!route) {
+            console.error("❌ Không tìm thấy tuyến đường.");
+            return res.status(404).send("Không tìm thấy tuyến đường.");
+        }
+
+        console.log(`✅ Lộ trình tìm thấy:`);
+        console.log(`📏 Khoảng cách: ${(route.distance / 1000).toFixed(2)} km`);
+        console.log(`⏳ Thời gian dự kiến: ${Math.round(route.duration / 60)} phút`);
+        console.log("🔥 Dữ liệu tuyến đường:", route.geometry.coordinates);
+        console.log("🔥 Kiểm tra toàn bộ phản hồi API:", JSON.stringify(route, null, 2));
+
+
+        // 🔥 Kiểm tra xem API có trả về dữ liệu `steps` hay không
+        if (!route.legs || !route.legs[0] || !route.legs[0].steps || route.legs[0].steps.length === 0) {
+            console.error("❌ Không có hướng dẫn di chuyển từ API!");
+        } else {
+            console.log("✅ Hướng dẫn di chuyển:");
+            route.legs[0].steps.forEach((step, index) => {
+                console.log(`#${index + 1}: ${step.maneuver.instruction} - 📏 ${(step.distance / 1000).toFixed(2)} km, ⏳ ${Math.round(step.duration / 60)} phút`);
+            });
+        }
+
+        // 🔥 Trích xuất từng bước hướng dẫn di chuyển
+        const steps = route.legs[0].steps.map(step => ({
+            distance: (step.distance / 1000).toFixed(2) + " km",
+            duration: Math.round(step.duration / 60) + " phút",
+            instruction: step.maneuver.instruction
+        }));
+
+        res.render("shipper/maps", {
+            routePath: JSON.stringify(route.geometry.coordinates),
+            route: route,
+            order: order,
+            steps: steps
+        });
+
+    } catch (err) {
+        console.error(`❌ Lỗi hệ thống khi lấy chỉ đường: ${err.message}`);
+        res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
     }
+}
 
-    const warehouseLocation = "10.762622,106.660172";
-    const destinationLocation = order.address;
 
-    console.log("📌 Địa chỉ giao hàng trước khi gửi request:", destinationLocation);
-
-    // 🔥 Gọi API để tìm tuyến đường
-    const route = await getDirectionsAPI(warehouseLocation, destinationLocation);
-
-    if (!route) {
-      console.log("❌ Không tìm thấy tuyến đường.");
-      return res.status(404).send("Không tìm thấy tuyến đường.");
-    }
-
-    console.log("✅ Lộ trình đã tìm thấy:", route.summary);
-    res.render("shipper/maps", { route, order });
-  } catch (err) {
-    console.error(`❌ Lỗi hệ thống khi lấy chỉ đường: ${err.message}`);
-    res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
-  }
 }
 
 
 
 
-}
+
+
 
 
 

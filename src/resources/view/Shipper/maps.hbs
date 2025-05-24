@@ -1,19 +1,76 @@
-<h2>Chỉ đường từ kho đến {{order.address}}</h2>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bản đồ chỉ đường</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+</head>
+<body>
+    <h1>Chỉ đường đến địa chỉ giao hàng</h1>
 
-<div id="map"></div>
+    <!-- 🔥 Hiển thị hướng dẫn di chuyển -->
+    <h2>Hướng dẫn đi đường</h2>
+    <ul>
+        {{#if steps.length}}
+            {{#each steps}}
+                <li>{{instruction}} - 📏 {{distance}}, ⏳ {{duration}}</li>
+            {{/each}}
+        {{else}}
+            <p>❌ Không tìm thấy hướng dẫn di chuyển.</p>
+        {{/if}}
+    </ul>
 
-<script>
-  function initMap() {
-    const route = {{{route}}}; // 🔥 Dữ liệu tuyến đường từ API
-    const map = new google.maps.Map(document.getElementById("map"), {
-      center: route.start_location,
-      zoom: 14,
-    });
+    <!-- 🔥 Khu vực hiển thị bản đồ -->
+    <div id="map" style="width: 100%; height: 500px;"></div>
+    <a id="googleMapsBtn" href="#" target="_blank">🗺️ Chỉ đường trên Google Maps</a>
+    <script>
+    var startLat = routePath[0][1];
+    var startLon = routePath[0][0];
+    var endLat = routePath[routePath.length - 1][1];
+    var endLon = routePath[routePath.length - 1][0];
 
-    const directionsRenderer = new google.maps.DirectionsRenderer();
-    directionsRenderer.setMap(map);
-    directionsRenderer.setDirections(route);
-  }
+    var googleMapsUrl = `https://www.google.com/maps/dir/${startLat},${startLon}/${endLat},${endLon}/`;
+
+    document.getElementById("googleMapsBtn").setAttribute("href", googleMapsUrl); // 🚀 Gán URL Google Maps vào thẻ `<a>`
 </script>
 
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"></script>
+
+    <script>
+        console.log("🔥 Kiểm tra dữ liệu trước khi hiển thị bản đồ");
+
+        var routePath = JSON.parse("{{{routePath}}}"); // 🔥 Dữ liệu tuyến đường từ API OSRM
+        console.log("✅ Dữ liệu tuyến đường:", routePath);
+
+        if (!routePath || routePath.length === 0) {
+            console.error("❌ Không có dữ liệu tuyến đường! Kiểm tra API.");
+        } else {
+            var map = L.map('map').setView([routePath[0][1], routePath[0][0]], 13); // Tọa độ xuất phát
+
+            console.log("✅ Tọa độ xuất phát:", routePath[0]);
+            console.log("✅ Tọa độ điểm giao hàng:", routePath[routePath.length - 1]);
+
+            // 🔥 Thêm bản đồ nền OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            console.log("✅ Bản đồ đã được tải vào");
+
+            // 🔥 Hiển thị tuyến đường từ API OSRM
+            try {
+                var routeLine = L.polyline(routePath.map(coord => [coord[1], coord[0]]), { color: 'blue', weight: 5 }).addTo(map);
+                console.log("✅ Tuyến đường đã được vẽ trên bản đồ");
+            } catch (error) {
+                console.error("❌ Lỗi khi vẽ tuyến đường:", error);
+            }
+
+            // 🔥 Đánh dấu điểm xuất phát và điểm giao hàng
+            try {
+                L.marker([routePath[0][1], routePath[0][0]]).addTo(map).bindPopup("🚚 Xuất phát").openPopup();
+                L.marker([routePath[routePath.length - 1][1], routePath[routePath.length - 1][0]]).addTo(map).bindPopup("📦 Điểm giao hàng").openPopup();
+                console.log("✅ Đã đặt marker điểm xuất phát và điểm giao hàng");
+            } catch (error) {
+                console.error("❌ Lỗi khi đặt marker:", error);
+            }
+        }
+    </script>
+</body>
+</html>
