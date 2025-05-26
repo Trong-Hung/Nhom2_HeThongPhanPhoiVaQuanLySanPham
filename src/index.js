@@ -7,14 +7,22 @@ const methodOverride = require("method-override");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
+
 require("./util/cronJobs");
+
+
+
 
 
 const app = express();
 const port = 3000;
 
+
+
 const route = require("./routes"); // Import route
 const db = require("./config/db"); // Import db
+
+
 
 // Connect to DB
 db.connect(); // Kết nối đến DB

@@ -3,10 +3,15 @@
 <ul>
   {{#each orders}}
     <li>
-      Mã đơn: {{this._id}} - Địa chỉ: {{this.address}} - Trạng thái: {{this.status}}
+      Mã đơn: {{this._id}} - Địa chỉ nhận: {{this.address}}  
+      <br>📦 Kho xuất hàng: {{#if this.warehouse}}{{this.warehouse.name}}{{else}}❌ Chưa xác định{{/if}}  
+      <br>📍 Địa chỉ kho: {{#if this.warehouse}}{{this.warehouse.address}}{{else}}❌ Chưa xác định{{/if}}  
+      <br>🚚 Trạng thái: {{this.status}}
+      
       <form action="/shipper/confirm/{{this._id}}" method="POST">
         <button type="submit" class="btn btn-success">Xác nhận giao hàng</button>
       </form>
+
       {{#if (eq this.status "Đang vận chuyển")}}
         <a href="/shipper/directions/{{this._id}}" class="btn btn-primary">Chỉ đường</a>
       {{/if}}

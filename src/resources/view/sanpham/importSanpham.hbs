@@ -1,0 +1,71 @@
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nhập hàng vào kho</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h2>📦 Nhập hàng vào kho</h2>
+
+      {{#if sanphams.length}}
+        <form action="/admin/nhaphang" method="POST">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tên sản phẩm</th>
+                <th>Mã SKU</th>
+                <th>Danh mục</th>
+                <th>Số lượng tồn</th>
+                <th>Nhập thêm</th>
+                <th>Kho nhập</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each sanphams}}
+                <tr>
+                  <td>{{this.name}}</td>
+                  <td>{{this.sku}}</td>
+                  <td>{{this.category}}</td>
+                  <td>{{this.stockTotal}}</td>
+                  <td>
+                    <input
+                      type="number"
+                      name="quantities[{{this._id}}]"
+                      min="1"
+                      required
+                    />
+                  </td>
+                  <td>
+                    {{log warehouses}}
+                    <!-- 🔥 Kiểm tra Handlebars có nhận dữ liệu không -->
+
+                    {{#if warehouses.length}}
+                      <select name="warehouses[{{this._id}}]" required>
+                        {{#each warehouses}}
+                          {{log this}}
+                          <!-- 🔥 Kiểm tra từng kho hiển thị -->
+                          <option value="{{this._id}}">{{this.name}}
+                            -
+                            {{this.address}}</option>
+                        {{/each}}
+                      </select>
+                    {{else}}
+                      <p>❌ Hiện chưa có kho nào, vui lòng tạo kho trước khi
+                        nhập hàng!</p>
+                    {{/if}}
+
+                  </td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+          <button type="submit" class="btn btn-primary mt-3">✔️ Cập nhật nhập
+            hàng</button>
+        </form>
+      {{else}}
+        <p>❌ Hiện chưa có sản phẩm nào để nhập hàng!</p>
+      {{/if}}
+    </div>
+  </body>
+</html>

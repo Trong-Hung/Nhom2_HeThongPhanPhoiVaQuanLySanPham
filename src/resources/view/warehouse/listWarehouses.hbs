@@ -1,0 +1,40 @@
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Danh sách kho</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h2>🏢 Danh sách kho hàng</h2>
+
+      {{#if warehouses.length}}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tên kho</th>
+              <th>Địa chỉ</th>
+              <th>Vĩ độ</th>
+              <th>Kinh độ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each warehouses}}
+              <tr>
+                <td>
+                  <a href="/admin/kho/{{this._id}}">{{this.name}}</a>
+                  <!-- 🔥 Bấm vào để đến trang quản lý kho -->
+                </td>
+                <td>{{this.address}}</td>
+                <td>{{this.location.latitude}}</td>
+                <td>{{this.location.longitude}}</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      {{else}}
+        <p>❌ Hiện chưa có kho nào!</p>
+      {{/if}}
+    </div>
+  </body>
+</html>

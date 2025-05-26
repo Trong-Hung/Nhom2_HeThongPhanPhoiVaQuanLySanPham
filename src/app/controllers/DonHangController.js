@@ -1,38 +1,131 @@
 const DonHang = require("../models/DonHang");
+const Warehouse = require("../models/Warehouse");
+
+
+
+
 
 class DonHangController {
   // ADMIN: Danh sách đơn hàng
-  async index(req, res) {
-    const orders = await DonHang.find().sort({ createdAt: -1 });
-    const statuses = ["Chờ xác nhận", "Đang giao", "Đã giao"];
-    res.render("admin/qldonhang", {
-      orders,
-      statuses,
-      currentStatus: "Chờ xác nhận",
-    });
-  }
-  // ADMIN: Cập nhật trạng thái đơn hàng
-  async updateStatus(req, res) {
-    const { id } = req.params;
-    const { status } = req.body;
+async index(req, res) {
+    try {
+        console.log("📌 Truy vấn danh sách đơn hàng...");
+        const orders = await DonHang.find().sort({ createdAt: -1 }).populate("warehouseId");
 
-    await DonHang.findByIdAndUpdate(id, { status });
-    res.redirect("/admin/donhang"); // Chuyển hướng đến danh sách đơn hàng
-  }
+        console.log("📌 Đơn hàng sau khi lấy kho:", orders);
 
-  async confirmReceived(req, res) {
-  const { id } = req.params;
-  const order = await DonHang.findById(id);
-
-  if (!order || order.status !== "Đã giao") {
-    return res.status(400).send("Đơn hàng không hợp lệ hoặc đã được xác nhận.");
-  }
-
-  order.status = "Hoàn thành"; // 🚀 Cập nhật trạng thái
-  await order.save();
-
-  return res.redirect(`/donhang/${id}`); // 🔥 Chuyển hướng về chi tiết đơn hàng
+        res.render("admin/qldonhang", { orders });
+    } catch (err) {
+        console.error("❌ Lỗi khi lấy danh sách đơn hàng:", err);
+        res.status(500).send("Lỗi hệ thống!");
+    }
 }
+
+
+async updateStatus(req, res) {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        const order = await DonHang.findById(id).populate("warehouseId");
+
+        if (!order) {
+            return res.status(404).send("❌ Không tìm thấy đơn hàng!");
+        }
+
+        // 🔥 Nếu đơn hàng chuyển sang "Đang vận chuyển", giảm tồn kho ngay lập tức
+        if (status === "Đang vận chuyển" && order.warehouseId) {
+            const warehouse = order.warehouseId;
+
+            order.items.forEach(item => {
+                const productInWarehouse = warehouse.products.find(p => p.productId.toString() === item._id.toString());
+                if (productInWarehouse) {
+                    productInWarehouse.quantity -= item.quantity;
+                    if (productInWarehouse.quantity < 0) {
+                        productInWarehouse.quantity = 0;
+                    }
+                }
+            });
+
+            await warehouse.save();
+            console.log(`✅ Đã giảm tồn kho từ kho ${warehouse.name}`);
+        }
+
+        // 🔥 Cập nhật trạng thái đơn hàng
+        order.status = status;
+        await order.save();
+        console.log(`✅ Đã cập nhật trạng thái đơn hàng: ${status}`);
+
+        res.redirect("/admin/donhang");
+    } catch (err) {
+        console.error("❌ Lỗi khi cập nhật trạng thái đơn hàng:", err);
+        res.status(500).send("Lỗi hệ thống!");
+    }
+}
+
+
+
+async confirmReceived(req, res) {
+    try {
+        const { id } = req.params;
+        const order = await DonHang.findById(id).populate("warehouseId");
+
+        if (!order || order.status !== "Đã giao") {
+            return res.status(400).send("Đơn hàng không hợp lệ hoặc đã được xác nhận.");
+        }
+
+        // 🔥 Nếu cần giảm tồn kho khi đơn hàng hoàn thành, có thể giữ đoạn này:
+        const warehouse = order.warehouseId;
+        if (warehouse) {
+            order.items.forEach(item => {
+                const productInWarehouse = warehouse.products.find(p => p.productId.toString() === item._id.toString());
+                if (productInWarehouse) {
+                    productInWarehouse.quantity -= item.quantity;
+                    if (productInWarehouse.quantity < 0) {
+                        productInWarehouse.quantity = 0;
+                    }
+                }
+            });
+
+            await warehouse.save();
+            console.log(`✅ Đã giảm tồn kho từ kho ${warehouse.name} khi đơn hàng hoàn thành.`);
+        }
+
+        // 🔥 Cập nhật trạng thái đơn hàng
+        order.status = "Hoàn thành";
+        await order.save();
+
+        console.log("✅ Đơn hàng đã được xác nhận là hoàn thành!");
+        res.redirect(`/donhang/${id}`);
+    } catch (err) {
+        console.error("❌ Lỗi khi xử lý đơn hàng:", err);
+        res.status(500).send("Lỗi hệ thống!");
+    }
+}
+
+
+
+//   async updateStatus(req, res) {
+//     const { id } = req.params;
+//     const { status } = req.body;
+
+//     await DonHang.findByIdAndUpdate(id, { status });
+//     res.redirect("/admin/donhang"); // Chuyển hướng đến danh sách đơn hàng
+//   }
+
+//   async confirmReceived(req, res) {
+//   const { id } = req.params;
+//   const order = await DonHang.findById(id);
+
+//   if (!order || order.status !== "Đã giao") {
+//     return res.status(400).send("Đơn hàng không hợp lệ hoặc đã được xác nhận.");
+//   }
+
+//   order.status = "Hoàn thành"; // 🚀 Cập nhật trạng thái
+//   await order.save();
+
+//   return res.redirect(`/donhang/${id}`); // 🔥 Chuyển hướng về chi tiết đơn hàng
+// }
 
 
 
@@ -67,20 +160,21 @@ class DonHangController {
   }
 
   async viewOrder(req, res) {
-  try {
-    const { id } = req.params;
-    const order = await DonHang.findById(id);
+    try {
+        const { id } = req.params;
+        const order = await DonHang.findById(id).populate("warehouseId");
 
-    if (!order) {
-      return res.status(404).send("Không tìm thấy đơn hàng.");
+        if (!order) {
+            return res.status(404).send("Không tìm thấy đơn hàng.");
+        }
+
+        res.render("user/chitietdonhang", { order });
+    } catch (err) {
+        console.error("❌ Lỗi khi lấy đơn hàng:", err);
+        res.status(500).send("Lỗi hệ thống!");
     }
-
-    res.render("user/chitietdonhang", { order });
-  } catch (err) {
-    console.error("Lỗi khi lấy đơn hàng:", err);
-    res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
-  }
 }
+
 
 
 

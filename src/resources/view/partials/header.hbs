@@ -56,6 +56,32 @@
           <li class="nav-item">
             <a class="nav-link" href="/admin/taotaikhoan">Tạo tài khoản</a>
           </li>
+
+          <!-- 🚀 Thêm dropdown "Kho hàng" dành cho admin -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarKho"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              🏢 Kho hàng
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarKho">
+              <a class="dropdown-item" href="/admin/kho/create">➕ Tạo kho mới</a>
+                <a class="dropdown-item" href="/admin/kho/list">📜 Danh sách kho</a> 
+              <div class="dropdown-divider"></div>
+              {{#each warehouses}}
+                <a class="dropdown-item" href="/admin/kho/{{this._id}}">
+                  {{this.name}} - {{this.address}}
+                </a>
+              {{/each}}
+            </div>
+          </li>
+
         {{/if}}
       {{/if}}
 
@@ -73,13 +99,13 @@
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
           {{#if user}}
-
             {{#if (eq user.role "user")}}
               <a class="dropdown-item" href="/auth/profile">Cập nhật thông tin</a>
             {{/if}}
             {{#if (eq user.role "admin")}}
               <a class="dropdown-item" href="/me/stored/sanpham">Quản lý sản phẩm</a>
               <a class="dropdown-item" href="/sanpham/create">Thêm sản phẩm</a>
+              <a class="dropdown-item" href="/admin/nhaphang">Nhập hàng vào kho</a>
             {{/if}}
             <div class="dropdown-divider"></div>
             <a class="dropdown-item" href="/auth/logout">Đăng xuất</a>

@@ -1,0 +1,11 @@
+<div class="container mt-5 text-center">
+  <h1 class="text-success">{{title}}</h1>
+  <div class="card mt-4">
+    <div class="card-body">
+      <p>Mã giao dịch: {{transaction.vnp_TransactionNo}}</p>
+      <p>Số tiền: {{formatCurrency transaction.vnp_Amount}}</p>
+      <p>Thời gian: {{transaction.vnp_PayDate}}</p>
+    </div>
+  </div>
+  <a href="/" class="btn btn-primary mt-3">Về trang chủ</a>
+</div>

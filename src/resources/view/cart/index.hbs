@@ -1,0 +1,36 @@
+<div class="container mt-5">
+  <h1 class="mb-4">{{title}}</h1>
+  
+  <form action="/payment/create_payment" method="POST">
+    <div class="mb-3">
+      <label class="form-label">Mã đơn hàng</label>
+      <input type="text" class="form-control" name="orderId" value="ORDER_{{randomNumber}}" required>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">Số tiền (VNĐ)</label>
+      <input type="number" class="form-control" name="amount" value="100000" required>
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">Mô tả đơn hàng</label>
+      <input type="text" class="form-control" name="orderInfo" value="Thanh toán dịch vụ">
+    </div>
+    
+    <div class="mb-3">
+      <label class="form-label">Ngân hàng (Tùy chọn)</label>
+      <select class="form-select" name="bankCode">
+        <option value="">Không chọn</option>
+        <option value="VNBANK">Ngân hàng VNPAY</option>
+        <option value="VNPAYQR">VNPAY QR</option>
+      </select>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Thanh toán</button>
+  </form>
+</div>
+
+<script>
+  // Tạo mã đơn hàng ngẫu nhiên
+  document.querySelector('input[name="orderId"]').value = `ORDER_${Math.floor(Math.random() * 1000000)}`;
+</script>

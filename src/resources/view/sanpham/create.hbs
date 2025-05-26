@@ -1,44 +1,42 @@
 <div class="mt-4">
-  <h3>Thêm sản phẩm</h3>
+  <h3>🛠️ Thêm sản phẩm mới</h3>
 
   <form method="POST" action="/sanpham/store" enctype="multipart/form-data">
     <div class="form-group">
-      <label for="name">Tiêu đề</label>
-      <input type="text" class="form-control" id="name" name="name" />
+      <label for="name">Tên sản phẩm</label>
+      <input type="text" class="form-control" id="name" name="name" required />
+    </div>
+
+    <div class="form-group">
+      <label for="sku">Mã SKU</label>
+      <input type="text" class="form-control" id="sku" name="sku" required />
+    </div>
+
+    <div class="form-group">
+      <label for="category">Danh mục sản phẩm</label>
+      <select class="form-control" id="category" name="category" required>
+        <option value="">Chọn danh mục</option>
+        <option value="electronics">Điện tử</option>
+        <option value="fashion">Thời trang</option>
+        <option value="home">Gia dụng</option>
+      </select>
     </div>
 
     <div class="form-group">
       <label for="price">Giá (VNĐ)</label>
-      <input
-        type="number"
-        class="form-control"
-        id="price"
-        name="price"
-        required
-      />
+      <input type="number" class="form-control" id="price" name="price" required />
     </div>
 
     <div class="form-group">
-      <label for="image">Chọn ảnh minh họa</label>
-      <input
-        type="file"
-        class="form-control"
-        id="image"
-        name="image"
-        required
-      />
+      <label for="image">Ảnh sản phẩm</label>
+      <input type="file" class="form-control" id="image" name="image" required />
     </div>
 
     <div class="form-group">
-      <label for="description">Mô tả</label>
-      <input
-        type="text"
-        class="form-control"
-        id="description"
-        name="description"
-      />
+      <label for="description">Mô tả sản phẩm</label>
+      <textarea class="form-control" id="description" name="description" rows="4"></textarea>
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Thêm sản phẩm</button>
+    <button type="submit" class="btn btn-primary mt-3">✔️ Thêm sản phẩm</button>
   </form>
 </div>

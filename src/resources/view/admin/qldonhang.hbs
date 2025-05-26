@@ -5,6 +5,8 @@
       <th>Họ tên</th>
       <th>SĐT</th>
       <th>Địa chỉ</th>
+      <th>Kho lấy hàng</th>
+      <th>Địa chỉ kho</th>
       <th>Trạng thái</th>
       <th>Hành động</th>
     </tr>
@@ -15,6 +17,8 @@
         <td>{{this.name}}</td>
         <td>{{this.phone}}</td>
         <td>{{this.address}}</td>
+        <td>{{#if this.warehouseId}}{{this.warehouseId.name}}{{else}}❌ Chưa xác định{{/if}}</td>
+        <td>{{#if this.warehouseId}}{{this.warehouseId.address}}{{else}}❌ Chưa xác định{{/if}}</td>
         <td>{{this.status}}</td>
         <td>
           <form method="POST" action="/admin/donhang/update/{{this._id}}">

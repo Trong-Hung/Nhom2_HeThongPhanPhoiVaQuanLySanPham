@@ -1,0 +1,17 @@
+<h2>Thanh toán đơn hàng</h2>
+
+<form action="/payment/pay" method="POST">
+    <label for="method">Chọn phương thức thanh toán:</label>
+    <select id="method" name="method">
+        <option value="vnpay">VNPay</option>
+        <option value="momo">MoMo</option>
+    </select>
+
+    <label for="amount">Số tiền:</label>
+    <input type="number" name="amount" required>
+
+    <label for="orderId">Mã đơn hàng:</label>
+    <input type="text" name="orderId" required>
+
+    <button type="submit">Tiến hành thanh toán</button>
+</form>

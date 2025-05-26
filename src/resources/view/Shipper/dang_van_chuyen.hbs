@@ -3,14 +3,13 @@
 <ul>
   {{#each orders}}
     <li>
-      Mã đơn:
-      {{this._id}}
-      - Địa chỉ:
-      {{this.address}}
-      - Trạng thái:
-      {{this.status}}
-      <a href="/shipper/maps/{{this._id}}" class="btn btn-primary">Chỉ đường</a>
+      📌 Mã đơn: {{this._id}}  
+      <br>📦 Kho xuất hàng: {{#if this.warehouseId}}{{this.warehouseId.name}}{{else}}❌ Chưa xác định{{/if}}  
+      <br>📍 Địa chỉ kho: {{#if this.warehouseId}}{{this.warehouseId.address}}{{else}}❌ Chưa xác định{{/if}}  
+      <br>🚚 Địa chỉ giao hàng: {{this.address}}  
+      <br>🚀 Trạng thái: {{this.status}}
 
+      <a href="/shipper/maps/{{this._id}}" class="btn btn-primary">Chỉ đường</a>
     </li>
   {{/each}}
 </ul>
