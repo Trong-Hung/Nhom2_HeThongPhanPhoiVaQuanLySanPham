@@ -6,7 +6,7 @@ const { geocodeAddress, geocode, getRoute } = require("../../util/mapService");
 
 
 class ShipperController {
-  // 🔥 Hiển thị danh sách đơn hàng "Đang sắp xếp" theo vùng của shipper
+ 
   async showPendingOrders(req, res) {
     try {
       if (!req.session.user || req.session.user.role !== "shipper") {
@@ -30,7 +30,7 @@ class ShipperController {
     }
   }
 
-  // 🔥 Hiển thị danh sách đơn hàng "Đang vận chuyển" mà shipper đang giao
+
 async showActiveOrders(req, res) {
     try {
         if (!req.session.user || req.session.user.role !== "shipper") {
@@ -44,7 +44,7 @@ async showActiveOrders(req, res) {
             status: "Đang vận chuyển",
             assignedShipper: shipperId,
             region: shipperRegion,
-        }).populate("warehouseId"); // 🔥 Đảm bảo lấy kho xuất hàng
+        }).populate("warehouseId"); 
 
         console.log("📦 Đơn hàng đang vận chuyển:", orders);
 
@@ -57,7 +57,6 @@ async showActiveOrders(req, res) {
 
 
 
-  // 🔥 API xác nhận đơn hàng từ "Đang sắp xếp" → "Đang vận chuyển"
   async confirmOrder(req, res) {
     try {
       const orderId = req.params.id;
@@ -72,41 +71,30 @@ async showActiveOrders(req, res) {
 
       const order = await DonHang.findById(orderId);
       if (!order) {
-        console.log("❌ Không tìm thấy đơn hàng.");
-        return res
-          .status(404)
-          .json({ success: false, message: "Không tìm thấy đơn hàng." });
+        console.log(" Không tìm thấy đơn hàng.");
+        
+        return res.redirect("/shipper/dang-sap-xep");
       }
 
       if (order.status !== "Đang sắp xếp") {
-        console.log("❌ Đơn hàng không hợp lệ:", order.status);
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Đơn hàng không ở trạng thái hợp lệ.",
-          });
+        console.log(" Đơn hàng không hợp lệ:", order.status);
+        return res.redirect("/shipper/dang-sap-xep");
       }
 
-      // 🔥 Cập nhật trạng thái và shipper nhận đơn
       order.assignedShipper = shipperId;
       order.status = "Đang vận chuyển";
       await order.save();
 
       console.log(
-        `✅ Đơn hàng ${orderId} đã được giao cho shipper ${shipperId} tại vùng ${shipperRegion}`
+        ` Đơn hàng ${orderId} đã được giao cho shipper ${shipperId} tại vùng ${shipperRegion}`
       );
 
-      res.json({ success: true });
+      res.redirect(req.get('referer') || '/shipper/dang-sap-xep');
     } catch (err) {
-      console.error("❌ Lỗi khi xác nhận đơn hàng:", err);
-      res.status(500).json({ success: false, message: "Lỗi hệ thống." });
+      console.error(" Lỗi khi xác nhận đơn hàng:", err);
+      res.status(500).send("Lỗi hệ thống.");
     }
-  }
-
-  // 🔥 API chỉ đường từ vị trí shipper đến địa chỉ giao hàng
-
-  // 🔥 Các phương thức trong class của bạn
+}
 
 async getDirections(req, res) {
     try {
@@ -119,16 +107,15 @@ async getDirections(req, res) {
 
         const warehouse = order.warehouseId;
         if (!warehouse) {
-            console.error("❌ Lỗi: Không tìm thấy kho hàng!");
+            console.error("Lỗi: Không tìm thấy kho hàng!");
             return res.status(400).send("Không tìm thấy kho xuất hàng.");
         }
 
-        // 🔥 Hiển thị tên & địa chỉ kho trước khi lấy tọa độ
         console.log(`📦 Kho xuất hàng: ${warehouse.name}`);
         console.log(`📍 Địa chỉ kho: ${warehouse.address}`);
 
         if (!warehouse.location || !warehouse.location.latitude || !warehouse.location.longitude) {
-            console.error("❌ Lỗi: Kho chưa có tọa độ, cần cập nhật!");
+            console.error(" Lỗi: Kho chưa có tọa độ, cần cập nhật!");
             return res.status(400).send("Kho chưa có tọa độ, cần cập nhật!");
         }
 
@@ -136,17 +123,17 @@ async getDirections(req, res) {
         let destinationCoords = await geocodeAddress(order.address);
 
         if (!destinationCoords) {
-            console.error("❌ Không thể tìm thấy tọa độ địa chỉ giao hàng.");
+            console.error("Không thể tìm thấy tọa độ địa chỉ giao hàng.");
             return res.status(404).send("Không tìm thấy tọa độ điểm giao.");
         }
 
         let destinationLocation = `${destinationCoords.latitude},${destinationCoords.longitude}`;
-        console.log("📌 Tọa độ kho xuất hàng:", warehouseLocation);
-        console.log("📌 Tọa độ điểm giao hàng:", destinationLocation);
+        console.log(" Tọa độ kho xuất hàng:", warehouseLocation);
+        console.log(" Tọa độ điểm giao hàng:", destinationLocation);
 
         const routeData = await getRoute(warehouseLocation, destinationLocation);
         if (!routeData || !routeData.geometry) {
-            console.error("❌ Không thể lấy tuyến đường.");
+            console.error(" Không thể lấy tuyến đường.");
             return res.status(404).send("Không tìm thấy tuyến đường.");
         }
 
@@ -158,7 +145,7 @@ async getDirections(req, res) {
         });
 
     } catch (error) {
-        console.error(`❌ Lỗi hệ thống khi lấy chỉ đường: ${error.message}`);
+        console.error(` Lỗi hệ thống khi lấy chỉ đường: ${error.message}`);
         res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
     }
 }

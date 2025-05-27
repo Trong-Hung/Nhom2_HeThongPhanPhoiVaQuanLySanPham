@@ -145,13 +145,17 @@ async manageAccounts(req, res) {
 
  async createAccount(req, res) {
   try {
+    // Kiểm tra nếu không phải admin thì từ chối yêu cầu
     if (!req.session.user || req.session.user.role !== "admin") {
       return res.status(403).send("❌ Bạn không có quyền tạo tài khoản.");
     }
 
     const { name, email, password, role, region } = req.body;
 
-    if (role === "shipper" && !region) {
+    // Nếu role không được chọn hoặc không được gửi từ form, mặc định là 'user'
+    const assignedRole = role || "user";
+
+    if (assignedRole === "shipper" && !region) {
       return res.status(400).send("❌ Region là bắt buộc đối với Shipper!");
     }
 
@@ -165,9 +169,9 @@ async manageAccounts(req, res) {
       name: name.trim(),
       email: email.trim(),
       password: hashedPassword,
-      role,
-      status: "Hoạt động", // 📌 Mặc định tài khoản shipper sẽ là "Hoạt động"
-      region: role === "shipper" ? region : undefined,
+      role: assignedRole, // Sử dụng giá trị role đã xử lý
+      status: "Hoạt động",
+      region: assignedRole === "shipper" ? region : undefined,
     });
 
     await newUser.save();

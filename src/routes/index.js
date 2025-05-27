@@ -1,5 +1,5 @@
 const { isAdmin, isAuthenticated } = require("../middlewares/role");
-const authRouter = require("./auth"); // Đảm bảo router auth được import đúng
+const authRouter = require("./auth");
 const newsRouter = require("./news");
 const searchRouter = require("./search");
 const sanphamRouter = require("./sanpham");
@@ -8,9 +8,9 @@ const homeRouter = require("./home");
 const adminRouter = require('./admin');
 const cartRouter = require('./cart');
 const donhangRouter = require("./donhang");
-const shipperRouter = require("./shipper"); // Đảm bảo router shipper được import đúng
+const shipperRouter = require("./shipper"); 
 
-// Kết nối route
+
 
 
 function Route(app) {
@@ -19,8 +19,8 @@ function Route(app) {
   app.use("/donhang", donhangRouter);
   app.use("/shipper", shipperRouter);
 
-  // Route phân quyền
-  app.use('/admin', adminRouter); // ✅ Trang quản trị admin
+  //phân quyền
+  app.use('/admin', adminRouter); 
   app.use('/me', isAdmin, meRouter);
   app.use('/sanpham', isAdmin, sanphamRouter);
   

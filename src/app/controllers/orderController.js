@@ -2,16 +2,16 @@ const Warehouse = require("../models/Warehouse");
 const Product = require("../models/Product");
 const axios = require("axios");
 
-// ✅ Chọn kho gần nhất có hàng để giao đơn
+
 exports.findNearestWarehouse = async (req, res) => {
     try {
         const { productId, latitude, longitude } = req.body;
 
-        // Tìm kho có hàng tồn
+     
         const warehouses = await Warehouse.find({ "products.productId": productId });
         if (warehouses.length === 0) return res.status(404).json({ message: "Không có kho nào có hàng!" });
 
-        // Tìm kho gần nhất bằng Mapbox API
+
         let nearestWarehouse = null;
         let shortestDistance = Infinity;
 

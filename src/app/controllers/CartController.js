@@ -39,11 +39,6 @@ async function findNearestWarehouse(customerLocation, productId, quantity) {
 class CartController {
 
 
-  // 🔥 Truy vấn kho gần nhất có hàng
-  // 🔥 Truy vấn kho gần nhất có hàng
-
-
-  // Thêm sản phẩm vào giỏ hàng
   async addToCart(req, res) {
     try {
       const productId = req.params.id;
@@ -77,10 +72,10 @@ class CartController {
         req.session.cart.totalPrice += product.price;
       }
 
-      console.log("✅ Đã thêm vào giỏ hàng:", req.session.cart);
+      console.log(" Đã thêm vào giỏ hàng:", req.session.cart);
       res.redirect("/cart/giohang");
     } catch (err) {
-      console.error("💥 Lỗi khi thêm vào giỏ:", err);
+      console.error(" Lỗi khi thêm vào giỏ:", err);
       res.status(500).send("Lỗi hệ thống");
     }
   }
@@ -119,33 +114,30 @@ class CartController {
 
  async processCheckout(req, res) {
     try {
-        console.log("📌 Nhận yêu cầu thanh toán:", req.body);
+        console.log(" Nhận yêu cầu thanh toán:", req.body);
         const { name, phone, province, district, ward, detail } = req.body;
 
-        // 🔥 Xác định địa chỉ đầy đủ
         const provinceName = await getProvinceName(province);
         const districtName = await getDistrictName(district);
         const wardName = await getWardName(ward, district);
         const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
 
-        // 🔥 Tìm kho gần nhất có hàng
         let location = req.body.location;
         if (!location || !location.latitude || !location.longitude) {
             location = await geocodeAddress(address);
-            if (!location) return res.status(400).send("❌ Lỗi: Không thể xác định vị trí.");
+            if (!location) return res.status(400).send(" Lỗi: Không thể xác định vị trí.");
         }
 
         console.log("📍 Vị trí xác định:", location);
 
         const selectedWarehouse = await findNearestWarehouse(location, req.session.cart.items[0]._id, req.session.cart.items[0].quantity);
-        if (!selectedWarehouse) return res.status(404).send("❌ Không có kho nào còn đủ hàng!");
+        if (!selectedWarehouse) return res.status(404).send(" Không có kho nào còn đủ hàng!");
 
-        console.log(`✅ Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
+        console.log(` Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
 
-        // 🔥 Cập nhật `warehouseId` vào đơn hàng
         const newOrder = new DonHang({
             userId: req.session.user._id,
-            warehouseId: selectedWarehouse._id, // 🔥 Lưu ID kho hàng
+            warehouseId: selectedWarehouse._id,
             name,
             phone,
             address,
@@ -157,13 +149,13 @@ class CartController {
         });
 
         await newOrder.save();
-        console.log("✅ Đơn hàng đã lưu thành công:", newOrder);
+        console.log(" Đơn hàng đã lưu thành công:", newOrder);
 
         req.session.cart = null;
         res.render("cart/thankyou", { name, phone, order: newOrder });
 
     } catch (err) {
-        console.error("❌ Lỗi khi xử lý thanh toán:", err);
+        console.error(" Lỗi khi xử lý thanh toán:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
@@ -173,32 +165,32 @@ class CartController {
   // Xử lý thanh toán
 //  async processCheckout(req, res) {
 //   const { name, phone, province, district, ward, detail } = req.body;
-//   console.log("📌 Dữ liệu nhận từ request:", req.body);
+//   console.log(" Dữ liệu nhận từ request:", req.body);
 
 
 //   const provinceName = await getProvinceName(province);
 // const districtName = await getDistrictName(district);
 // const wardName = await getWardName(ward, district);
 
-// console.log("📌 Tỉnh:", provinceName);
-// console.log("📌 Huyện:", districtName);
-// console.log("📌 Xã:", wardName);
+// console.log(" Tỉnh:", provinceName);
+// console.log(" Huyện:", districtName);
+// console.log(" Xã:", wardName);
 
 //   try {
 //     const provinceName = await getProvinceName(province);
-//     console.log("📌 Kiểm tra tỉnh/thành phố trước khi gọi `getRegionByProvince`:", provinceName);
+//     console.log(" Kiểm tra tỉnh/thành phố trước khi gọi `getRegionByProvince`:", provinceName);
 
 //     const region = getRegionByProvince(provinceName);
-//     console.log("📌 Kết quả xác định vùng miền:", region);
+//     console.log(" Kết quả xác định vùng miền:", region);
 
 //     if (!provinceName || !region || region === "Không xác định") {
-//       return res.status(400).send("❌ Lỗi xác định vùng miền.");
+//       return res.status(400).send(" Lỗi xác định vùng miền.");
 //     }
 
-//    const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`; // ✅ Sử dụng tên địa phương đúng
+//    const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`; //  Sử dụng tên địa phương đúng
 
 
-//     console.log("📌 Địa chỉ trước khi lưu đơn hàng:", address);
+//     console.log(" Địa chỉ trước khi lưu đơn hàng:", address);
 
 //     const cart = req.session.cart;
 //     if (!cart || cart.items.length === 0) {
@@ -206,7 +198,7 @@ class CartController {
 //     }
 
 //     if (!req.session.user) {
-//       return res.status(403).send("❌ Bạn cần đăng nhập để đặt hàng.");
+//       return res.status(403).send(" Bạn cần đăng nhập để đặt hàng.");
 //     }
 
 //     const userId = req.session.user._id;
@@ -216,8 +208,8 @@ class CartController {
 //       userId,
 //       name,
 //       phone,
-//       address, // 🔥 Địa chỉ đầy đủ
-//       region,  // 🔥 Vùng miền đã xác định
+//       address, // Địa chỉ đầy đủ
+//       region,  // Vùng miền đã xác định
 //       items: cart.items,
 //       totalQuantity,
 //       totalPrice: cart.totalPrice,
@@ -225,16 +217,15 @@ class CartController {
 //     });
 
 //     await order.save();
-//     console.log("✅ Đơn hàng đã được tạo:", order);
+//     console.log(" Đơn hàng đã được tạo:", order);
 
 //     req.session.cart = null;
 //     res.render("cart/thankyou", { name, phone, address, order: cart });
 //   } catch (err) {
-//     console.error("❌ Lỗi khi xử lý thanh toán:", err);
+//     console.error(" Lỗi khi xử lý thanh toán:", err);
 //     res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
 //   }
 // }
-
 
 
 

@@ -6,17 +6,17 @@ const Warehouse = require("../models/Warehouse");
 
 
 class DonHangController {
-  // ADMIN: Danh sách đơn hàng
+
 async index(req, res) {
     try {
-        console.log("📌 Truy vấn danh sách đơn hàng...");
+        console.log(" Truy vấn danh sách đơn hàng...");
         const orders = await DonHang.find().sort({ createdAt: -1 }).populate("warehouseId");
 
-        console.log("📌 Đơn hàng sau khi lấy kho:", orders);
+        console.log(" Đơn hàng sau khi lấy kho:", orders);
 
         res.render("admin/qldonhang", { orders });
     } catch (err) {
-        console.error("❌ Lỗi khi lấy danh sách đơn hàng:", err);
+        console.error(" Lỗi khi lấy danh sách đơn hàng:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
@@ -30,10 +30,9 @@ async updateStatus(req, res) {
         const order = await DonHang.findById(id).populate("warehouseId");
 
         if (!order) {
-            return res.status(404).send("❌ Không tìm thấy đơn hàng!");
+            return res.status(404).send(" Không tìm thấy đơn hàng!");
         }
 
-        // 🔥 Nếu đơn hàng chuyển sang "Đang vận chuyển", giảm tồn kho ngay lập tức
         if (status === "Đang vận chuyển" && order.warehouseId) {
             const warehouse = order.warehouseId;
 
@@ -48,17 +47,16 @@ async updateStatus(req, res) {
             });
 
             await warehouse.save();
-            console.log(`✅ Đã giảm tồn kho từ kho ${warehouse.name}`);
+            console.log(` Đã giảm tồn kho từ kho ${warehouse.name}`);
         }
 
-        // 🔥 Cập nhật trạng thái đơn hàng
         order.status = status;
         await order.save();
-        console.log(`✅ Đã cập nhật trạng thái đơn hàng: ${status}`);
+        console.log(` Đã cập nhật trạng thái đơn hàng: ${status}`);
 
         res.redirect("/admin/donhang");
     } catch (err) {
-        console.error("❌ Lỗi khi cập nhật trạng thái đơn hàng:", err);
+        console.error(" Lỗi khi cập nhật trạng thái đơn hàng:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
@@ -74,7 +72,6 @@ async confirmReceived(req, res) {
             return res.status(400).send("Đơn hàng không hợp lệ hoặc đã được xác nhận.");
         }
 
-        // 🔥 Nếu cần giảm tồn kho khi đơn hàng hoàn thành, có thể giữ đoạn này:
         const warehouse = order.warehouseId;
         if (warehouse) {
             order.items.forEach(item => {
@@ -88,17 +85,16 @@ async confirmReceived(req, res) {
             });
 
             await warehouse.save();
-            console.log(`✅ Đã giảm tồn kho từ kho ${warehouse.name} khi đơn hàng hoàn thành.`);
+            console.log(` Đã giảm tồn kho từ kho ${warehouse.name} khi đơn hàng hoàn thành.`);
         }
 
-        // 🔥 Cập nhật trạng thái đơn hàng
         order.status = "Hoàn thành";
         await order.save();
 
-        console.log("✅ Đơn hàng đã được xác nhận là hoàn thành!");
+        console.log(" Đơn hàng đã được xác nhận là hoàn thành!");
         res.redirect(`/donhang/${id}`);
     } catch (err) {
-        console.error("❌ Lỗi khi xử lý đơn hàng:", err);
+        console.error(" Lỗi khi xử lý đơn hàng:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
@@ -121,7 +117,7 @@ async confirmReceived(req, res) {
 //     return res.status(400).send("Đơn hàng không hợp lệ hoặc đã được xác nhận.");
 //   }
 
-//   order.status = "Hoàn thành"; // 🚀 Cập nhật trạng thái
+//   order.status = "Hoàn thành"; // Cập nhật trạng thái
 //   await order.save();
 
 //   return res.redirect(`/donhang/${id}`); // 🔥 Chuyển hướng về chi tiết đơn hàng
@@ -129,7 +125,7 @@ async confirmReceived(req, res) {
 
 
 
-  // USER: Hủy đơn
+
   async cancel(req, res) {
     try {
       const { id } = req.params;
@@ -141,17 +137,14 @@ async confirmReceived(req, res) {
         return res.status(404).send("Không tìm thấy đơn hàng.");
       }
 
-      // Kiểm tra trạng thái trước khi hủy
       if (order.status !== "Chờ xác nhận") {
         return res.status(400).send("Không thể hủy đơn hàng ở trạng thái này.");
       }
 
-      // Cập nhật trạng thái và lý do hủy
       order.status = "Đã hủy";
       order.cancelReason = reason;
       await order.save();
 
-      // Chuyển hướng về trang chi tiết đơn hàng
       return res.redirect(`/donhang/${id}`);
     } catch (err) {
       console.error("Lỗi khi hủy đơn hàng:", err);
@@ -170,15 +163,12 @@ async confirmReceived(req, res) {
 
         res.render("user/chitietdonhang", { order });
     } catch (err) {
-        console.error("❌ Lỗi khi lấy đơn hàng:", err);
+        console.error(" Lỗi khi lấy đơn hàng:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
 
 
-
-
-  // USER: Danh sách đơn hàng
   async userOrders(req, res) {
     if (!req.session.user) {
       return res.redirect("/auth/login");
@@ -187,7 +177,7 @@ async confirmReceived(req, res) {
     const userId = req.session.user._id;
     const orders = await DonHang.find({ userId }).sort({ createdAt: -1 });
 
-    res.render("user/donhangme", { orders }); // Đảm bảo đường dẫn đúng
+    res.render("user/donhangme", { orders }); 
   }
 }
 

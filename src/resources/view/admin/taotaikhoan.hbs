@@ -15,7 +15,6 @@
     <option value="admin">Admin</option>
   </select>
 
-  <!-- 🔥 Trường chọn vùng miền, chỉ hiển thị nếu role là "shipper" -->
   <div id="regionContainer" style="display: none;">
     <label for="region">Vùng miền:</label>
     <select id="region" name="region">
@@ -33,7 +32,6 @@
     const role = document.getElementById("role").value;
     const regionContainer = document.getElementById("regionContainer");
 
-    // 📌 Hiển thị trường "region" nếu vai trò là "shipper"
     if (role === "shipper") {
       regionContainer.style.display = "block";
     } else {

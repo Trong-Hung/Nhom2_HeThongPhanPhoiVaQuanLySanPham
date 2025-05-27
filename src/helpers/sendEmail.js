@@ -12,9 +12,9 @@ async function sendVerificationEmail(userEmail, token) {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("✅ Email xác nhận đã gửi thành công!");
+    console.log("Email xác nhận đã gửi thành công!");
   } catch (error) {
-    console.error("❌ Lỗi khi gửi email xác nhận:", error);
+    console.error("Lỗi khi gửi email xác nhận:", error);
   }
 }
 

@@ -9,9 +9,9 @@ const sanphamSchema = new mongoose.Schema({
   slug: { type: String, slug: "name", unique: true },
   image: { type: String },
   price: { type: Number, required: true },
-  category: { type: String, required: true },  // 🔥 Danh mục sản phẩm
-  sku: { type: String, required: true, unique: true }, // 🔥 SKU giúp tìm kiếm nhanh
-  stockTotal: { type: Number, default: 0 },  // 🔥 Tổng số lượng tồn kho
+  category: { type: String, required: true }, 
+  sku: { type: String, required: true, unique: true }, 
+  stockTotal: { type: Number, default: 0 },
   warehouses: [{
     warehouseId: { type: mongoose.Schema.Types.ObjectId, ref: "Warehouse" },
     stock: { type: Number, required: true, default: 0 }

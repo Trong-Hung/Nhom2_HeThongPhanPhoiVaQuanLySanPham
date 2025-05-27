@@ -9,8 +9,6 @@ class MeController {
         })
       )
       .catch(next);
-
-    // me/stored-course
   }
 }
 

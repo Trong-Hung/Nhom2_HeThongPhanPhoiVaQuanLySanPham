@@ -19,45 +19,35 @@ const port = 3000;
 
 
 
-const route = require("./routes"); // Import route
-const db = require("./config/db"); // Import db
+const route = require("./routes");
+const db = require("./config/db");
 
-
-
-// Connect to DB
-db.connect(); // Kết nối đến DB
+db.connect(); 
 
 
 const passport = require("./config/passport");
 
 
-// Middlewares
-
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public"))); // Đường dẫn tĩnh cho các file CSS, JS, ảnh
-app.use(express.urlencoded({ extended: true }));  // Xử lý dữ liệu từ form
-app.use(express.json()); // Xử lý dữ liệu JSON
-app.use("/uploads", express.static("uploads"));  // Xử lý đường dẫn tải lên file
-app.use(methodOverride('_method')); // Cho phép sử dụng phương thức PUT, DELETE từ form
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.json()); 
+app.use("/uploads", express.static("uploads")); 
+app.use(methodOverride('_method')); 
 
 
 
 
 
 
-// Khai báo session
-// Cấu hình session
 app.use(session({
   secret: 'yourSecretKey',
-  resave: true,  // Giữ session giữa các request
+  resave: true,  
   saveUninitialized: false, 
-  cookie: { secure: false, maxAge: 86400000 } // 24 giờ (1 ngày)
+  cookie: { secure: false, maxAge: 86400000 }
 }));
 
 
-
-
-// Cấu hình Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -84,8 +74,8 @@ const hbs = create({
     },
   },
   runtimeOptions: {
-    allowProtoPropertiesByDefault: true, // Cho phép truy cập các thuộc tính không phải "own property"
-    allowProtoMethodsByDefault: true,   // Cho phép truy cập các phương thức không phải "own method"
+    allowProtoPropertiesByDefault: true, 
+    allowProtoMethodsByDefault: true,   
   },
 });
 
@@ -96,18 +86,16 @@ app.set("views", path.join(__dirname, "resources", "view"));
 
 // Routes
 const authRouter = require('./routes/auth');
-app.use('/auth', authRouter);  // Sử dụng auth router
+app.use('/auth', authRouter); 
 
-// ✅ Gắn session user vào biến res.locals để dùng trong view
 app.use((req, res, next) => {
   res.locals.user = req.session.user;
   next();
 });
 
 
-route(app); // Khởi tạo các route khác
+route(app); 
 
-// Khởi chạy server
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);
 });

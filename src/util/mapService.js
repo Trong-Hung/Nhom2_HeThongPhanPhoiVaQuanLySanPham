@@ -1,11 +1,9 @@
 const axios = require("axios");
 
-const OPENROUTESERVICE_API_KEY = "5b3ce3597851110001cf62485ab14955136c4f3fa2fff3fcf0cc8110"; // 🔥 Key cho OpenRouteService
-const GRAPHHOPPER_API_KEY = "59892466-e5b1-41c1-9bfb-d161b6eababb"; // 🔥 Key cho GraphHopper
+const OPENROUTESERVICE_API_KEY = "5b3ce3597851110001cf62485ab14955136c4f3fa2fff3fcf0cc8110"; 
+const GRAPHHOPPER_API_KEY = "59892466-e5b1-41c1-9bfb-d161b6eababb"; 
 
 
-
-// 🔥 Hàm lấy tọa độ từ địa chỉ (OpenRouteService)
 async function geocode(address) {
     try {
         if (!OPENROUTESERVICE_API_KEY) throw new Error("API Key OpenRouteService không hợp lệ!");
@@ -19,18 +17,18 @@ async function geocode(address) {
 
         return { latitude: location[1], longitude: location[0] };
     } catch (error) {
-        console.error("❌ Lỗi khi lấy tọa độ:", error.message);
+        console.error(" Lỗi khi lấy tọa độ:", error.message);
         return null;
     }
 }
 
-// 🔥 Hàm lấy tuyến đường từ kho đến địa chỉ giao hàng (GraphHopper)
+
 async function getRoute(startCoords, endCoords) {
     try {
         if (!GRAPHHOPPER_API_KEY) throw new Error("API Key GraphHopper không hợp lệ!");
 
-        console.log("📌 Tọa độ kho xuất hàng:", startCoords);
-        console.log("📌 Tọa độ điểm giao hàng:", endCoords);
+        console.log(" Tọa độ kho xuất hàng:", startCoords);
+        console.log(" Tọa độ điểm giao hàng:", endCoords);
 
         const response = await axios.get(`https://graphhopper.com/api/1/route`, {
             params: {
@@ -52,7 +50,7 @@ async function getRoute(startCoords, endCoords) {
             instructions: route.instructions.map(step => step.text)
         };
     } catch (error) {
-        console.error("❌ Lỗi khi lấy tuyến đường:", error.message);
+        console.error(" Lỗi khi lấy tuyến đường:", error.message);
         return null;
     }
 }
@@ -62,7 +60,7 @@ async function geocodeAddress(address) {
     try {
         const response = await axios.get(url);
         if (response.data.length === 0) {
-            console.error("❌ Không tìm thấy tọa độ! Thử thay đổi địa chỉ.");
+            console.error(" Không tìm thấy tọa độ! Thử thay đổi địa chỉ.");
             return null;
         }
 
@@ -70,7 +68,7 @@ async function geocodeAddress(address) {
         console.log(`📍 Địa chỉ: ${address} → GPS: (${lat}, ${lon})`);
         return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
     } catch (err) {
-        console.error("❌ Lỗi khi gọi Geocoding API:", err);
+        console.error(" Lỗi khi gọi Geocoding API:", err);
         return null;
     }
 }
