@@ -18,4 +18,17 @@ async function geocodeAddress(address) {
         return null;
     }
 }
-module.exports = { geocodeAddress };
+function calculateEstimatedDelivery(distance) {
+    try {
+        const avgSpeed = 40; // km/h
+        const travelTime = distance / avgSpeed; // Thời gian di chuyển theo giờ
+        const estimatedDate = new Date();
+        estimatedDate.setHours(estimatedDate.getHours() + travelTime);
+
+        return estimatedDate.toISOString().split("T")[0]; // Trả về dạng `YYYY-MM-DD`
+    } catch (err) {
+        console.error("❌ Lỗi khi tính toán ngày giao:", err);
+        return null;
+    }
+}
+module.exports = { geocodeAddress, calculateEstimatedDelivery };

@@ -24,7 +24,7 @@ const DonHangSchema = new Schema({
     enum: ["Chờ thanh toán", "Chờ xác nhận", "Đang sắp xếp", "Đang vận chuyển", "Đã giao", "Đã hủy", "Hoàn thành"],
     default: "Chờ thanh toán", 
   },
-  
+  estimatedDelivery: { type: Date },
   cancelReason: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }, 

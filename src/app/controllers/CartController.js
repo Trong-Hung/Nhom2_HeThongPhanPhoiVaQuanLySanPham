@@ -2,7 +2,7 @@ const Sanpham = require("../models/Sanpham");
 const DonHang = require("../models/DonHang");
 const Warehouse = require("../models/Warehouse"); 
 const { getDistance } = require("../../util/distanceHelper");
-const { geocodeAddress } = require("../../util/geolocationHelper");
+const { geocodeAddress, calculateEstimatedDelivery } = require("../../util/geolocationHelper");
 const { mongooseToObject } = require("../../util/mongoose");
 const {
   getProvinceName,
@@ -114,51 +114,69 @@ class CartController {
 
  async processCheckout(req, res) {
     try {
-        console.log(" Nhận yêu cầu thanh toán:", req.body);
+        console.log("📦 Nhận yêu cầu thanh toán:", req.body);
         const { name, phone, province, district, ward, detail } = req.body;
 
+        // Xác định địa chỉ khách hàng
         const provinceName = await getProvinceName(province);
         const districtName = await getDistrictName(district);
         const wardName = await getWardName(ward, district);
         const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
+        const region = getRegionByProvince(provinceName);
 
+        // Xác định vị trí khách hàng (nếu chưa truyền tọa độ, dùng hàm geocode)
         let location = req.body.location;
         if (!location || !location.latitude || !location.longitude) {
             location = await geocodeAddress(address);
-            if (!location) return res.status(400).send(" Lỗi: Không thể xác định vị trí.");
+            if (!location) return res.status(400).send("❌ Lỗi: Không thể xác định vị trí khách hàng.");
         }
+        console.log("📍 Vị trí khách hàng:", location);
 
-        console.log("📍 Vị trí xác định:", location);
-
+        // Tìm kho hàng gần nhất có đủ hàng
         const selectedWarehouse = await findNearestWarehouse(location, req.session.cart.items[0]._id, req.session.cart.items[0].quantity);
-        if (!selectedWarehouse) return res.status(404).send(" Không có kho nào còn đủ hàng!");
+        if (!selectedWarehouse) return res.status(404).send("❌ Không có kho nào đủ hàng!");
 
-        console.log(` Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
+        console.log(`🚛 Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
 
+        // THÊM ĐOẠN CODE TÍNH KHOẢNG CÁCH VÀ THỜI GIAN GIAO DỰ KIẾN
+        const distance = await getDistance(selectedWarehouse.location, location);
+        let estimatedDelivery = null;
+        if (distance !== null) {
+            estimatedDelivery = calculateEstimatedDelivery(distance);
+            console.log(`📏 Khoảng cách: ${distance} km, Thời gian giao dự kiến: ${estimatedDelivery}`);
+        } else {
+            console.error("❌ Không thể lấy được khoảng cách, không tính được ngày giao dự kiến.");
+        }
+        // END: Đoạn code thêm vào
+
+        // Tạo đơn hàng mới với thông tin đã tính được
         const newOrder = new DonHang({
             userId: req.session.user._id,
             warehouseId: selectedWarehouse._id,
             name,
             phone,
             address,
-            region: getRegionByProvince(provinceName),
+            region,
             items: req.session.cart.items,
             totalQuantity: req.session.cart.items.reduce((total, item) => total + item.quantity, 0),
             totalPrice: req.session.cart.totalPrice,
             status: "Chờ xác nhận",
+            estimatedDelivery, // Thêm ngày giao dự kiến nếu có
         });
 
         await newOrder.save();
-        console.log(" Đơn hàng đã lưu thành công:", newOrder);
+        console.log("✅ Đơn hàng đã lưu thành công:", newOrder);
 
+        // Xóa giỏ hàng sau khi đặt
         req.session.cart = null;
         res.render("cart/thankyou", { name, phone, order: newOrder });
 
     } catch (err) {
-        console.error(" Lỗi khi xử lý thanh toán:", err);
+        console.error("❌ Lỗi khi xử lý thanh toán:", err);
         res.status(500).send("Lỗi hệ thống!");
     }
 }
+
 
 
 

@@ -1,6 +1,6 @@
 const regions = {
   "Miền Bắc": ["Thành phố Hà Nội", "Bắc Ninh", "Hải Phòng", "Quảng Ninh", "Lào Cai"],
-  "Miền Trung": ["Thanh Hóa", "Nghệ An", "Huế", "Đà Nẵng", "Khánh Hòa"],
+  "Miền Trung": ["Thanh Hóa", "Tỉnh Nghệ An", "Huế", "Đà Nẵng", "Khánh Hòa"],
   "Miền Nam": ["Thành phố Hồ Chí Minh", "Bình Dương", "Đồng Nai", "Cần Thơ", "An Giang"]
 };
 
