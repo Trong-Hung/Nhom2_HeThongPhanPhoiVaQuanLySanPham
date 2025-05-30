@@ -1,35 +1,53 @@
 const axios = require("axios");
 
-async function getDistance(origin, destination) {
-    // Log tọa độ kho (origin) và tọa độ khách hàng (destination)
-    console.log("📍 Vị trí kho (Origin):", origin);
-    console.log("📍 Vị trí khách hàng (Destination):", destination);
-
-    if (!origin || !destination || !origin.latitude || !origin.longitude || !destination.latitude || !destination.longitude) {
-        console.error("❌ Lỗi: Tọa độ không hợp lệ!");
-        return null;
-    }
-
-    const apiKey = "5b3ce3597851110001cf62485ab14955136c4f3fa2fff3fcf0cc8110";
-    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${origin.longitude},${origin.latitude}&end=${destination.longitude},${destination.latitude}`;
-
-    try {
-        console.log(`📡 Gửi yêu cầu OpenRouteService: ${url}`);
-        const response = await axios.get(url);
-
-        if (!response.data.routes || response.data.routes.length === 0) {
-            console.error("❌ Không tìm thấy lộ trình! Kiểm tra địa chỉ nhập vào.");
-            return null;
-        }
-
-        const distanceInMeters = response.data.routes[0].summary.distance;
-        const distanceInKm = distanceInMeters / 1000;
-        console.log(`📏 Khoảng cách: ${distanceInKm} km`);
-        return distanceInKm;
-    } catch (err) {
-        console.error("❌ Lỗi khi gọi OpenRouteService API:", err.message);
-        return null;
-    }
+async function getDistanceUsingHere(origin, destination) {
+  // Kiểm tra dữ liệu đầu vào
+  if (
+  !origin ||
+  !destination ||
+  origin.latitude == null ||
+  origin.longitude == null ||
+  destination.latitude == null ||
+  destination.longitude == null
+) {
+  console.error("❌ Lỗi: Tọa độ không hợp lệ!");
+  return null;
 }
 
-module.exports = { getDistance };
+
+  // Log tọa độ để debug
+  console.log("HERE API - Vị trí kho (Origin):", origin);
+  console.log("HERE API - Vị trí khách hàng (Destination):", destination);
+
+  // Thay YOUR_HERE_API_KEY bằng API key hợp lệ của bạn
+  const apiKey = "nJ2hIx9AoLMf3ba0VXmNq1KrMukOYi5sf_xVvCeh9pM";
+  const url = `https://router.hereapi.com/v8/routes?transportMode=car&origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&return=summary&apiKey=${apiKey}`;
+
+  try {
+    console.log(`📡 Đang gửi yêu cầu HERE Routing API: ${url}`);
+    const response = await axios.get(url);
+
+    if (
+      !response.data.routes ||
+      response.data.routes.length === 0 ||
+      !response.data.routes[0].sections ||
+      response.data.routes[0].sections.length === 0
+    ) {
+      console.error("❌ Không tìm thấy lộ trình từ HERE API. Kiểm tra lại địa chỉ hoặc API key.");
+      return null;
+    }
+
+    // Lấy thông tin khoảng cách từ summary.
+    // Cấu trúc trả về thường là: routes -> sections -> summary -> length (đơn vị là mét)
+    const summary = response.data.routes[0].sections[0].summary;
+    const distanceInKm = summary.length / 1000;
+    console.log(`📏 Khoảng cách (HERE): ${distanceInKm} km`);
+
+    return distanceInKm;
+  } catch (err) {
+    console.error("❌ Lỗi khi gọi HERE Routing API:", err.message);
+    return null;
+  }
+}
+
+module.exports = { getDistanceUsingHere };

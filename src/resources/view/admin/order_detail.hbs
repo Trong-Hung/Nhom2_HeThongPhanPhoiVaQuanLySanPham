@@ -1,0 +1,31 @@
+<h3>Chi tiết đơn hàng</h3>
+<p><strong>Mã đơn:</strong> {{order._id}}</p>
+<p><strong>Họ tên:</strong> {{order.name}}</p>
+<p><strong>SĐT:</strong> {{order.phone}}</p>
+<p><strong>Địa chỉ giao:</strong> {{order.address}}</p>
+<p><strong>Kho lấy hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
+<p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
+<p><strong>Trạng thái:</strong> {{order.status}}</p>
+<p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
+<p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+<p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
+<p><strong>Shipper phụ trách:</strong>
+  {{#if order.assignedShipper}}
+    {{order.assignedShipper.name}}
+  {{else}}
+    <span class="text-danger">Chưa gán shipper</span>
+  {{/if}}
+</p>
+
+<form method="POST" action="/admin/donhang/update/{{order._id}}">
+  <label for="status">Cập nhật trạng thái:</label>
+  <select name="status" id="status" class="form-select">
+    <option value="Chờ xác nhận" {{#if (eq order.status "Chờ xác nhận")}}selected{{/if}}>Chờ xác nhận</option>
+    <option value="Đang sắp xếp" {{#if (eq order.status "Đang sắp xếp")}}selected{{/if}}>Đang sắp xếp</option>
+    <option value="Đang vận chuyển" {{#if (eq order.status "Đang vận chuyển")}}selected{{/if}}>Đang vận chuyển</option>
+    <option value="Đã giao" {{#if (eq order.status "Đã giao")}}selected{{/if}}>Đã giao</option>
+    <option value="Đã hủy" {{#if (eq order.status "Đã hủy")}}selected{{/if}}>Đã hủy</option>
+  </select>
+  <button class="btn btn-primary btn-sm mt-1">Cập nhật</button>
+</form>
+<a href="/admin/qldonhang">Quay lại danh sách</a>

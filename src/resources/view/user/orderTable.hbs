@@ -1,0 +1,24 @@
+{{#if orders.length}}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Mã đơn hàng</th>
+        <th>Trạng thái</th>
+        <th>Ngày đặt hàng</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each orders}}
+        <tr>
+          <td>{{@index}}</td>
+          <td><a href="/donhang/{{this._id}}">{{this._id}}</a></td>
+          <td>{{this.status}}</td>
+          <td>{{this.createdAt}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{else}}
+  <p>Không có đơn hàng nào.</p>
+{{/if}}

@@ -1,14 +1,22 @@
 const Sanpham = require("../models/Sanpham");
 const DonHang = require("../models/DonHang");
-const Warehouse = require("../models/Warehouse"); 
-const { getDistance } = require("../../util/distanceHelper");
-const { geocodeAddress, calculateEstimatedDelivery } = require("../../util/geolocationHelper");
+const Warehouse = require("../models/Warehouse");
+const { createMomoPaymentUrl } = require("../../util/momoHelper");
+
+const { getDistanceUsingHere } = require("../../util/distanceHelper");
+const {
+  geocodeAddress,
+  calculateEstimatedDelivery,
+  addDays,
+  computeTravelTimeInDays,
+} = require("../../util/geolocationHelper");
 const { mongooseToObject } = require("../../util/mongoose");
 const {
   getProvinceName,
   getDistrictName,
   getWardName,
 } = require("../../util/addressHelper");
+const moment = require("moment-timezone");
 
 const { getRegionByProvince } = require("../../util/regions");
 
@@ -16,29 +24,42 @@ const fs = require("fs");
 const path = require("path");
 
 async function findNearestWarehouse(customerLocation, productId, quantity) {
-    const warehouses = await Warehouse.find();
-    let closestWarehouse = null;
-    let minDistance = Infinity;
+  const warehouses = await Warehouse.find();
+  let closestWarehouse = null;
+  let minDistance = Infinity;
 
-    for (const warehouse of warehouses) {
-        const distance = await getDistance(
-            `${warehouse.location.longitude},${warehouse.location.latitude}`,
-            `${customerLocation.longitude},${customerLocation.latitude}`
-        );
+  for (const warehouse of warehouses) {
+    const distance = await getDistanceUsingHere(
+      `${warehouse.location.longitude},${warehouse.location.latitude}`,
+      `${customerLocation.longitude},${customerLocation.latitude}`
+    );
 
-        const productEntry = warehouse.products.find(p => p.productId.toString() === productId);
-        if (productEntry && productEntry.quantity >= quantity && distance < minDistance) {
-            minDistance = distance;
-            closestWarehouse = warehouse;
-        }
+    const productEntry = warehouse.products.find(
+      (p) => p.productId.toString() === productId
+    );
+    if (
+      productEntry &&
+      productEntry.quantity >= quantity &&
+      distance < minDistance
+    ) {
+      minDistance = distance;
+      closestWarehouse = warehouse;
     }
+  }
 
-    return closestWarehouse;
+  return closestWarehouse;
+}
+
+function removeVietnameseTones(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/[^a-zA-Z0-9 ]/g, ""); // chỉ giữ chữ, số, dấu cách
 }
 
 class CartController {
-
-
   async addToCart(req, res) {
     try {
       const productId = req.params.id;
@@ -83,7 +104,10 @@ class CartController {
   // Hiển thị giỏ hàng
   viewCart(req, res) {
     const cart = req.session.cart || { items: [], totalPrice: 0 };
-    const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
+    const totalQuantity = cart.items.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
     const totalPrice = cart.totalPrice;
 
     res.render("cart/giohang", {
@@ -96,7 +120,10 @@ class CartController {
   // Hiển thị trang thanh toán
   viewCheckout(req, res) {
     const cart = req.session.cart || { items: [], totalPrice: 0 };
-    const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
+    const totalQuantity = cart.items.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
     const formattedTotalPrice = cart.totalPrice.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
@@ -110,142 +137,136 @@ class CartController {
     });
   }
 
-
-
- async processCheckout(req, res) {
+  async processCheckout(req, res) {
     try {
-        console.log("📦 Nhận yêu cầu thanh toán:", req.body);
-        const { name, phone, province, district, ward, detail } = req.body;
+      console.log("📦 Nhận yêu cầu thanh toán:", req.body);
+      const { name, phone, province, district, ward, detail, method } =
+        req.body;
 
-        // Xác định địa chỉ khách hàng
-        const provinceName = await getProvinceName(province);
-        const districtName = await getDistrictName(district);
-        const wardName = await getWardName(ward, district);
-        const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
-        const region = getRegionByProvince(provinceName);
+      // Xác định địa chỉ khách hàng
+      const provinceName = await getProvinceName(province);
+      const districtName = await getDistrictName(district);
+      const wardName = await getWardName(ward, district);
+      const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
+      const region = getRegionByProvince(provinceName);
 
-        // Xác định vị trí khách hàng (nếu chưa truyền tọa độ, dùng hàm geocode)
-        let location = req.body.location;
-        if (!location || !location.latitude || !location.longitude) {
-            location = await geocodeAddress(address);
-            if (!location) return res.status(400).send("❌ Lỗi: Không thể xác định vị trí khách hàng.");
+      // Xác định vị trí khách hàng
+      let location = req.body.location;
+      if (!location || !location.latitude || !location.longitude) {
+        location = await geocodeAddress(address);
+        if (!location) {
+          return res
+            .status(400)
+            .send("❌ Lỗi: Không thể xác định vị trí khách hàng.");
         }
-        console.log("📍 Vị trí khách hàng:", location);
+      }
+      console.log("📍 Vị trí khách hàng:", location);
 
-        // Tìm kho hàng gần nhất có đủ hàng
-        const selectedWarehouse = await findNearestWarehouse(location, req.session.cart.items[0]._id, req.session.cart.items[0].quantity);
-        if (!selectedWarehouse) return res.status(404).send("❌ Không có kho nào đủ hàng!");
+      // Tìm kho hàng gần nhất có đủ hàng
+      const selectedWarehouse = await findNearestWarehouse(
+        location,
+        req.session.cart.items[0]._id,
+        req.session.cart.items[0].quantity
+      );
+      if (!selectedWarehouse) {
+        return res.status(404).send("❌ Không có kho nào đủ hàng!");
+      }
+      console.log(`🚛 Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
 
-        console.log(`🚛 Đơn hàng sẽ xuất từ kho: ${selectedWarehouse.name}`);
+      // Tính khoảng cách
+      const distance = await getDistanceUsingHere(
+        selectedWarehouse.location,
+        location
+      );
+      if (distance === null) {
+        return res.status(400).send("❌ Lỗi tính khoảng cách.");
+      }
 
-        // THÊM ĐOẠN CODE TÍNH KHOẢNG CÁCH VÀ THỜI GIAN GIAO DỰ KIẾN
-        const distance = await getDistance(selectedWarehouse.location, location);
-        let estimatedDelivery = null;
-        if (distance !== null) {
-            estimatedDelivery = calculateEstimatedDelivery(distance);
-            console.log(`📏 Khoảng cách: ${distance} km, Thời gian giao dự kiến: ${estimatedDelivery}`);
-        } else {
-            console.error("❌ Không thể lấy được khoảng cách, không tính được ngày giao dự kiến.");
-        }
-        // END: Đoạn code thêm vào
+      // Tính ngày giao dự kiến
+      const orderCreationDate = new Date();
+      const speed = 40; // km/h
+      const orderStatus = "Chờ xác nhận";
+      const estimatedDeliveryUTC = calculateEstimatedDelivery(
+        distance,
+        speed,
+        orderStatus,
+        orderCreationDate,
+        null
+      );
+      const estimatedDeliveryVietnam = moment(estimatedDeliveryUTC)
+        .tz("Asia/Ho_Chi_Minh")
+        .toDate();
 
-        // Tạo đơn hàng mới với thông tin đã tính được
-        const newOrder = new DonHang({
-            userId: req.session.user._id,
-            warehouseId: selectedWarehouse._id,
-            name,
-            phone,
-            address,
-            region,
-            items: req.session.cart.items,
-            totalQuantity: req.session.cart.items.reduce((total, item) => total + item.quantity, 0),
-            totalPrice: req.session.cart.totalPrice,
-            status: "Chờ xác nhận",
-            estimatedDelivery, // Thêm ngày giao dự kiến nếu có
+      // Tạo đơn hàng mới
+      const newOrder = new DonHang({
+        userId: req.session.user._id,
+        warehouseId: selectedWarehouse._id,
+        name,
+        phone,
+        address,
+        region,
+        items: req.session.cart.items,
+        totalQuantity: req.session.cart.items.reduce(
+          (total, item) => total + item.quantity,
+          0
+        ),
+        totalPrice: req.session.cart.totalPrice,
+        paymentMethod: method,
+        status: orderStatus,
+        estimatedDelivery: estimatedDeliveryVietnam,
+        customerLocation: location,
+      });
+
+      await newOrder.save();
+      console.log("✅ Đơn hàng đã lưu thành công:", newOrder);
+
+      // Xử lý thanh toán
+      if (method === "momo") {
+        req.session.lastOrder = {
+          name,
+          phone,
+          address,
+          items: newOrder.items,
+          totalQuantity: newOrder.totalQuantity,
+          totalPrice: newOrder.totalPrice,
+          paymentMethodText: "Thanh toán qua MoMo",
+          warehouseLocation: selectedWarehouse.location,
+          customerLocation: location,
+          order: newOrder, // nếu view cần dùng
+        };
+        const orderId = newOrder._id
+          .toString()
+          .replace(/[^a-zA-Z0-9]/g, "")
+          .slice(-10);
+        const orderInfo = `Thanh toan don hang ${orderId}`;
+        const paymentUrl = await createMomoPaymentUrl({
+          amount: newOrder.totalPrice,
+          orderId,
+          orderInfo,
+          returnUrl: process.env.MOMO_RETURNURL,
         });
-
-        await newOrder.save();
-        console.log("✅ Đơn hàng đã lưu thành công:", newOrder);
-
-        // Xóa giỏ hàng sau khi đặt
+        return res.redirect(paymentUrl);
+      } else {
+        // Thanh toán tiền mặt
         req.session.cart = null;
-        res.render("cart/thankyou", { name, phone, order: newOrder });
-
+        let paymentMethodText = "Thanh toán khi nhận hàng";
+        return res.render("cart/thankyou", {
+          name,
+          phone,
+          address,
+          order: newOrder,
+          totalQuantity: newOrder.totalQuantity,
+          totalPrice: newOrder.totalPrice,
+          paymentMethodText,
+          warehouseLocation: selectedWarehouse.location,
+          customerLocation: location,
+        });
+      }
     } catch (err) {
-        console.error("❌ Lỗi khi xử lý thanh toán:", err);
-        res.status(500).send("Lỗi hệ thống!");
+      console.error("❌ Lỗi khi xử lý thanh toán:", err);
+      res.status(500).send("Lỗi hệ thống!");
     }
-}
-
-
-
-
-  // Xử lý thanh toán
-//  async processCheckout(req, res) {
-//   const { name, phone, province, district, ward, detail } = req.body;
-//   console.log(" Dữ liệu nhận từ request:", req.body);
-
-
-//   const provinceName = await getProvinceName(province);
-// const districtName = await getDistrictName(district);
-// const wardName = await getWardName(ward, district);
-
-// console.log(" Tỉnh:", provinceName);
-// console.log(" Huyện:", districtName);
-// console.log(" Xã:", wardName);
-
-//   try {
-//     const provinceName = await getProvinceName(province);
-//     console.log(" Kiểm tra tỉnh/thành phố trước khi gọi `getRegionByProvince`:", provinceName);
-
-//     const region = getRegionByProvince(provinceName);
-//     console.log(" Kết quả xác định vùng miền:", region);
-
-//     if (!provinceName || !region || region === "Không xác định") {
-//       return res.status(400).send(" Lỗi xác định vùng miền.");
-//     }
-
-//    const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`; //  Sử dụng tên địa phương đúng
-
-
-//     console.log(" Địa chỉ trước khi lưu đơn hàng:", address);
-
-//     const cart = req.session.cart;
-//     if (!cart || cart.items.length === 0) {
-//       return res.redirect("/cart/giohang");
-//     }
-
-//     if (!req.session.user) {
-//       return res.status(403).send(" Bạn cần đăng nhập để đặt hàng.");
-//     }
-
-//     const userId = req.session.user._id;
-//     const totalQuantity = cart.items.reduce((total, item) => total + item.quantity, 0);
-
-//     const order = new DonHang({
-//       userId,
-//       name,
-//       phone,
-//       address, // Địa chỉ đầy đủ
-//       region,  // Vùng miền đã xác định
-//       items: cart.items,
-//       totalQuantity,
-//       totalPrice: cart.totalPrice,
-//       status: "Chờ xác nhận",
-//     });
-
-//     await order.save();
-//     console.log(" Đơn hàng đã được tạo:", order);
-
-//     req.session.cart = null;
-//     res.render("cart/thankyou", { name, phone, address, order: cart });
-//   } catch (err) {
-//     console.error(" Lỗi khi xử lý thanh toán:", err);
-//     res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
-//   }
-// }
-
-
+  }
 
   increaseQuantity(req, res) {
     const productId = req.params.id;
@@ -262,6 +283,22 @@ class CartController {
     res.redirect("/cart/giohang");
   }
 
+  viewThankYou(req, res) {
+    const lastOrder = req.session.lastOrder || {};
+    req.session.lastOrder = null;
+    res.render("cart/thankyou", {
+      paymentMethodText: lastOrder.paymentMethodText || "Thanh toán qua MoMo",
+      name: lastOrder.name,
+      phone: lastOrder.phone,
+      address: lastOrder.address,
+      items: lastOrder.items || [],
+      totalQuantity: lastOrder.totalQuantity,
+      totalPrice: lastOrder.totalPrice,
+      warehouseLocation: lastOrder.warehouseLocation,
+      customerLocation: lastOrder.customerLocation,
+      order: lastOrder.order,
+    });
+  }
   decreaseQuantity(req, res) {
     const productId = req.params.id;
     const cart = req.session.cart;
@@ -288,7 +325,9 @@ class CartController {
     }
 
     const cart = req.session.cart;
-    const index = cart.items.findIndex((item) => item._id.toString() === productId);
+    const index = cart.items.findIndex(
+      (item) => item._id.toString() === productId
+    );
 
     if (index > -1) {
       const removedItem = cart.items.splice(index, 1)[0];

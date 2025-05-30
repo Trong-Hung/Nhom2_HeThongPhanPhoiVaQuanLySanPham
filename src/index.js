@@ -9,51 +9,42 @@ const MongoStore = require("connect-mongo");
 const cookieParser = require("cookie-parser");
 
 require("./util/cronJobs");
-
-
-
-
+require('dotenv').config();
 
 const app = express();
 const port = 3000;
 
-
-
 const route = require("./routes");
 const db = require("./config/db");
-
-db.connect(); 
-
+db.connect();
 
 const passport = require("./config/passport");
 
-
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(express.urlencoded({ extended: true })); 
-app.use(express.json()); 
-app.use("/uploads", express.static("uploads")); 
-app.use(methodOverride('_method')); 
 
-
-
-
-
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+app.use(methodOverride('_method'));
 
 app.use(session({
   secret: 'yourSecretKey',
-  resave: true,  
-  saveUninitialized: false, 
+  resave: true,
+  saveUninitialized: false,
   cookie: { secure: false, maxAge: 86400000 }
 }));
-
 
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Khởi tạo handlebars và đăng ký partials
 const hbs = create({
   extname: ".hbs",
-  partialsDir: path.join(__dirname, "resources", "view", "partials"),
+  partialsDir: [
+    path.join(__dirname, "resources", "view", "partials"),
+    path.join(__dirname, "resources", "view", "user") // Đăng ký thêm thư mục partials cho user
+  ],
   defaultLayout: "main",
   helpers: {
     eq: (a, b) => a === b,
@@ -74,8 +65,8 @@ const hbs = create({
     },
   },
   runtimeOptions: {
-    allowProtoPropertiesByDefault: true, 
-    allowProtoMethodsByDefault: true,   
+    allowProtoPropertiesByDefault: true,
+    allowProtoMethodsByDefault: true,
   },
 });
 
@@ -83,18 +74,16 @@ app.engine(".hbs", hbs.engine);
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "resources", "view"));
 
-
 // Routes
 const authRouter = require('./routes/auth');
-app.use('/auth', authRouter); 
+app.use('/auth', authRouter);
 
 app.use((req, res, next) => {
   res.locals.user = req.session.user;
   next();
 });
 
-
-route(app); 
+route(app);
 
 app.listen(port, () => {
   console.log(`Server đang chạy tại http://localhost:${port}`);

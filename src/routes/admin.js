@@ -12,13 +12,15 @@ const warehouseController = require("../app/controllers/warehouseController");
 router.get("/qldonhang", isAdmin, adminController.index);
 router.post("/donhang/update/:id", isAdmin, adminController.updateStatus);
 router.get("/donhang", isAdmin, adminController.index);
-router.get("/qldonhang", isAdmin, AuthController.showOrders);
 router.post("/assign-shipper/:id", isAdmin, AuthController.assignShipper);
+router.get('/donhang/:id', adminController.viewOrderDetail);
+
 
 
 router.get("/quanlytaikhoan", isAdmin, AuthController.manageAccounts);
 router.get("/taotaikhoan", isAdmin, AuthController.showCreateAccount);
 router.post("/taotaikhoan", isAdmin, AuthController.createAccount);
+router.post("/delete-user/:id", isAdmin, AuthController.deleteUser);
 
 router.post("/update", isAdmin, AuthController.updateUser);
 router.get("/edit/:id", isAdmin, AuthController.viewEditUser);
@@ -33,6 +35,7 @@ router.get("/kho/create", isAdmin, warehouseController.createWarehouseView);
 router.post("/kho/create", isAdmin, warehouseController.createWarehouse);
 router.get("/kho/list", isAdmin, warehouseController.listWarehouses);
 router.get("/kho/:id", isAdmin, warehouseController.manageWarehouse);
+
 
 
 router.post("/kho/:id/nhaphang", isAdmin, warehouseController.importToWarehouse);

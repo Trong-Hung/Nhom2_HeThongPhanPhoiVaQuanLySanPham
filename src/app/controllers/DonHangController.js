@@ -1,11 +1,55 @@
 const DonHang = require("../models/DonHang");
 const Warehouse = require("../models/Warehouse");
+const User = require("../models/User");
 
 
 
 
 
 class DonHangController {
+
+
+
+   async viewOrderDetail(req, res) {
+  try {
+    console.log("==> [viewOrderDetail] req.params.id:", req.params.id);
+    // Populate cả warehouseId và assignedShipper
+    const order = await DonHang.findById(req.params.id)
+      .populate('warehouseId')
+      .populate('assignedShipper');
+    console.log("==> [viewOrderDetail] order:", order);
+
+    // Lấy danh sách shipper cùng miền (nếu cần chọn lại)
+    const shippers = await User.find({ role: "shipper", region: order.region });
+    console.log("==> [viewOrderDetail] shippers (theo miền):", shippers.length);
+    let paymentMethodText = "Không xác định";
+if (order.paymentMethod === "cash") paymentMethodText = "Thanh toán khi nhận hàng";
+if (order.paymentMethod === "vnpay") paymentMethodText = "Thanh toán qua VNPay";
+const estimatedDeliveryText = order.estimatedDelivery
+  ? order.estimatedDelivery.toLocaleString("vi-VN")
+  : "Chưa có";
+res.render("admin/order_detail", { order, shippers, paymentMethodText, estimatedDeliveryText });
+
+  } catch (err) {
+    console.error("❌ [viewOrderDetail] Lỗi:", err);
+    res.status(500).send("Lỗi hệ thống!");
+  }
+}
+
+    async index(req, res) {
+      try {
+        console.log("==> [index] Truy vấn danh sách đơn hàng...");
+        const orders = await DonHang.find().sort({ createdAt: -1 }).populate("warehouseId");
+        console.log("==> [index] Đơn hàng sau khi lấy kho:", orders.length);
+        res.render("admin/qldonhang", { orders });
+      } catch (err) {
+        console.error("❌ [index] Lỗi khi lấy danh sách đơn hàng:", err);
+        res.status(500).send("Lỗi hệ thống!");
+      }
+    }
+    
+    
+
 
 async index(req, res) {
     try {
@@ -152,33 +196,53 @@ async confirmReceived(req, res) {
     }
   }
 
-  async viewOrder(req, res) {
-    try {
-        const { id } = req.params;
-        const order = await DonHang.findById(id).populate("warehouseId");
+async viewOrder(req, res) {
+  try {
+    const { id } = req.params;
+    const order = await DonHang.findById(id)
+      .populate("warehouseId")
+      .populate("assignedShipper");
 
-        if (!order) {
-            return res.status(404).send("Không tìm thấy đơn hàng.");
-        }
-
-        res.render("user/chitietdonhang", { order });
-    } catch (err) {
-        console.error(" Lỗi khi lấy đơn hàng:", err);
-        res.status(500).send("Lỗi hệ thống!");
+    if (!order) {
+      return res.status(404).send("Không tìm thấy đơn hàng.");
     }
+
+    // Xử lý text cho hiển thị
+    let paymentMethodText = "Không xác định";
+    if (order.paymentMethod === "cash") paymentMethodText = "Thanh toán khi nhận hàng";
+    if (order.paymentMethod === "vnpay") paymentMethodText = "Thanh toán qua VNPay";
+    const estimatedDeliveryText = order.estimatedDelivery
+      ? order.estimatedDelivery.toLocaleString("vi-VN")
+      : "Chưa có";
+
+    res.render("user/chitietdonhang", {
+          estimatedDeliveryText,
+  paymentMethodText,
+      order,
+   
+    });
+  } catch (err) {
+    console.error(" Lỗi khi lấy đơn hàng:", err);
+    res.status(500).send("Lỗi hệ thống!");
+  }
 }
 
 
-  async userOrders(req, res) {
-    if (!req.session.user) {
-      return res.redirect("/auth/login");
-    }
-
-    const userId = req.session.user._id;
-    const orders = await DonHang.find({ userId }).sort({ createdAt: -1 });
-
-    res.render("user/donhangme", { orders }); 
+async userOrders(req, res) {
+  if (!req.session.user) {
+    return res.redirect("/auth/login");
   }
+
+  const userId = req.session.user._id;
+  const allOrders = await DonHang.find({ userId }).sort({ createdAt: -1 });
+
+  const ordersPending = allOrders.filter(o => o.status === "Chờ xác nhận" || o.status === "Đang sắp xếp");
+  const ordersShipping = allOrders.filter(o => o.status === "Đang vận chuyển");
+  const ordersDelivered = allOrders.filter(o => o.status === "Đã giao" || o.status === "Hoàn thành");
+  const ordersCanceled = allOrders.filter(o => o.status === "Đã hủy");
+
+  res.render("user/donhangme", { ordersPending, ordersShipping, ordersDelivered, ordersCanceled });
+}
 }
 
 module.exports = new DonHangController();

@@ -1,0 +1,24 @@
+<!-- filepath: src/resources/view/Shipper/da_giao.hbs -->
+<h3>Đơn hàng đã giao</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Mã đơn</th>
+      <th>Khách hàng</th>
+      <th>Địa chỉ</th>
+      <th>Kho</th>
+      <th>Ngày giao</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each orders}}
+    <tr>
+      <td>{{this._id}}</td>
+      <td>{{this.name}}</td>
+      <td>{{this.address}}</td>
+      <td>{{this.warehouseId.name}}</td>
+      <td>{{this.updatedAt}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

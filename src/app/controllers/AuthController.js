@@ -89,7 +89,15 @@ async viewEditUser(req, res) {
   }
 }
 
-
+async viewOrderDetail(req, res) {
+  try {
+    const order = await DonHang.findById(req.params.id).populate('warehouseId');
+    const shippers = await User.find({ role: "shipper" });
+    res.render("admin/order_detail", { order, shippers });
+  } catch (err) {
+    res.status(500).send("Lỗi hệ thống!");
+  }
+}
 
 
 
@@ -145,14 +153,11 @@ async manageAccounts(req, res) {
 
  async createAccount(req, res) {
   try {
-    // Kiểm tra nếu không phải admin thì từ chối yêu cầu
     if (!req.session.user || req.session.user.role !== "admin") {
       return res.status(403).send("❌ Bạn không có quyền tạo tài khoản.");
     }
 
     const { name, email, password, role, region } = req.body;
-
-    // Nếu role không được chọn hoặc không được gửi từ form, mặc định là 'user'
     const assignedRole = role || "user";
 
     if (assignedRole === "shipper" && !region) {
@@ -169,8 +174,8 @@ async manageAccounts(req, res) {
       name: name.trim(),
       email: email.trim(),
       password: hashedPassword,
-      role: assignedRole, // Sử dụng giá trị role đã xử lý
-      status: "Hoạt động",
+      role: assignedRole,
+      status: assignedRole === "shipper" ? "Hoạt động" : "Hoạt động", // luôn "Hoạt động"
       region: assignedRole === "shipper" ? region : undefined,
     });
 
@@ -181,7 +186,15 @@ async manageAccounts(req, res) {
     res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
   }
 }
-
+async deleteUser(req, res) {
+  try {
+    await User.deleteOne({ _id: req.params.id });
+    res.redirect("/admin/quanlytaikhoan");
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa tài khoản:", err);
+    res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
+  }
+}
 
 
 

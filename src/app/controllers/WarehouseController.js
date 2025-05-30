@@ -203,24 +203,22 @@ async listWarehouses(req, res) {
 
 async manageWarehouse(req, res) {
     try {
-        console.log("📌 ID kho nhận được:", req.params.id); // 🔥 Kiểm tra dữ liệu
+        console.log("📌 ID kho nhận được:", req.params.id);
 
-        const warehouse = await Warehouse.findById(req.params.id);
+        const warehouse = await Warehouse.findById(req.params.id)
+            .populate('products.productId');
         if (!warehouse) {
             console.error("❌ Kho không tồn tại:", req.params.id);
             return res.status(404).send("Kho không tồn tại!");
         }
 
-        console.log("📌 Quản lý kho:", warehouse);
+        // Lấy tất cả sản phẩm
+        const allProducts = await Sanpham.find();
 
-        // 🔥 Truy vấn sản phẩm chứa kho này
-        const productsInWarehouse = await Sanpham.find({
-            warehouses: { $elemMatch: { warehouseId: req.params.id } }
-        }).populate("warehouses.warehouseId");
-
-        console.log("📌 Danh sách sản phẩm trong kho:", productsInWarehouse);
-
-        res.render("warehouse/manageWarehouse", { warehouse, products: productsInWarehouse });
+        res.render("warehouse/manageWarehouse", {
+            warehouse,
+            allProducts // truyền thêm biến này
+        });
     } catch (err) {
         console.error("❌ Lỗi khi tải trang quản lý kho:", err);
         res.status(500).send("Lỗi hệ thống!");
@@ -295,7 +293,7 @@ async createWarehouse(req, res) {
         await warehouse.save();
         console.log("✅ Kho mới đã được tạo:", warehouse);
 
-        res.redirect("/admin/nhaphang");
+        res.redirect(`/admin/kho/${warehouse._id}`);
     } catch (err) {
         console.error("❌ Lỗi khi tạo kho:", err);
         res.status(500).send("Lỗi hệ thống!");

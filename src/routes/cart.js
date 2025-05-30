@@ -5,6 +5,8 @@ const CartController = require('../app/controllers/CartController');
 
 
 
+
+
 router.post('/add/:id', CartController.addToCart);
 
 router.post('/increase/:id', CartController.increaseQuantity);
@@ -19,6 +21,10 @@ router.get('/giohang', CartController.viewCart);
 router.get('/payment', CartController.viewCheckout);
 
 router.post('/payment', CartController.processCheckout);
+
+router.get('/thankyou', CartController.viewThankYou);
+
+
 
 
 

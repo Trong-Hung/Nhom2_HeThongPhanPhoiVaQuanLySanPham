@@ -2,46 +2,27 @@
 <table class="table">
   <thead>
     <tr>
+      <th>Mã đơn</th>
       <th>Họ tên</th>
       <th>SĐT</th>
       <th>Địa chỉ</th>
       <th>Kho lấy hàng</th>
       <th>Địa chỉ kho</th>
       <th>Trạng thái</th>
-      <th>Hành động</th>
     </tr>
   </thead>
   <tbody>
     {{#each orders}}
       <tr>
+        <td>
+          <a href="/admin/donhang/{{this._id}}">{{this._id}}</a>
+        </td>
         <td>{{this.name}}</td>
         <td>{{this.phone}}</td>
         <td>{{this.address}}</td>
         <td>{{#if this.warehouseId}}{{this.warehouseId.name}}{{else}}❌ Chưa xác định{{/if}}</td>
         <td>{{#if this.warehouseId}}{{this.warehouseId.address}}{{else}}❌ Chưa xác định{{/if}}</td>
         <td>{{this.status}}</td>
-        <td>
-          <form method="POST" action="/admin/donhang/update/{{this._id}}">
-            <select name="status" class="form-select">
-              <option {{select this.status "Chờ xác nhận"}}>Chờ xác nhận</option>
-              <option {{select this.status "Đang sắp xếp"}}>Đang sắp xếp</option>
-              <option {{select this.status "Đang vận chuyển"}}>Đang vận chuyển</option>
-              <option {{select this.status "Đã giao"}}>Đã giao</option>
-              <option {{select this.status "Đã hủy"}}>Đã hủy</option>
-            </select>
-            <select name="shipperId" class="form-select">
-              {{#if shippers.length}}
-                {{#each shippers}}
-                  <option value="{{this._id}}">{{this.name}}</option>
-                {{/each}}
-              {{else}}
-                <option disabled>Không có shipper nào</option>
-              {{/if}}
-            </select>
-
-            <button class="btn btn-primary btn-sm mt-1">Cập nhật</button>
-          </form>
-        </td>
       </tr>
     {{/each}}
   </tbody>

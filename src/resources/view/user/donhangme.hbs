@@ -1,32 +1,31 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\view\user\donhangme.hbs -->
 <h2>Đơn hàng của bạn</h2>
 
-{{#if orders.length}}
-  <table class="table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Mã đơn hàng</th>
-        <th>Trạng thái</th>
-        <th>Ngày đặt hàng</th>
-        
-      </tr>
-    </thead>
-    <tbody>
-      {{#each orders}}
-        <tr>
-          <td>{{@index}}</td>
-          <td><a href="/donhang/{{this._id}}">{{this._id}}</a></td> <!-- Thêm liên kết -->
-          <td>{{this.status}}</td>
-          <td>{{this.createdAt}}</td>
-          <td>
-            
-
-            
-          </td>
-        </tr>
-      {{/each}}
-    </tbody>
-  </table>
-{{else}}
-  <p>Bạn chưa có đơn hàng nào.</p>
-{{/if}}
+<ul class="nav nav-tabs" id="orderTabs" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab">Chờ xác nhận & Đang sắp xếp</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="shipping-tab" data-toggle="tab" href="#shipping" role="tab">Đang vận chuyển</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="delivered-tab" data-toggle="tab" href="#delivered" role="tab">Đã giao/Hoàn thành</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="canceled-tab" data-toggle="tab" href="#canceled" role="tab">Đã hủy</a>
+  </li>
+</ul>
+<div class="tab-content mt-3">
+  <div class="tab-pane fade show active" id="pending" role="tabpanel">
+    {{> orderTable orders=ordersPending}}
+  </div>
+  <div class="tab-pane fade" id="shipping" role="tabpanel">
+    {{> orderTable orders=ordersShipping}}
+  </div>
+  <div class="tab-pane fade" id="delivered" role="tabpanel">
+    {{> orderTable orders=ordersDelivered}}
+  </div>
+  <div class="tab-pane fade" id="canceled" role="tabpanel">
+    {{> orderTable orders=ordersCanceled}}
+  </div>
+</div>

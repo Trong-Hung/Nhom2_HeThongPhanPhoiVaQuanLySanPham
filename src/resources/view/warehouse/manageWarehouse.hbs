@@ -3,14 +3,18 @@
     <meta charset="UTF-8" />
     <title>Quản lý kho - {{warehouse.name}}</title>
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   </head>
   <body>
     <div class="container mt-4">
       <!-- 🔥 Tiêu đề kho -->
       <div class="card bg-light shadow-sm p-3 mb-4">
-        <h2 class="text-primary">🏢 Quản lý kho: <strong>{{warehouse.name}}</strong></h2>
+        <h2 class="text-primary">🏢 Quản lý kho:
+          <strong>{{warehouse.name}}</strong></h2>
         <p><strong>📍 Địa chỉ:</strong> {{warehouse.address}}</p>
       </div>
 
@@ -23,17 +27,27 @@
           <div class="mb-3">
             <label for="product" class="form-label">Chọn sản phẩm:</label>
             <select name="productId" class="form-select" required>
-              {{#each warehouse.products}}
-                <option value="{{this.productId._id}}">{{this.productId.name}} - {{this.quantity}} sản phẩm</option>
-              {{else}}
-                <option value="" disabled>❌ Không có sản phẩm nào trong kho!</option>
+              {{#each allProducts}}
+                <option value="{{this._id}}">
+                  {{this.name}}
+                  - SKU:
+                  {{this.sku}}
+                  - Danh mục:
+                  {{this.category}}
+                </option>
               {{/each}}
             </select>
           </div>
 
           <div class="mb-3">
             <label for="quantity" class="form-label">Số lượng nhập:</label>
-            <input type="number" name="quantity" class="form-control" min="1" required />
+            <input
+              type="number"
+              name="quantity"
+              class="form-control"
+              min="1"
+              required
+            />
           </div>
 
           <button type="submit" class="btn btn-primary w-100">✔️ Nhập hàng</button>
@@ -58,7 +72,7 @@
               {{#each warehouse.products}}
                 <tr>
                   <td>{{@index}}</td>
-                  <td>{{this.productId.name}}</td> <!-- 🔥 Lấy đúng tên sản phẩm từ `Sanpham` -->
+                  <td>{{this.productId.name}}</td>
                   <td>{{this.productId.sku}}</td>
                   <td>{{this.productId.category}}</td>
                   <td><strong>{{this.quantity}}</strong> sản phẩm</td>

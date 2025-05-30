@@ -3,7 +3,18 @@
 <p><strong>Mã đơn hàng:</strong> {{order._id}}</p>
 <p><strong>Trạng thái:</strong> {{order.status}}</p>
 <p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+<p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
+<p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
 <p><strong>Địa chỉ nhận hàng:</strong> {{order.address}}</p>
+<p><strong>Kho xuất hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
+<p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
+<p><strong>Shipper phụ trách:</strong>
+  {{#if order.assignedShipper}}
+    {{order.assignedShipper.name}}
+  {{else}}
+    <span class="text-danger">Chưa gán shipper</span>
+  {{/if}}
+</p>
 
 {{#if (eq order.status "Chờ xác nhận")}}
   <form action="/donhang/cancel/{{order._id}}" method="POST">
@@ -28,5 +39,38 @@
     <li>{{this.name}} - {{this.quantity}} x {{this.price}}</li>
   {{/each}}
 </ul>
+
+
+
+<div id="map" style="height: 400px; margin-top: 16px;"></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  var warehouseLat = {{order.warehouseId.location.latitude}};
+  var warehouseLng = {{order.warehouseId.location.longitude}};
+  var customerLat = {{order.customerLocation.latitude}};
+  var customerLng = {{order.customerLocation.longitude}};
+
+  var map = L.map('map').setView([warehouseLat, warehouseLng], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  var warehouseMarker = L.marker([warehouseLat, warehouseLng]).addTo(map)
+    .bindPopup('Kho hàng').openPopup();
+
+  var customerMarker = L.marker([customerLat, customerLng]).addTo(map)
+    .bindPopup('Khách hàng');
+
+  var latlngs = [
+    [warehouseLat, warehouseLng],
+    [customerLat, customerLng]
+  ];
+  var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+  map.fitBounds(polyline.getBounds());
+</script>
+
 
 <a href="/donhang">Quay lại danh sách đơn hàng</a>
