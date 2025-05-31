@@ -26,14 +26,13 @@
         <a class="nav-link" href="/">Trang chủ</a>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link" href="/cart/giohang">Giỏ hàng</a>
-      </li>
-
       {{#if user}}
         {{#if (eq user.role "user")}}
           <li class="nav-item">
             <a class="nav-link" href="/donhang">Đơn hàng của tôi</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/cart/giohang">Giỏ hàng</a>
           </li>
         {{/if}}
         {{#if (eq user.role "shipper")}}
@@ -52,11 +51,46 @@
           </li>
         {{/if}}
         {{#if (eq user.role "admin")}}
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarBanner"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              🖼 Banner
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarBanner">
+              <a class="dropdown-item" href="/banner/list">Quản lý banner</a>
+              <a class="dropdown-item" href="/banner/create">Thêm banner mới</a>
+            </div>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="/admin/qldonhang">Quản lý đơn hàng</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/admin/quanlytaikhoan">Quản lý tài khoản</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarCategory"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              📂 Danh mục sản phẩm
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarCategory">
+              <a class="dropdown-item" href="/category/create">➕ Thêm danh mục</a>
+              <a class="dropdown-item" href="/category/list">📜 Danh sách danh
+                mục</a>
+            </div>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/admin/taotaikhoan">Tạo tài khoản</a>
@@ -125,11 +159,13 @@
       </li>
     </ul>
 
-    <form class="form-inline my-2 my-lg-0">
+    <form class="form-inline my-2 my-lg-0" action="/" method="GET">
       <input
         class="form-control mr-sm-2"
         type="search"
+        name="q"
         placeholder="Tìm kiếm sản phẩm"
+        autocomplete="off"
       />
       <button
         class="btn btn-outline-success my-2 my-sm-0"

@@ -1,61 +1,51 @@
 const Sanpham = require("../models/Sanpham");
-const { mutipleMongooseToObject } = require("../../util/mongoose");
-
-class HomeController {
-
-  index(req, res, next) {
-    Sanpham.find({})
-    .then((sanphams) => {
-      console.log(" Dữ liệu từ MongoDB:", sanphams);
-
-      const formattedSanphams = sanphams.map((sanpham) => {
-        return {
-          _id: sanpham._id,
-          name: sanpham.name,
-          description: sanpham.description,
-          slug: sanpham.slug,
-          price: sanpham.price,
-          image: sanpham.image
-            ? `/uploads/${sanpham.image}`
-            : "/uploads/default.jpg",      
-          createdAt: sanpham.createdAt,
-          updatedAt: sanpham.updatedAt,
-        };
-      });
-
-      console.log(" Dữ liệu đã format:", formattedSanphams);
-
-      res.render("home", { sanphams: formattedSanphams });
-    })
-    .catch(err => console.error("Lỗi khi lấy dữ liệu từ MongoDB:", err));
+const Banner = require('../models/banner');
+function removeVietnameseTones(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/[^a-zA-Z0-9 ]/g, "")
+    .toLowerCase();
 }
 
-  // index(req, res, next) {
-  //   Sanpham.find({})
-  //   .then((sanphams) => {
-  //     console.log(" Dữ liệu từ MongoDB:", sanphams); // Kiểm tra danh sách sản phẩm
-  
-  //     const formattedSanphams = sanphams.map((sanpham) => {
-  //       return {
-  //         _id: sanpham._id,
-  //         name: sanpham.name,
-  //         description: sanpham.description,
-  //         slug: sanpham.slug,
-  //         image: sanpham.image && sanpham.image.data
-  //           ? `data:${sanpham.image.contentType};base64,${sanpham.image.data.toString("base64")}`
-  //           : "/uploads/default.jpg",
-  //         createdAt: sanpham.createdAt,
-  //         updatedAt: sanpham.updatedAt,
-  //       };
-  //     });
-  
-  //     console.log(" Dữ liệu đã format:", formattedSanphams); // Kiểm tra danh sách sau khi format
-  
-  //     res.render("home", { sanphams: formattedSanphams });
-  //   })
-  //   .catch(err => console.error("Lỗi khi lấy dữ liệu từ MongoDB:", err));
-  
-  // }
+class HomeController {
+  async index(req, res, next) {
+    const keyword = req.query.q || "";
+    const banners = await Banner.find({}); // <-- Đặt ở đây
+    const allProducts = await Sanpham.find({});
+    let sanphams = allProducts.map((sanpham) => ({
+      _id: sanpham._id,
+      name: sanpham.name,
+      description: sanpham.description,
+      slug: sanpham.slug,
+      price: sanpham.price,
+      image: sanpham.image
+        ? `/uploads/${sanpham.image}`
+        : "/uploads/default.jpg",
+      createdAt: sanpham.createdAt,
+      updatedAt: sanpham.updatedAt,
+    }));
+
+    // Nếu có từ khóa tìm kiếm, lọc sản phẩm
+    if (keyword) {
+      sanphams = sanphams.filter(sp =>
+        removeVietnameseTones(sp.name).includes(removeVietnameseTones(keyword))
+      );
+    }
+
+    const message = req.session.message;
+    req.session.message = null;
+
+    res.render("home", {
+      sanphams,
+      title: "Trang chủ",
+      message,
+      keyword,
+      banners
+    });
+  }
 }
 
 module.exports = new HomeController();

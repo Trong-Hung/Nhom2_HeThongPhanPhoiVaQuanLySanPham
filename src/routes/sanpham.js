@@ -2,16 +2,16 @@ const express = require("express");
 const router = express.Router();
 const upload = require("../config/multer");
 const sanphamController = require("../app/controllers/SanphamController");
+const { isAdmin } = require('../middlewares/role');
 
+// Các route chỉ cho admin
+router.post("/store", isAdmin, upload.single("image"), sanphamController.store);
+router.get("/create", isAdmin, sanphamController.create);
+router.get("/:id/edit", isAdmin, sanphamController.edit);
+router.delete("/:id", isAdmin, sanphamController.delete);
+router.put("/:id", isAdmin, upload.single("image"), sanphamController.update);
 
-router.post("/store", upload.single("image"), sanphamController.store);
-router.get("/create", sanphamController.create); 
-// router.post("/store", courseController.store); 
-
-router.get("/:id/edit", sanphamController.edit); 
-router.delete("/:id", sanphamController.delete); 
-router.put("/:id", upload.single("image"), sanphamController.update);
-
-router.get("/:slug", sanphamController.show); 
+// Route công khai: ai cũng xem được chi tiết sản phẩm
+router.get('/:slug', sanphamController.show);
 
 module.exports = router;

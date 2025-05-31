@@ -1,0 +1,28 @@
+
+<h2>Danh sách danh mục sản phẩm</h2>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Mã danh mục</th>
+      <th>Tên danh mục</th>
+      <th>Mô tả</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each categories}}
+      <tr>
+        <td>{{this.code}}</td>
+        <td>{{this.name}}</td>
+        <td>{{this.description}}</td>
+        <td>
+          <a href="/category/{{this._id}}/edit" class="btn btn-warning btn-sm">Sửa</a>
+          <form action="/category/{{this._id}}/delete" method="POST" style="display:inline;">
+            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+          </form>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+<a href="/category/create" class="btn btn-success">Thêm danh mục mới</a>

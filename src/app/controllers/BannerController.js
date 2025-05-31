@@ -1,21 +1,43 @@
-const fs = require("fs");
-const path = require("path");
+const Banner = require('../models/banner');
 
 class BannerController {
-    upload(req, res) {
-        const bannerPath = path.join(__dirname, "../public/uploads/banner.jpg");
+  async list(req, res) {
+    const banners = await Banner.find({});
+    res.render('banner/list', { banners });
+  }
+  async create(req, res) {
+    res.render('banner/create');
+  }
+  async store(req, res) {
+    await Banner.create({ image: req.file.filename, link: req.body.link, title: req.body.title });
+    res.redirect('/banner/list');
+  }
+  async delete(req, res) {
+    await Banner.findByIdAndDelete(req.params.id);
+    res.redirect('/banner/list');
+  }
+  async edit(req, res) {
+    const banner = await Banner.findById(req.params.id);
+    res.render('banner/edit', { banner });
+  }
 
-        if (req.file) {
-            fs.writeFileSync(bannerPath, req.file.buffer);
-            res.redirect("/admin/banner"); // ✅ Điều hướng sau khi cập nhật
-        } else {
-            res.status(400).send("Chưa chọn ảnh!");
-        }
+  async update(req, res) {
+    const banner = await Banner.findById(req.params.id);
+    let updateData = {
+      title: req.body.title,
+      link: req.body.link
+    };
+    if (req.file) {
+      // Xóa ảnh cũ nếu có
+      if (banner.image) {
+        const oldPath = path.join(__dirname, '../../public/uploads', banner.image);
+        fs.existsSync(oldPath) && fs.unlinkSync(oldPath);
+      }
+      updateData.image = req.file.filename;
     }
-
-    show(req, res) {
-        res.render("admin/banner"); // ✅ Giao diện chỉnh sửa banner
-    }
+    await Banner.findByIdAndUpdate(req.params.id, updateData);
+    res.redirect('/banner/list');
+  }
 }
 
 module.exports = new BannerController();

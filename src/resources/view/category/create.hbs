@@ -1,0 +1,20 @@
+
+<h2>Thêm danh mục sản phẩm</h2>
+{{#if error}}
+  <div class="alert alert-danger">{{error}}</div>
+{{/if}}
+<form action="/category/store" method="POST">
+  <div class="form-group">
+    <label>Mã danh mục</label>
+    <input type="text" name="code" class="form-control" required value="{{code}}">
+  </div>
+  <div class="form-group">
+    <label>Tên danh mục</label>
+    <input type="text" name="name" class="form-control" required value="{{name}}">
+  </div>
+  <div class="form-group">
+    <label>Mô tả</label>
+    <textarea name="description" class="form-control">{{description}}</textarea>
+  </div>
+  <button type="submit" class="btn btn-success">Thêm danh mục</button>
+</form>

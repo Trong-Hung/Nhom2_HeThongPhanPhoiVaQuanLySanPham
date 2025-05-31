@@ -10,12 +10,14 @@ function isAuthenticated(req, res, next) {
 
 
 function isAdmin(req, res, next) {
-  if (req.session && req.session.user && req.session.user.role === "admin") {
-    res.locals.user = req.session.user; // 👈 THÊM DÒNG NÀY
+  if (req.session.user && req.session.user.role === "admin") {
     return next();
   }
-  return res.redirect("/auth/login");
+  // Nếu không phải admin, render trang thông báo
+  return res.status(403).render("admin/no-permission");
 }
+
+module.exports = { isAdmin, /* ... */ };
 
 function isShipper(req, res, next) {
   if (!req.session.user || req.session.user.role !== "shipper") {

@@ -61,45 +61,51 @@ function removeVietnameseTones(str) {
 
 class CartController {
   async addToCart(req, res) {
-    try {
-      const productId = req.params.id;
-      const product = await Sanpham.findById(productId);
-
-      if (!product) {
-        return res.status(404).send("Không tìm thấy sản phẩm");
-      }
-
-      if (!req.session.cart) {
-        req.session.cart = {
-          items: [],
-          totalPrice: 0,
-        };
-      }
-
-      const existingItemIndex = req.session.cart.items.findIndex(
-        (item) => item._id.toString() === productId
-      );
-
-      if (existingItemIndex !== -1) {
-        req.session.cart.items[existingItemIndex].quantity += 1;
-        req.session.cart.totalPrice += product.price;
-      } else {
-        req.session.cart.items.push({
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          quantity: 1,
-        });
-        req.session.cart.totalPrice += product.price;
-      }
-
-      console.log(" Đã thêm vào giỏ hàng:", req.session.cart);
-      res.redirect("/cart/giohang");
-    } catch (err) {
-      console.error(" Lỗi khi thêm vào giỏ:", err);
-      res.status(500).send("Lỗi hệ thống");
+  try {
+    // Nếu chưa đăng nhập thì chuyển về trang đăng nhập
+    if (!req.session.user) {
+      req.session.message = "Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!";
+      return res.redirect("/auth/login");
     }
+
+    const productId = req.params.id;
+    const product = await Sanpham.findById(productId);
+
+    if (!product) {
+      return res.status(404).send("Không tìm thấy sản phẩm");
+    }
+
+    if (!req.session.cart) {
+      req.session.cart = {
+        items: [],
+        totalPrice: 0,
+      };
+    }
+
+    const existingItemIndex = req.session.cart.items.findIndex(
+      (item) => item._id.toString() === productId
+    );
+
+    if (existingItemIndex !== -1) {
+      req.session.cart.items[existingItemIndex].quantity += 1;
+      req.session.cart.totalPrice += product.price;
+    } else {
+      req.session.cart.items.push({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+      });
+      req.session.cart.totalPrice += product.price;
+    }
+
+    req.session.message = `Đã thêm sản phẩm "${product.name}" vào giỏ hàng!`;
+    res.redirect("/");
+  } catch (err) {
+    console.error(" Lỗi khi thêm vào giỏ:", err);
+    res.status(500).send("Lỗi hệ thống");
   }
+}
 
   // Hiển thị giỏ hàng
   viewCart(req, res) {

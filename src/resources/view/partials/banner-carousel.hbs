@@ -1,0 +1,18 @@
+<!-- filepath: src/resources/view/partials/banner-carousel.hbs -->
+<div id="bannerCarousel" class="carousel slide mb-4" data-ride="carousel" data-interval="3000">
+  <div class="carousel-inner">
+    {{#each banners}}
+      <div class="carousel-item {{#if @first}}active{{/if}}">
+        <a href="{{this.link}}">
+          <img src="/uploads/{{this.image}}" class="d-block w-100" alt="{{this.title}}">
+        </a>
+      </div>
+    {{/each}}
+  </div>
+  <a class="carousel-control-prev" href="#bannerCarousel" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </a>
+  <a class="carousel-control-next" href="#bannerCarousel" role="button" data-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </a>
+</div>

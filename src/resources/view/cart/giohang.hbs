@@ -20,25 +20,41 @@
             <td>{{this.name}}</td>
             <td>{{formatCurrency this.price}}</td>
             <td>
-              <form method="POST" action="/cart/decrease/{{this._id}}" style="display: inline;">
-                <button class="btn btn-sm btn-secondary" type="submit">-</button>
+              <form
+                method="POST"
+                action="/cart/decrease/{{this._id}}"
+                style="display: inline;"
+              >
+                <button
+                  class="btn btn-sm btn-secondary"
+                  type="submit"
+                >-</button>
               </form>
               <span class="mx-2">{{this.quantity}}</span>
-              <form method="POST" action="/cart/increase/{{this._id}}" style="display: inline;">
-                <button class="btn btn-sm btn-secondary" type="submit">+</button>
+              <form
+                method="POST"
+                action="/cart/increase/{{this._id}}"
+                style="display: inline;"
+              >
+                <button
+                  class="btn btn-sm btn-secondary"
+                  type="submit"
+                >+</button>
               </form>
             </td>
             <td>{{multiply this.price this.quantity}}</td>
             <td>
-              <button
-                type="button"
-                class="btn btn-danger btn-sm"
-                data-toggle="modal"
-                data-id="{{this._id}}"
-                data-target="#delete-item-modal"
+              <form
+                action="/cart/remove/{{this._id}}"
+                method="POST"
+                style="display:inline;"
               >
-                Xóa
-              </button>
+                <button
+                  type="submit"
+                  class="btn btn-danger btn-sm"
+                  onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')"
+                >Xóa</button>
+              </form>
             </td>
           </tr>
         {{/each}}

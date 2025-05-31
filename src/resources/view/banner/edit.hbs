@@ -1,0 +1,20 @@
+<h2>Sửa banner</h2>
+<form action="/banner/{{banner._id}}/update" method="POST" enctype="multipart/form-data">
+  <div class="form-group">
+    <label>Tiêu đề</label>
+    <input type="text" name="title" class="form-control" value="{{banner.title}}" required>
+  </div>
+  <div class="form-group">
+    <label>Link (nếu có)</label>
+    <input type="text" name="link" class="form-control" value="{{banner.link}}">
+  </div>
+  <div class="form-group">
+    <label>Ảnh hiện tại</label><br>
+    <img src="/uploads/{{banner.image}}" alt="{{banner.title}}" style="max-width:150px;max-height:80px;">
+  </div>
+  <div class="form-group">
+    <label>Đổi ảnh mới (nếu muốn)</label>
+    <input type="file" name="image" class="form-control">
+  </div>
+  <button type="submit" class="btn btn-primary">Cập nhật banner</button>
+</form>

@@ -1,5 +1,6 @@
 const Sanpham = require("../models/Sanpham");
 const Warehouse = require("../models/Warehouse"); 
+const Category = require("../models/Category");
 
 const { mongooseToObject } = require("../../util/mongoose");
 const fs = require("fs");
@@ -34,9 +35,15 @@ class SanphamController {
     }
   }
 
-  create(req, res) {
-    res.render("sanpham/create");
+async create(req, res) {
+  try {
+    const categories = await Category.find({});
+    res.render("sanpham/create", { categories });
+  } catch (err) {
+    console.error("Lỗi khi lấy danh mục:", err);
+    res.render("sanpham/create", { categories: [] });
   }
+}
 
 
 

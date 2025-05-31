@@ -33,5 +33,43 @@
   border-radius: 10px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
-
+.card-sanpham-item {
+  margin-bottom: 24px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.card-sanpham-item .card-img-top {
+  height: 180px;
+  object-fit: cover;
+}
+.card-sanpham-item .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  height: 2.6em; /* 2 dòng */
+  line-height: 1.3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Số dòng tối đa */
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+.card-sanpham-item .card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.product-title {
+  min-height: 2.6em;
+  max-height: 2.6em;
+  line-height: 1.3em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Hiện tối đa 2 dòng */
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
 
