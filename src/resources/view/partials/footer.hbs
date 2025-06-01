@@ -1,71 +1,114 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Quản Trị</title>
+    <style>
+        /* Định dạng tổng thể */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
 
-<footer class="mt-auto bg-dark text-white pt-4 pb-4">
-    <div class="container">
-        <div class="row">
-            <!-- Información de la empresa -->
-            <div class="col-md-3 mb-3">
-                <h5>Giới thiệu</h5>
-                <p>Website phân phối và quản lý sản phẩm giúp doanh nghiệp theo dõi sản phẩm, đơn hàng và kho hàng hiệu quả, góp phần tối ưu quy trình kinh doanh và nâng cao trải nghiệm khách hàng.</p>
-            </div>
+        /* Bố cục trang */
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-            <!-- Enlaces rápidos -->
-            <div class="col-md-3 mb-3">
-                <h5>Liên kết</h5>
-                <ul class="list-unstyled">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="/">
-                            <i class="bi bi-house"></i> Trang chủ
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#">
-                            <i class="bi bi-info-circle"></i> Giới thiệu
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" href="#">
-                            <i class="bi bi-envelope"></i> Mail
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white"  href="#">
-                            <i class="bi bi-shield-lock"></i> Chính sách bảo mật
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        /* Nội dung chính */
+        .content {
+            flex: 1;
+            text-align: center;
+        }
 
-            <!-- Información de contacto -->
-            <div class="col-md-3 mb-3">
-                <h5>Contacto</h5>
-                <ul class="list-unstyled">
-                    <li><i class="bi bi-geo-alt-fill"></i> Khu căn hộ, phường Hiệp Bình Chánh, tp.Thủ Đức, tp.Hồ Chí Minh</li>
-                    <li><i class="bi bi-telephone-fill"></i>   +84 364 682 670</li>
-                    <li><i class="bi bi-envelope-fill"></i>    votronghung.work@gmail.com</li>
-                </ul>
-            </div>
+        /* Tiêu đề */
+        h1 {
+            color: #007bff;
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 50px;
+        }
 
-            <!-- Redes Sociales -->
-            <div class="col-md-3 mb-3">
-                <h5>Theo dõi</h5>
-                <ul class="list-inline">
-                    <li class="list-inline-item"><a href="https://www.facebook.com/amtrhung" class="text-white"><i class="bi bi-facebook fs-4"></i></a></li>
-                    <li class="list-inline-item"><a href="https://www.linkedin.com/in/tronghungvo/" class="text-white"><i class="bi bi-twitter fs-4"></i></a></li>
-                    <li class="list-inline-item"><a href="https://www.instagram.com/tu_cuenta" class="text-white"><i class="bi bi-instagram fs-4"></i></a></li>
-                    <li class="list-inline-item"><a href="https://www.linkedin.com/in/tronghungvo/" class="text-white"><i class="bi bi-linkedin fs-4"></i></a></li>
-                </ul>
-            </div>
-        </div>
+        /* Footer */
+        .footer {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
 
-        <hr class="bg-light">
+    <div class="wrapper">
+        <!-- Footer -->
+        <footer class="footer">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        <!-- Derechos de autor -->
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <p class="mb-0">&copy; Thương mại điện tử 2025. Đã đăng ký Bản quyền.</p>
-            </div>
-        </div>
+            <footer class="mt-auto bg-dark text-white pt-4 pb-4">
+                <div class="container">
+                    <div class="row">
+                        <!-- Thông tin doanh nghiệp -->
+                        <div class="col-md-3 mb-3">
+                            <h5>Giới thiệu</h5>
+                            <p>Website phân phối và quản lý sản phẩm giúp doanh nghiệp theo dõi sản phẩm, đơn hàng và kho hàng hiệu quả, góp phần tối ưu quy trình kinh doanh và nâng cao trải nghiệm khách hàng.</p>
+                        </div>
+
+                        <!-- Liên kết -->
+                        <div class="col-md-3 mb-3">
+                            <h5>Liên kết</h5>
+                            <ul class="list-unstyled">
+                                <li class="nav-item"><a class="nav-link text-white" href="/"><i class="bi bi-house"></i> Trang chủ</a></li>
+                                <li class="nav-item"><a class="nav-link text-white" href="#"><i class="bi bi-info-circle"></i> Giới thiệu</a></li>
+                                <li class="nav-item"><a class="nav-link text-white" href="#"><i class="bi bi-envelope"></i> Mail</a></li>
+                                <li class="nav-item"><a class="nav-link text-white" href="#"><i class="bi bi-shield-lock"></i> Chính sách bảo mật</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Thông tin liên hệ -->
+                        <div class="col-md-3 mb-3">
+                            <h5>Liên hệ</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-geo-alt-fill"></i> Khu căn hộ, TP.Thủ Đức, TP.Hồ Chí Minh</li>
+                                <li><i class="bi bi-telephone-fill"></i> +84 364 682 670</li>
+                                <li><i class="bi bi-envelope-fill"></i> votronghung.work@gmail.com
+                                                                         dinhthicamdan@gmail.com</li>
+                            </ul>
+                        </div>
+
+                        <!-- Mạng xã hội -->
+                        <div class="col-md-3 mb-3">
+                            <h5>Theo dõi</h5>
+                            <ul class="list-inline">
+                                <li class="list-inline-item"><a href="https://www.facebook.com/amtrhung" class="text-white"><i class="bi bi-facebook fs-4"></i></a></li>
+                                <li class="list-inline-item"><a href="https://www.linkedin.com/in/tronghungvo/" class="text-white"><i class="bi bi-twitter fs-4"></i></a></li>
+                                <li class="list-inline-item"><a href="https://www.instagram.com/tu_cuenta" class="text-white"><i class="bi bi-instagram fs-4"></i></a></li>
+                                <li class="list-inline-item"><a href="https://www.linkedin.com/in/tronghungvo/" class="text-white"><i class="bi bi-linkedin fs-4"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr class="bg-light">
+
+                    <!-- Bản quyền -->
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <p class="mb-0">&copy; Thương mại điện tử 2025. Đã đăng ký Bản quyền.</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </footer>
     </div>
-</footer>
+
+</body>
+</html>

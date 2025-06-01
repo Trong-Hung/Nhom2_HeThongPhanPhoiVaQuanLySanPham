@@ -1,42 +1,84 @@
-<div class="mt-4">
-  <h3>🛠️ Thêm sản phẩm mới</h3>
+<div class="container mt-4 mb-5 p-4 bg-white rounded shadow-sm" style="max-width: 600px;">
+  <h3 class="mb-4">🛠️ Thêm sản phẩm mới</h3>
 
-  <form method="POST" action="/sanpham/store" enctype="multipart/form-data">
+  <form method="POST" action="/sanpham/store" enctype="multipart/form-data" novalidate>
     <div class="form-group">
-      <label for="name">Tên sản phẩm</label>
-      <input type="text" class="form-control" id="name" name="name" required />
+      <label for="name" class="font-weight-semibold">Tên sản phẩm <span class="text-danger">*</span></label>
+      <input
+        type="text"
+        class="form-control"
+        id="name"
+        name="name"
+        placeholder="Nhập tên sản phẩm"
+        required
+      />
     </div>
 
     <div class="form-group">
-      <label for="sku">Mã SKU</label>
-      <input type="text" class="form-control" id="sku" name="sku" required />
+      <label for="sku" class="font-weight-semibold">Mã SKU <span class="text-danger">*</span></label>
+      <input
+        type="text"
+        class="form-control"
+        id="sku"
+        name="sku"
+        placeholder="Nhập mã SKU"
+        required
+      />
     </div>
 
     <div class="form-group">
-    <label>Danh mục</label>
-    <select name="category" class="form-control" required>
-      <option value="">--Chọn danh mục--</option>
-      {{#each categories}}
-        <option value="{{this._id}}">{{this.name}}</option>
-      {{/each}}
-    </select>
-  </div>
-
-    <div class="form-group">
-      <label for="price">Giá (VNĐ)</label>
-      <input type="number" class="form-control" id="price" name="price" required />
+      <label for="category" class="font-weight-semibold">Danh mục <span class="text-danger">*</span></label>
+      <select
+        id="category"
+        name="category"
+        class="form-control"
+        required
+      >
+        <option value="" disabled selected>-- Chọn danh mục --</option>
+        {{#each categories}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
     </div>
 
     <div class="form-group">
-      <label for="image">Ảnh sản phẩm</label>
-      <input type="file" class="form-control" id="image" name="image" required />
+      <label for="price" class="font-weight-semibold">Giá (VNĐ) <span class="text-danger">*</span></label>
+      <input
+        type="number"
+        class="form-control"
+        id="price"
+        name="price"
+        placeholder="Nhập giá sản phẩm"
+        min="0"
+        required
+      />
     </div>
 
     <div class="form-group">
-      <label for="description">Mô tả sản phẩm</label>
-      <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+      <label for="image" class="font-weight-semibold">Ảnh sản phẩm <span class="text-danger">*</span></label>
+      <input
+        type="file"
+        class="form-control-file"
+        id="image"
+        name="image"
+        accept="image/*"
+        required
+      />
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">✔️ Thêm sản phẩm</button>
+    <div class="form-group">
+      <label for="description" class="font-weight-semibold">Mô tả sản phẩm</label>
+      <textarea
+        class="form-control"
+        id="description"
+        name="description"
+        rows="4"
+        placeholder="Nhập mô tả chi tiết sản phẩm"
+      ></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block mt-3">
+      ✔️ Thêm sản phẩm
+    </button>
   </form>
 </div>

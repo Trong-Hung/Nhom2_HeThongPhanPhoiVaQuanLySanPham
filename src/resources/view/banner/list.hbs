@@ -1,29 +1,45 @@
-<h2>Quản lý Banner</h2>
-<a href="/banner/create" class="btn btn-success mb-3">Thêm banner mới</a>
-<table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Ảnh</th>
-      <th>Tiêu đề</th>
-      <th>Link</th>
-      <th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each banners}}
-      <tr>
-        <td>
-          <img src="/uploads/{{this.image}}" alt="{{this.title}}" style="max-width:150px;max-height:80px;">
-        </td>
-        <td>{{this.title}}</td>
-        <td>{{this.link}}</td>
-        <td>
-          <a href="/banner/{{this._id}}/edit" class="btn btn-warning btn-sm">Sửa</a>
-          <form action="/banner/{{this._id}}/delete" method="POST" style="display:inline;">
-            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bạn có chắc muốn xóa banner này?')">Xóa</button>
-          </form>
-        </td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+<div class="container mt-4">
+  <h3 class="mb-4">🎨 Quản lý Banner</h3>
+
+  <a href="/banner/create" class="btn btn-success mb-3">➕ Thêm banner mới</a>
+
+  {{#if banners.length}}
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col" style="width: 160px;">Ảnh banner</th>
+            <th scope="col">Tiêu đề</th>
+            <th scope="col">Liên kết</th>
+            <th scope="col" style="width: 160px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each banners}}
+          <tr>
+            <td>
+              <img src="/uploads/{{this.image}}" alt="{{this.title}}" class="img-thumbnail" style="max-width: 140px; max-height: 70px;">
+            </td>
+            <td>{{this.title}}</td>
+            <td>
+              <a href="{{this.link}}" target="_blank">{{this.link}}</a>
+            </td>
+            <td>
+              <a href="/banner/{{this._id}}/edit" class="btn btn-sm btn-outline-warning mb-1">Sửa</a>
+              <form action="/banner/{{this._id}}/delete" method="POST" style="display: inline;">
+                <button 
+                  type="submit" 
+                  class="btn btn-sm btn-outline-danger"
+                  onclick="return confirm('Bạn có chắc muốn xóa banner này?')"
+                >Xóa</button>
+              </form>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <p class="text-muted">🚫 Hiện chưa có banner nào.</p>
+  {{/if}}
+</div>

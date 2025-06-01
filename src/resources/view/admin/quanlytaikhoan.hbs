@@ -1,37 +1,66 @@
-<h2>Quản lý tài khoản</h2>
+<div class="container my-4">
+  <h2 class="mb-4">Quản lý tài khoản</h2>
 
-<h3>Admins</h3>
-<ul>
-  {{#each admins}}
-    <li>
-      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}}</a>
-      <form action="/admin/delete-user/{{this._id}}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
-        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
-      </form>
-    </li>
-  {{/each}}
-</ul>
+  <!-- Admins -->
+  <section class="mb-5">
+    <h3 class="mb-3">Admins</h3>
+    {{#if admins.length}}
+    <ul class="list-group">
+      {{#each admins}}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="/admin/edit/{{this._id}}" class="text-decoration-none fw-semibold">
+          {{this.name}} <small class="text-muted">- {{this.email}}</small>
+        </a>
+        <form action="/admin/delete-user/{{this._id}}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
+          <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+        </form>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="text-muted fst-italic">Không có tài khoản Admin nào.</p>
+    {{/if}}
+  </section>
 
-<h3>Shippers</h3>
-<ul>
-  {{#each shippers}}
-    <li>
-      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}} ({{this.status}})</a>
-      <form action="/admin/delete-user/{{this._id}}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
-        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
-      </form>
-    </li>
-  {{/each}}
-</ul>
+  <!-- Shippers -->
+  <section class="mb-5">
+    <h3 class="mb-3">Shippers</h3>
+    {{#if shippers.length}}
+    <ul class="list-group">
+      {{#each shippers}}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="/admin/edit/{{this._id}}" class="text-decoration-none fw-semibold">
+          {{this.name}} <small class="text-muted">- {{this.email}} ({{this.status}})</small>
+        </a>
+        <form action="/admin/delete-user/{{this._id}}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
+          <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+        </form>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="text-muted fst-italic">Không có tài khoản Shipper nào.</p>
+    {{/if}}
+  </section>
 
-<h3>Users</h3>
-<ul>
-  {{#each users}}
-    <li>
-      <a href="/admin/edit/{{this._id}}" class="user-link">{{this.name}} - {{this.email}}</a>
-      <form action="/admin/delete-user/{{this._id}}" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
-        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
-      </form>
-    </li>
-  {{/each}}
-</ul>
+  <!-- Users -->
+  <section class="mb-5">
+    <h3 class="mb-3">Users</h3>
+    {{#if users.length}}
+    <ul class="list-group">
+      {{#each users}}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="/admin/edit/{{this._id}}" class="text-decoration-none fw-semibold">
+          {{this.name}} <small class="text-muted">- {{this.email}}</small>
+        </a>
+        <form action="/admin/delete-user/{{this._id}}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
+          <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+        </form>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="text-muted fst-italic">Không có tài khoản User nào.</p>
+    {{/if}}
+  </section>
+</div>

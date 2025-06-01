@@ -1,73 +1,46 @@
-<div class="mt-4">
-  <h3>Giỏ hàng của bạn</h3>
+<div class="mt-4 container">
+  <h3 class="text-center mb-4">🛒 Giỏ hàng của bạn</h3>
 
   {{#if cart.items.length}}
-    <table class="table mt-4">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Tên sản phẩm</th>
-          <th>Giá</th>
-          <th>Số lượng</th>
-          <th>Thành tiền</th>
-          <th>Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each cart.items}}
-          <tr>
-            <th>{{@index}}</th>
-            <td>{{this.name}}</td>
-            <td>{{formatCurrency this.price}}</td>
-            <td>
-              <form
-                method="POST"
-                action="/cart/decrease/{{this._id}}"
-                style="display: inline;"
-              >
-                <button
-                  class="btn btn-sm btn-secondary"
-                  type="submit"
-                >-</button>
-              </form>
-              <span class="mx-2">{{this.quantity}}</span>
-              <form
-                method="POST"
-                action="/cart/increase/{{this._id}}"
-                style="display: inline;"
-              >
-                <button
-                  class="btn btn-sm btn-secondary"
-                  type="submit"
-                >+</button>
-              </form>
-            </td>
-            <td>{{multiply this.price this.quantity}}</td>
-            <td>
-              <form
-                action="/cart/remove/{{this._id}}"
-                method="POST"
-                style="display:inline;"
-              >
-                <button
-                  type="submit"
-                  class="btn btn-danger btn-sm"
-                  onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')"
-                >Xóa</button>
-              </form>
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
+    <div class="row gx-2 px-2">
+      {{#each cart.items}}
+        <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{this.name}}</h5>
+              <p class="card-text text-danger fw-bold">{{formatCurrency this.price}}</p>
 
-    <div class="mt-4">
-      <p><strong>Tổng số lượng:</strong> {{totalQuantity}}</p>
-      <p><strong>Tổng tiền:</strong> {{formatCurrency totalPrice}}</p>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <form method="POST" action="/cart/decrease/{{this._id}}" style="display: inline;">
+                  <button class="btn btn-sm btn-outline-secondary">-</button>
+                </form>
+                <span>{{this.quantity}}</span>
+                <form method="POST" action="/cart/increase/{{this._id}}" style="display: inline;">
+                  <button class="btn btn-sm btn-outline-secondary">+</button>
+                </form>
+              </div>
+
+              <p class="text-muted mb-2">Thành tiền: <strong>{{multiply this.price this.quantity}}</strong></p>
+
+              <form action="/cart/remove/{{this._id}}" method="POST" class="mt-auto">
+                <button 
+                  type="submit" 
+                  class="btn btn-danger btn-sm w-100"
+                  onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')"
+                >Xóa khỏi giỏ</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      {{/each}}
     </div>
 
-    <a href="/cart/payment" class="btn btn-success">Thanh toán</a>
+    <div class="mt-4 text-end pe-3">
+      <p><strong>Tổng số lượng:</strong> {{totalQuantity}}</p>
+      <p><strong>Tổng tiền:</strong> {{formatCurrency totalPrice}}</p>
+      <a href="/cart/payment" class="btn btn-success">Tiến hành thanh toán</a>
+    </div>
   {{else}}
-    <p>🛒 Giỏ hàng của bạn đang trống.</p>
+    <p class="text-center">🛒 Giỏ hàng của bạn đang trống.</p>
   {{/if}}
 </div>

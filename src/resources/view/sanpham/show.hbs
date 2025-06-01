@@ -1,21 +1,20 @@
-<div class="mt-4">
-    <div class="row">
-        <div class="col-lg-3">
-            <button>Mua ngay</button>
-            <ul>
-                <li>
-                    {{sanpham.level}}
-                </li>
-            </ul>
+<div class="container mt-5">
+  <!-- Hiển thị Sản phẩm -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-4 col-md-6">
+      <div class="card shadow-sm border-0">
+        <img 
+          src="{{image}}" 
+          alt="{{sanpham.name}}" 
+          class="card-img-top" 
+          style="height: 320px; object-fit: cover; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;"
+        >
+        <div class="card-body">
+          <h5 class="card-title text-primary fw-bold">{{sanpham.name}}</h5>
+          <p class="card-text text-muted">{{sanpham.description}}</p>
+          <p class="card-text fs-5 fw-semibold text-danger">{{sanpham.price}}.000₫</p>
+          <a href="#" class="btn btn-outline-primary w-100">🛒 Thêm vào giỏ</a>
         </div>
-
-        <div class="col-lg-3">
-           <h1>{{sanpham.name}}</h1>
-           <p>{{sanpham.description}}</p>
-<img class="card-img-top" src="{{image}}" alt="Ảnh minh họa",
- style="max-width: 400px;" />
-<p>{{sanpham.price}}</p>
-</p>
-        </div>
+      </div>
     </div>
-</div>
+  </div>

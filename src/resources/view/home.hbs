@@ -8,35 +8,148 @@
   {{/if}}
 </div>
 <!-- ...phần danh sách sản phẩm giữ nguyên... -->
-<div class="container">
-  {{#if message}}
-    <div id="alert-message" class="alert alert-success text-center" role="alert" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999;">
-      {{message}}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .banner img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .card-sanpham-item {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card-sanpham-item:hover {
+            transform: translateY(-5px);
+        }
+        .card-img-top {
+            height: 180px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<section id="billboard" class="bg-light py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <h1 class="section-title text-center mt-4 aos-init aos-animate" data-aos="fade-up">New Collections</h1>
+      <div class="col-md-6 text-center aos-init aos-animate" data-aos="fade-up" data-aos-delay="300">
+        <p>Mùa hè này, hãy để phong cách của bạn tỏa sáng với bộ sưu tập mới, nơi sắc màu rực rỡ hòa quyện cùng những thiết kế đầy phóng khoáng. Chạm đến sự tự do và cá tính với những trang phục mang hơi thở của nắng, gió và biển xanh!</p>
+      </div>
     </div>
-    <script>
-      setTimeout(function() {
-        var alert = document.getElementById('alert-message');
-        if(alert) alert.style.display = 'none';
-      }, 5000);
-    </script>
-  {{/if}}
-</div>
-<div class="mt-4">
-  <h1>Danh sách sản phẩm</h1>
-  <div class="row">
+    <div class="row">
+      <div class="swiper main-swiper py-4 swiper-initialized swiper-horizontal swiper-backface-hidden aos-init aos-animate" data-aos="fade-up" data-aos-delay="600">
+        <div class="swiper-wrapper d-flex border-animation-left" id="swiper-wrapper-04a70adaa46e106f5" aria-live="polite">
+          <div class="swiper-slide swiper-slide-active" role="group" aria-label="1 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="0">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/41955c88733f5531e3801392876dd33d.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide swiper-slide-next" role="group" aria-label="2 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="1">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/b80939aa7deb586546cd6e2e92a14ac7.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide" role="group" aria-label="3 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="2">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/bf4ad5a74703554ed76ca71d4551c8c5.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide" role="group" aria-label="4 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="3">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/d72148897a1e44f30f864b1c5a3a773f.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide" role="group" aria-label="5 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="4">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/978c8a36428c7dfad4e33f544c7dc2ae.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="swiper-slide" role="group" aria-label="6 / 6" style="width: 350px; margin-right: 20px;" data-swiper-slide-index="5">
+            <div class="banner-item image-zoom-effect">
+              <div class="image-holder">
+                <a href="#">
+                  <img src="/uploads/adef901697e6d55b837da8a731f2b926.jpg" alt="product" class="img-fluid" style="width: 100%; height: 300px; object-fit: cover;">
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span>
+      </div>
+      <div class="icon-arrow icon-arrow-left" tabindex="0" role="button" aria-label="Previous slide" aria-controls="swiper-wrapper-04a70adaa46e106f5">
+        <svg width="50" height="50" viewBox="0 0 24 24">
+          <use xlink:href="#arrow-left"></use>
+        </svg>
+      </div>
+      <div class="icon-arrow icon-arrow-right" tabindex="0" role="button" aria-label="Next slide" aria-controls="swiper-wrapper-04a70adaa46e106f5">
+        <svg width="50" height="50" viewBox="0 0 24 24">
+          <use xlink:href="#arrow-right"></use>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+    <!-- Danh sách sản phẩm -->
+   <div class="container">
+    <div class="row justify-content-center">
+      <h1 class="section-title text-center mt-4 aos-init aos-animate" data-aos="fade-up">EXVN</h1>
+    </div>
+   </div>
+  <div class="row gx-2 px-2">
     {{#each sanphams}}
-      <div class="col-sm-6 col-lg-3 d-flex">
-        <div class="card card-sanpham-item flex-fill">
+      <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+        <div class="card card-sanpham-item h-100">
           <a href="/sanpham/{{this.slug}}">
-            <img class="card-img-top" src="{{this.image}}" alt="Ảnh minh họa">
+            <img 
+              class="card-img-top" 
+              src="{{this.image}}" 
+              alt="{{this.name}}" 
+              style="width: 100%; height: 400px; object-fit: cover;"
+            >
           </a>
-          <div class="card-body d-flex flex-column">
-            <a href="/sanpham/{{this.slug}}">
-              <h5 class="card-title text-primary product-title">{{this.name}}</h5>
+          <div class="card-body">
+            <a href="/sanpham/{{this.slug}}" class="text-decoration-none text-dark">
+              <h5 class="card-title">{{this.name}}</h5>
             </a>
-            <p class="card-text mt-auto mb-2 font-weight-bold">{{formatCurrency this.price}}</p>
+            <p class="card-text text-danger fw-bold">{{this.price}}.000 VNĐ</p>
             <form action="/cart/add/{{this._id}}" method="POST">
-              <button type="submit" class="btn btn-primary btn-block">Thêm vào giỏ</button>
+              <form action="/cart/add/{{this._id}}" method="POST">
+                 <button type="submit" class="btn btn-primary btn-sm">Thêm vào giỏ</button>
+              </form>
             </form>
           </div>
         </div>
@@ -44,3 +157,9 @@
     {{/each}}
   </div>
 </div>
+
+    <!-- Bootstrap JS (nếu dùng dropdown, modal...) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

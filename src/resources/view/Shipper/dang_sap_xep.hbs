@@ -1,12 +1,42 @@
-<h2>Đơn hàng đang sắp xếp</h2>
+<div class="container mt-4">
+  <h3 class="mb-4">📦 Đơn hàng đang sắp xếp</h3>
 
-<ul>
-  {{#each orders}}
-    <li>
-      Mã đơn: {{this._id}} - Địa chỉ: {{this.address}} - Trạng thái: {{this.status}}
-      <form action="/shipper/confirm/{{this._id}}" method="POST">
-        <button type="submit" class="btn btn-success">Nhận giao hàng</button>
-      </form>
-    </li>
-  {{/each}}
-</ul>
+  {{#if orders.length}}
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Mã đơn hàng</th>
+            <th scope="col">Địa chỉ giao</th>
+            <th scope="col">Trạng thái</th>
+            <th scope="col" style="width: 180px;">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr>
+            <td>{{this._id}}</td>
+            <td>{{this.address}}</td>
+            <td>
+              <span class="badge bg-warning text-dark">{{this.status}}</span>
+            </td>
+            <td>
+              <form action="/shipper/confirm/{{this._id}}" method="POST" style="display: inline;">
+                <button 
+                  type="submit" 
+                  class="btn btn-sm btn-outline-success"
+                  onclick="return confirm('Bạn có chắc muốn nhận đơn hàng này để giao không?')"
+                >
+                  ✅ Nhận giao hàng
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <p class="text-muted">🚫 Hiện không có đơn hàng nào đang sắp xếp.</p>
+  {{/if}}
+</div>

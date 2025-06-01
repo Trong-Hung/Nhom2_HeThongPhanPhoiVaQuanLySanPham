@@ -1,41 +1,48 @@
-<form action="/admin/taotaikhoan" method="POST">
-  <label for="name">Tên:</label>
-  <input type="text" id="name" name="name" required>
+<form action="/admin/taotaikhoan" method="POST" class="mx-auto p-4 shadow-sm rounded" style="max-width: 480px; background: #fff;">
+  <h3 class="mb-4">Tạo tài khoản mới</h3>
 
-  <label for="email">Email:</label>
-  <input type="email" id="email" name="email" required>
+  <div class="mb-3">
+    <label for="name" class="form-label">Tên</label>
+    <input type="text" id="name" name="name" class="form-control" required placeholder="Nhập tên đầy đủ">
+  </div>
 
-  <label for="password">Mật khẩu:</label>
-  <input type="password" id="password" name="password" required>
+  <div class="mb-3">
+    <label for="email" class="form-label">Email</label>
+    <input type="email" id="email" name="email" class="form-control" required placeholder="example@gmail.com">
+  </div>
 
-  <label for="role">Vai trò:</label>
-  <select id="role" name="role" onchange="toggleRegion()">
-    <option value="user">User</option>
-    <option value="shipper">Shipper</option>
-    <option value="admin">Admin</option>
-  </select>
+  <div class="mb-3">
+    <label for="password" class="form-label">Mật khẩu</label>
+    <input type="password" id="password" name="password" class="form-control" required placeholder="Nhập mật khẩu">
+  </div>
 
-  <div id="regionContainer" style="display: none;">
-    <label for="region">Vùng miền:</label>
-    <select id="region" name="region">
+  <div class="mb-3">
+    <label for="role" class="form-label">Vai trò</label>
+    <select id="role" name="role" class="form-select" onchange="toggleRegion()">
+      <option value="user">User</option>
+      <option value="shipper">Shipper</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+
+  <div class="mb-3" id="regionContainer" style="display: none;">
+    <label for="region" class="form-label">Vùng miền</label>
+    <select id="region" name="region" class="form-select">
       <option value="Miền Bắc">Miền Bắc</option>
       <option value="Miền Trung">Miền Trung</option>
       <option value="Miền Nam">Miền Nam</option>
     </select>
   </div>
 
-  <button type="submit">Tạo tài khoản</button>
+  <button type="submit" class="btn btn-primary w-100">Tạo tài khoản</button>
 </form>
 
 <script>
   function toggleRegion() {
     const role = document.getElementById("role").value;
     const regionContainer = document.getElementById("regionContainer");
-
-    if (role === "shipper") {
-      regionContainer.style.display = "block";
-    } else {
-      regionContainer.style.display = "none";
-    }
+    regionContainer.style.display = role === "shipper" ? "block" : "none";
   }
+  // Gọi một lần khi trang tải để đảm bảo trạng thái đúng
+  document.addEventListener("DOMContentLoaded", toggleRegion);
 </script>

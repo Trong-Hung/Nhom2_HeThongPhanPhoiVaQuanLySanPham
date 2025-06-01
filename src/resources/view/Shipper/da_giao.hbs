@@ -1,24 +1,32 @@
-<!-- filepath: src/resources/view/Shipper/da_giao.hbs -->
-<h3>Đơn hàng đã giao</h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Mã đơn</th>
-      <th>Khách hàng</th>
-      <th>Địa chỉ</th>
-      <th>Kho</th>
-      <th>Ngày giao</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each orders}}
-    <tr>
-      <td>{{this._id}}</td>
-      <td>{{this.name}}</td>
-      <td>{{this.address}}</td>
-      <td>{{this.warehouseId.name}}</td>
-      <td>{{this.updatedAt}}</td>
-    </tr>
-    {{/each}}
-  </tbody>
-</table>
+<div class="container mt-4">
+  <h3 class="mb-4">📦 Đơn hàng đã giao</h3>
+
+  {{#if orders.length}}
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-striped table-hover align-middle">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Mã đơn hàng</th>
+            <th scope="col">Khách hàng</th>
+            <th scope="col">Địa chỉ giao</th>
+            <th scope="col">Kho giao</th>
+            <th scope="col">Ngày giao</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each orders}}
+          <tr>
+            <td>{{this._id}}</td>
+            <td>{{this.name}}</td>
+            <td>{{this.address}}</td>
+            <td>{{this.warehouseId.name}}</td>
+            <td>{{formatDate this.updatedAt}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  {{else}}
+    <p class="text-muted">🚫 Hiện chưa có đơn hàng nào đã giao.</p>
+  {{/if}}
+</div>

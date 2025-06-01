@@ -1,48 +1,84 @@
-<h2>Chi tiết đơn hàng</h2>
+<div class="container mt-4">
+  <h2 class="mb-4">Chi tiết đơn hàng</h2>
 
-<p><strong>Mã đơn hàng:</strong> {{order._id}}</p>
-<p><strong>Trạng thái:</strong> {{order.status}}</p>
-<p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
-<p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
-<p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
-<p><strong>Địa chỉ nhận hàng:</strong> {{order.address}}</p>
-<p><strong>Kho xuất hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
-<p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
-<p><strong>Shipper phụ trách:</strong>
-  {{#if order.assignedShipper}}
-    {{order.assignedShipper.name}}
-  {{else}}
-    <span class="text-danger">Chưa gán shipper</span>
-  {{/if}}
-</p>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Mã đơn hàng:</strong> {{order._id}}</p>
+          <p><strong>Trạng thái:</strong> 
+            {{#if (eq order.status "Đã hủy")}}
+              <span class="badge bg-danger">{{order.status}}</span>
+            {{else if (eq order.status "Đã giao")}}
+              <span class="badge bg-success">{{order.status}}</span>
+            {{else}}
+              <span class="badge bg-warning text-dark">{{order.status}}</span>
+            {{/if}}
+          </p>
+          <p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+          <p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
+        </div>
 
-{{#if (eq order.status "Chờ xác nhận")}}
-  <form action="/donhang/cancel/{{order._id}}" method="POST">
-    <input type="text" name="reason" placeholder="Nhập lý do hủy" required>
-    <button type="submit" class="btn btn-danger">Hủy đơn hàng</button>
-  </form>
-{{/if}}
+        <div class="col-md-6">
+          <p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
+          <p><strong>Địa chỉ nhận hàng:</strong> {{order.address}}</p>
+          <p><strong>Kho xuất hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{else}}<span class="text-muted">Chưa xác định</span>{{/if}}</p>
+          <p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{else}}<span class="text-muted">Chưa xác định</span>{{/if}}</p>
+          <p><strong>Shipper phụ trách:</strong>
+            {{#if order.assignedShipper}}
+              {{order.assignedShipper.name}}
+            {{else}}
+              <span class="text-danger">Chưa gán shipper</span>
+            {{/if}}
+          </p>
+        </div>
+      </div>
 
-{{#if (eq order.status "Đã giao")}}
-  <form action="/donhang/confirm-received/{{order._id}}" method="POST">
-    <button type="submit" class="btn btn-success">Đã nhận hàng</button>
-  </form>
-{{/if}}
+      {{#if (eq order.status "Chờ xác nhận")}}
+        <form action="/donhang/cancel/{{order._id}}" method="POST" class="mb-3">
+          <div class="input-group">
+            <input type="text" name="reason" class="form-control" placeholder="Nhập lý do hủy" required>
+            <button type="submit" class="btn btn-danger">Hủy đơn hàng</button>
+          </div>
+        </form>
+      {{/if}}
 
-{{#if (eq order.status "Đã hủy")}}
-  <p class="text-danger"><strong>Lý do hủy:</strong> {{order.cancelReason}}</p>
-{{/if}}
+      {{#if (eq order.status "Đã giao")}}
+        <form action="/donhang/confirm-received/{{order._id}}" method="POST" class="mb-3">
+          <button type="submit" class="btn btn-success">Đã nhận hàng</button>
+        </form>
+      {{/if}}
 
-<h3>Sản phẩm trong đơn hàng</h3>
-<ul>
-  {{#each order.items}}
-    <li>{{this.name}} - {{this.quantity}} x {{this.price}}</li>
-  {{/each}}
-</ul>
+      {{#if (eq order.status "Đã hủy")}}
+        <p class="text-danger"><strong>Lý do hủy:</strong> {{order.cancelReason}}</p>
+      {{/if}}
+    </div>
+  </div>
 
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">Sản phẩm trong đơn hàng</h3>
+    </div>
+    <ul class="list-group list-group-flush">
+      {{#each order.items}}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{this.name}}
+          <span>{{this.quantity}} x {{this.price}}</span>
+        </li>
+      {{/each}}
+    </ul>
+  </div>
 
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white">
+      <h4 class="mb-0">Bản đồ vị trí</h4>
+    </div>
+    <div id="map" style="height: 400px;"></div>
+  </div>
 
-<div id="map" style="height: 400px; margin-top: 16px;"></div>
+  <a href="/donhang" class="btn btn-outline-secondary mb-4">← Quay lại danh sách đơn hàng</a>
+</div>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
@@ -71,6 +107,3 @@
   var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
   map.fitBounds(polyline.getBounds());
 </script>
-
-
-<a href="/donhang">Quay lại danh sách đơn hàng</a>

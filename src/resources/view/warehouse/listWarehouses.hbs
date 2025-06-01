@@ -1,40 +1,48 @@
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Danh sách kho</title>
-    <link rel="stylesheet" href="/css/style.css" />
-  </head>
-  <body>
-    <div class="container mt-4">
-      <h2>🏢 Danh sách kho hàng</h2>
+<div class="container mt-4">
+  <h3 class="mb-4">Danh sách kho hàng</h3>
 
-      {{#if warehouses.length}}
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Tên kho</th>
-              <th>Địa chỉ</th>
-              <th>Vĩ độ</th>
-              <th>Kinh độ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each warehouses}}
-              <tr>
-                <td>
-                  <a href="/admin/kho/{{this._id}}">{{this.name}}</a>
-                  <!-- 🔥 Bấm vào để đến trang quản lý kho -->
-                </td>
-                <td>{{this.address}}</td>
-                <td>{{this.location.latitude}}</td>
-                <td>{{this.location.longitude}}</td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      {{else}}
-        <p>❌ Hiện chưa có kho nào!</p>
-      {{/if}}
+  {{#if warehouses.length}}
+    <div class="table-responsive shadow-sm rounded">
+      <table class="table table-striped table-hover">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Tên kho</th>
+            <th scope="col">Địa chỉ</th>
+            <th scope="col">Vĩ độ</th>
+            <th scope="col">Kinh độ</th>
+            <th scope="col" style="width: 100px;">Sửa</th>
+            <th scope="col" style="width: 100px;">Xóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each warehouses}}
+          <tr>
+            <td>
+              <a href="/admin/kho/{{this._id}}" class="text-decoration-none">{{this.name}}</a>
+            </td>
+            <td>{{this.address}}</td>
+            <td>{{this.location.latitude}}</td>
+            <td>{{this.location.longitude}}</td>
+            <td>
+              <a href="/admin/kho/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">Sửa</a>
+            </td>
+            <td>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                data-toggle="modal"
+                data-id="{{this._id}}"
+                data-target="#delete-warehouse-modal"
+              >
+                Xóa
+              </button>
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
     </div>
-  </body>
-</html>
+  {{else}}
+    <p>❌ Hiện chưa có kho nào!</p>
+  {{/if}}
+</div>
