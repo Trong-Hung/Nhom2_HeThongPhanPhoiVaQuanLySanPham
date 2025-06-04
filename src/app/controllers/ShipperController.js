@@ -165,13 +165,14 @@ class ShipperController {
   }
 }
 
-  async markDelivered(req, res) {
+async markDelivered(req, res) {
   try {
     const order = await DonHang.findById(req.params.id);
     if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
     if (order.status !== "Đang vận chuyển") return res.status(400).send("Trạng thái không hợp lệ.");
 
     order.status = "Đã giao";
+    order.deliveredAt = new Date(); // Lưu thời điểm giao hàng
     await order.save();
 
     res.redirect(`/shipper/order/${order._id}`);
@@ -208,18 +209,7 @@ class ShipperController {
     }
   }
 
-  async showActiveOrders(req, res) {
-    try {
-      const orders = await DonHang.find({
-        assignedShipper: req.session.user._id,
-        status: "Đang vận chuyển",
-      }).populate("warehouseId");
-      res.render("Shipper/dang_van_chuyen", { orders });
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy đơn hàng đang vận chuyển:", err);
-      res.status(500).send("Lỗi hệ thống!");
-    }
-  }
+  
 }
 
 module.exports = new ShipperController();

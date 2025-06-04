@@ -1,14 +1,43 @@
+<style>
+  .navbar-right-btns {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 20px;
+  }
+</style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand d-flex align-items-center" href="/">
-<<<<<<< Updated upstream
-    <img src="/IMG/logo.png" alt="logo" style="height: 30px; width: auto; margin-right: 10px;" />
-    EXVN
-=======
-    <img src="/IMG/E.png" alt="logo" style="height: 30px; width: auto; margin-left: 20px; margin-right: 20px;" />
-EXVN
-
->>>>>>> Stashed changes
-  </a>
+  {{#if user}}
+    {{#if (eq user.role "admin")}}
+      <a class="navbar-brand d-flex align-items-center" href="/admin">
+        <img
+          src="/IMG/E.png"
+          alt="logo"
+          style="height: 30px; width: auto; margin-left: 20px; margin-right: 20px;"
+        />
+        EXVN
+      </a>
+    {{else}}
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <img
+          src="/IMG/E.png"
+          alt="logo"
+          style="height: 30px; width: auto; margin-left: 20px; margin-right: 20px;"
+        />
+        EXVN
+      </a>
+    {{/if}}
+  {{else}}
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img
+        src="/IMG/E.png"
+        alt="logo"
+        style="height: 30px; width: auto; margin-left: 20px; margin-right: 20px;"
+      />
+      EXVN
+    </a>
+  {{/if}}
 
   <button
     class="navbar-toggler"
@@ -24,10 +53,6 @@ EXVN
 
   <div class="collapse navbar-collapse" id="navbarNavDropdown">
     <ul class="navbar-nav mr-auto">
-      <!-- Home -->
-      <li class="nav-item">
-        <a class="nav-link" href="/">Home</a>
-      </li>
 
       {{#if user}}
         <!-- Quản lý sản phẩm (gồm: sản phẩm, danh mục, kho, banner) -->
@@ -42,28 +67,33 @@ EXVN
               aria-haspopup="true"
               aria-expanded="false"
             >
-              📦 Quản lý sản phẩm
+              Quản lý
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarQuanLySanPham">
-              <a class="dropdown-item" href="/me/stored/sanpham">📋 Danh sách sản phẩm</a>
-              <a class="dropdown-item" href="/sanpham/create">➕ Thêm sản phẩm</a>
+              <a class="dropdown-item" href="/me/stored/sanpham">Danh sách sản
+                phẩm</a>
+              <a class="dropdown-item" href="/sanpham/create">Thêm sản phẩm</a>
               <div class="dropdown-divider"></div>
 
-              <a class="dropdown-item" href="/category/list">📂 Danh mục sản phẩm</a>
-              <a class="dropdown-item" href="/category/create">➕ Thêm danh mục</a>
+              <a class="dropdown-item" href="/category/list">Danh mục sản phẩm</a>
+              <a class="dropdown-item" href="/category/create">Thêm danh mục</a>
               <div class="dropdown-divider"></div>
 
-              <a class="dropdown-item" href="/admin/kho/list">🏢 Quản lý kho hàng</a>
-              <a class="dropdown-item" href="/admin/kho/create">➕ Tạo kho mới</a>
+              <a class="dropdown-item" href="/admin/kho/list">Quản lý kho hàng</a>
+              <a class="dropdown-item" href="/admin/kho/create">Tạo kho mới</a>
+              <a class="dropdown-item" href="/admin/summary">Thống kê</a>
               {{#each warehouses}}
                 <a class="dropdown-item" href="/admin/kho/{{this._id}}">
-                  🏬 {{this.name}} - {{this.address}}
+                  🏬
+                  {{this.name}}
+                  -
+                  {{this.address}}
                 </a>
               {{/each}}
               <div class="dropdown-divider"></div>
 
-              <a class="dropdown-item" href="/banner/list">🖼 Quản lý banner</a>
-              <a class="dropdown-item" href="/banner/create">➕ Thêm banner mới</a>
+              <a class="dropdown-item" href="/banner/list">Quản lý banner</a>
+              <a class="dropdown-item" href="/banner/create">Thêm banner mới</a>
             </div>
           </li>
         {{/if}}
@@ -71,7 +101,7 @@ EXVN
         <!-- Quản lý đơn hàng -->
         {{#if (eq user.role "admin")}}
           <li class="nav-item">
-            <a class="nav-link" href="/admin/qldonhang">📦 Quản lý đơn hàng</a>
+            <a class="nav-link" href="/admin/qldonhang">Quản lý đơn hàng</a>
           </li>
         {{/if}}
 
@@ -87,11 +117,12 @@ EXVN
               aria-haspopup="true"
               aria-expanded="false"
             >
-              👥 Quản lý tài khoản
+              Quản lý tài khoản
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarQuanLyTaiKhoan">
-              <a class="dropdown-item" href="/admin/quanlytaikhoan">📋 Danh sách tài khoản</a>
-              <a class="dropdown-item" href="/admin/taotaikhoan">➕ Tạo tài khoản</a>
+              <a class="dropdown-item" href="/admin/quanlytaikhoan">Danh sách
+                tài khoản</a>
+              <a class="dropdown-item" href="/admin/taotaikhoan">Tạo tài khoản</a>
             </div>
           </li>
         {{/if}}
@@ -99,49 +130,78 @@ EXVN
         <!-- Các menu dành cho user -->
         {{#if (eq user.role "user")}}
           <li class="nav-item">
-            <a class="nav-link" href="/donhang">Đơn hàng của tôi</a>
+            <a class="nav-link" href="/user/donhangme">Đơn hàng của tôi</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/cart/giohang">Giỏ hàng</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/auth/profile">Thông tin cá nhân</a>
           </li>
         {{/if}}
 
         <!-- Các menu dành cho shipper -->
         {{#if (eq user.role "shipper")}}
           <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp xếp</a>
+            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp
+              xếp</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/shipper/da-giao">Đơn hàng đã giao</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang vận chuyển</a>
+            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang
+              vận chuyển</a>
           </li>
         {{/if}}
       {{/if}}
     </ul>
 
-    <!-- Form tìm kiếm -->
-    <form class="form-inline my-2 my-lg-0" action="/" method="GET">
-      <input
-        class="form-control mr-sm-2"
-        type="search"
-        name="q"
-        placeholder="Tìm kiếm sản phẩm"
-        autocomplete="off"
-      />
-      <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Tìm</button>
-    </form>
+    {{#unless user}}
+      <form class="form-inline my-2 my-lg-0" action="/" method="GET">
+        <input
+          class="form-control mr-sm-2"
+          type="search"
+          name="q"
+          placeholder="Tìm kiếm sản phẩm"
+          autocomplete="off"
+        />
+        <button
+          class="btn btn-outline-success my-2 my-sm-0"
+          type="submit"
+        >Tìm</button>
+      </form>
+    {{/unless}}
+    {{#if user}}
+      {{#unless (eq user.role "shipper")}}
+        <form class="form-inline my-2 my-lg-0" action="/" method="GET">
+          <input
+            class="form-control mr-sm-2"
+            type="search"
+            name="q"
+            placeholder="Tìm kiếm sản phẩm"
+            autocomplete="off"
+          />
+          <button
+            class="btn btn-outline-success my-2 my-sm-0"
+            type="submit"
+          >Tìm</button>
+        </form>
+      {{/unless}}
+    {{/if}}
 
     <!-- Phần bên phải: nếu đăng nhập thì hiển thị Xin chào + username + nút đăng xuất, nếu chưa thì hiện Đăng nhập và Đăng ký -->
-    {{#if user}}
-      <span class="navbar-text text-white ml-3">
-        Xin chào, {{user.username}}!
-      </span>
-      <a class="btn btn-outline-light btn-sm ml-2" href="/auth/logout">Đăng xuất</a>
-    {{else}}
-      <a class="btn btn-outline-light btn-sm ml-2" href="/auth/login">Đăng nhập</a>
-      <a class="btn btn-outline-light btn-sm ml-2" href="/auth/register">Đăng ký</a>
-    {{/if}}
+    <div class="navbar-right-btns">
+      {{#if user}}
+        <span class="navbar-text text-white ml-3">
+          Xin chào,
+          {{user.username}}!
+        </span>
+        <a class="btn btn-outline-light btn-sm" href="/auth/logout">Đăng xuất</a>
+      {{else}}
+        <a class="btn btn-outline-light btn-sm" href="/auth/login">Đăng nhập</a>
+        <a class="btn btn-outline-light btn-sm" href="/auth/register">Đăng ký</a>
+      {{/if}}
+    </div>
   </div>
 </nav>

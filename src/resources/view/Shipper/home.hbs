@@ -1,0 +1,46 @@
+<div class="container py-5">
+  <h2 class="text-center mb-4">Chào mừng Shipper {{user.username}}!</h2>
+  <p class="text-center mb-5">Chọn chức năng để quản lý đơn hàng của bạn:</p>
+  <div class="row justify-content-center g-4">
+    <div class="col-md-4">
+      <a href="/shipper/dang_sap_xep" class="text-decoration-none">
+        <div class="card shadow h-100 text-center border-0 hover-shadow">
+          <div class="card-body py-4">
+            <div class="mb-3">
+              <i class="bi bi-list-task display-4 text-warning"></i>
+            </div>
+            <h5 class="card-title mb-2">Đơn hàng đang sắp xếp</h5>
+            <p class="card-text text-muted">Xem và nhận các đơn hàng mới được phân công.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/shipper/dang_van_chuyen" class="text-decoration-none">
+        <div class="card shadow h-100 text-center border-0 hover-shadow">
+          <div class="card-body py-4">
+            <div class="mb-3">
+              <i class="bi bi-truck display-4 text-primary"></i>
+            </div>
+            <h5 class="card-title mb-2">Đơn hàng đang vận chuyển</h5>
+            <p class="card-text text-muted">Quản lý các đơn hàng bạn đang giao cho khách.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a href="/shipper/da-giao" class="text-decoration-none">
+        <div class="card shadow h-100 text-center border-0 hover-shadow">
+          <div class="card-body py-4">
+            <div class="mb-3">
+              <i class="bi bi-check2-circle display-4 text-success"></i>
+            </div>
+            <h5 class="card-title mb-2">Đơn hàng đã giao</h5>
+            <p class="card-text text-muted">Xem lại lịch sử các đơn hàng đã giao thành công.</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">

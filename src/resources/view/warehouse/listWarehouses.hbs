@@ -27,16 +27,11 @@
               <a href="/admin/kho/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">Sửa</a>
             </td>
             <td>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger"
-                data-toggle="modal"
-                data-id="{{this._id}}"
-                data-target="#delete-warehouse-modal"
-              >
-                Xóa
-              </button>
-            </td>
+  <form action="/admin/kho/{{this._id}}?_method=DELETE" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-sm btn-outline-danger"
+      onclick="return confirm('Bạn có chắc muốn xóa kho này?')">Xóa</button>
+  </form>
+</td>
           </tr>
           {{/each}}
         </tbody>

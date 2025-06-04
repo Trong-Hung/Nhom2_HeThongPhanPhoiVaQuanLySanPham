@@ -1,7 +1,40 @@
-<div class="row justify-content-center">
-  <div class="col-12 text-center">
-    <h1 class="section-title mt-4 aos-init aos-animate" data-aos="fade-up">
-      Chào mừng đến với trang chủ admin
-    </h1>
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h1 class="fw-bold text-primary mb-3">Trang Quản Trị Admin</h1>
+      <p class="lead text-muted">Chào mừng {{user.name}} đến với hệ thống quản trị!</p>
+    </div>
+  </div>
+   <div class="row g-4 justify-content-center">
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card shadow-sm border-0 w-100">
+        <div class="card-body text-center">
+          <i class="bi bi-box-seam fs-1 text-primary mb-2"></i>
+          <h5 class="card-title mb-2">Quản lý sản phẩm</h5>
+          <a href="/me/stored/sanpham" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card shadow-sm border-0 w-100">
+        <div class="card-body text-center">
+          <i class="bi bi-people fs-1 text-success mb-2"></i>
+          <h5 class="card-title mb-2">Quản lý tài khoản</h5>
+          <a href="/admin/quanlytaikhoan" class="btn btn-outline-success btn-sm">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card shadow-sm border-0 w-100">
+        <div class="card-body text-center">
+          <i class="bi bi-truck fs-1 text-warning mb-2"></i>
+          <h5 class="card-title mb-2">Quản lý đơn hàng</h5>
+          <a href="/admin/donhang" class="btn btn-outline-warning btn-sm">Xem chi tiết</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Nếu chưa có Bootstrap Icons, thêm CDN này vào layout chính -->
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> -->

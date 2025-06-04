@@ -9,6 +9,7 @@
           <th scope="col">Tên sản phẩm</th>
           <th scope="col" style="width: 120px;">Giá</th>
           <th scope="col">Mô tả</th>
+          <th scope="col" style="width: 100px;">Xem</th>
           <th scope="col" style="width: 100px;">Sửa</th>
           <th scope="col" style="width: 100px;">Xóa</th>
         </tr>
@@ -20,6 +21,11 @@
           <td>{{this.name}}</td>
           <td>{{this.price}}</td>
           <td>{{this.description}}</td>
+          <td>
+      <a href="/sanpham/{{this.slug}}" class="btn btn-sm btn-outline-info" target="_blank">
+        Xem
+      </a>
+    </td>
           <td>
             <a href="/sanpham/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">
               Sửa

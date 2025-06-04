@@ -1,17 +1,27 @@
-// src/routes/auth.js
-
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require("../middlewares/role");
-const authController = require('../app/controllers/AuthController'); // Import controller đúng
+const authController = require('../app/controllers/AuthController');
+const userController = require('../app/controllers/UserController'); // Thêm dòng này
 
+// Trang đăng nhập/đăng ký
+router.get('/login', authController.showLogin);
+router.post('/login', authController.login);
 
-router.post("/profile", isAuthenticated, authController.updateProfile);
-router.get("/profile", isAuthenticated, authController.showProfile);
+router.get('/register', authController.showRegister);
+router.post('/register', authController.register);
 
+// Đăng xuất
+router.get('/logout', authController.logout);
 
+// Trang hồ sơ cá nhân
+router.get('/profile', isAuthenticated, authController.showProfile);
+router.post('/profile', isAuthenticated, userController.updateProfile); // Sửa controller ở đây
+
+// Xác thực email (nếu có)
 router.get("/verify/:token", async (req, res) => {
   const { token } = req.params;
+  const User = require('../app/models/User');
   const user = await User.findOne({ verificationToken: token });
 
   if (!user) {
@@ -24,13 +34,5 @@ router.get("/verify/:token", async (req, res) => {
 
   res.send("Tài khoản đã được xác nhận thành công!");
 });
-
-router.get('/login', authController.showLogin);  // Hiển thị trang đăng nhập
-router.post('/login', authController.login);  // Xử lý đăng nhập
-
-router.get('/register', authController.showRegister);  // Hiển thị trang đăng ký
-router.post('/register', authController.register);  // Xử lý đăng ký
-
-router.get('/logout', authController.logout);  // Xử lý logout
 
 module.exports = router;

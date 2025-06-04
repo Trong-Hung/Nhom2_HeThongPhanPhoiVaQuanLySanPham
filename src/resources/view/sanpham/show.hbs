@@ -1,20 +1,40 @@
 <div class="container mt-5">
-  <!-- Hiển thị Sản phẩm -->
-  <div class="row justify-content-center mb-5">
-    <div class="col-lg-4 col-md-6">
-      <div class="card shadow-sm border-0">
+  <div class="row justify-content-center">
+    <!-- Ảnh sản phẩm bên trái -->
+    <div class="col-md-5 mb-4">
+      <div class="bg-white rounded shadow-sm p-3">
         <img 
           src="{{image}}" 
           alt="{{sanpham.name}}" 
-          class="card-img-top" 
-          style="height: 320px; object-fit: cover; border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;"
+          class="img-fluid w-100"
+          style="max-height: 400px; object-fit: cover; border-radius: 8px;"
         >
-        <div class="card-body">
-          <h5 class="card-title text-primary fw-bold">{{sanpham.name}}</h5>
-          <p class="card-text text-muted">{{sanpham.description}}</p>
-          <p class="card-text fs-5 fw-semibold text-danger">{{sanpham.price}}.000₫</p>
-          <a href="#" class="btn btn-outline-primary w-100">🛒 Thêm vào giỏ</a>
+      </div>
+    </div>
+    <!-- Thông tin sản phẩm bên phải -->
+    <div class="col-md-7">
+      <div class="bg-white rounded shadow-sm p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <h3 class="fw-bold text-dark mb-2">{{sanpham.name}}</h3>
+          <div class="mb-3">
+            <span class="badge bg-danger fs-6 px-3 py-2">FLASH SALE</span>
+          </div>
+          <div class="mb-3">
+            <span class="fs-2 fw-bold text-danger">{{sanpham.price}}₫</span>
+            {{#if sanpham.oldPrice}}
+              <span class="text-muted text-decoration-line-through ms-2">{{sanpham.oldPrice}}₫</span>
+            {{/if}}
+          </div>
+          <hr>
+          <h6 class="fw-semibold mb-2">Mô tả sản phẩm:</h6>
+          <p class="text-muted" style="min-height: 80px;">{{sanpham.description}}</p>
         </div>
+        <form action="/cart/add/{{sanpham._id}}" method="POST" class="mt-4">
+          <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+            🛒 Thêm vào giỏ hàng
+          </button>
+        </form>
       </div>
     </div>
   </div>
+</div>

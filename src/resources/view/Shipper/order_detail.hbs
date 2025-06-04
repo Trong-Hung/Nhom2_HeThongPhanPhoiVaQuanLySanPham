@@ -1,72 +1,121 @@
-<h3>Chi tiết đơn hàng</h3>
-<p><strong>Mã đơn:</strong> {{order._id}}</p>
-<p><strong>Họ tên:</strong> {{order.name}}</p>
-<p><strong>SĐT:</strong> {{order.phone}}</p>
-<p><strong>Địa chỉ giao:</strong> {{order.address}}</p>
-<p><strong>Kho lấy hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
-<p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
-<p><strong>Trạng thái:</strong> {{order.status}}</p>
-<p><strong>Hình thức thanh toán:</strong> {{order.paymentMethod}}</p>
-<p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow rounded">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="bi bi-receipt"></i> Chi tiết đơn hàng</h4>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4">Mã đơn:</dt>
+            <dd class="col-sm-8">{{order._id}}</dd>
 
-<form method="POST" action="/admin/donhang/update/{{order._id}}">
-  <label for="status">Cập nhật trạng thái:</label>
-  <select name="status" id="status" class="form-select">
-    <option value="Chờ xác nhận" {{#if (eq order.status "Chờ xác nhận")}}selected{{/if}}>Chờ xác nhận</option>
-    <option value="Đang sắp xếp" {{#if (eq order.status "Đang sắp xếp")}}selected{{/if}}>Đang sắp xếp</option>
-    <option value="Đang vận chuyển" {{#if (eq order.status "Đang vận chuyển")}}selected{{/if}}>Đang vận chuyển</option>
-    <option value="Đã giao" {{#if (eq order.status "Đã giao")}}selected{{/if}}>Đã giao</option>
-    <option value="Đã hủy" {{#if (eq order.status "Đã hủy")}}selected{{/if}}>Đã hủy</option>
-  </select>
-  <button class="btn btn-primary btn-sm mt-1">Cập nhật</button>
-</form>
+            <dt class="col-sm-4">Họ tên:</dt>
+            <dd class="col-sm-8">{{order.name}}</dd>
 
-{{#if order.customerLocation.latitude}}
-  <div id="map" style="height: 400px; margin-top: 16px;"></div>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    var warehouseLat = {{order.warehouseId.location.latitude}};
-    var warehouseLng = {{order.warehouseId.location.longitude}};
-    var customerLat = {{order.customerLocation.latitude}};
-    var customerLng = {{order.customerLocation.longitude}};
+            <dt class="col-sm-4">SĐT:</dt>
+            <dd class="col-sm-8">{{order.phone}}</dd>
 
-    var map = L.map('map').setView([warehouseLat, warehouseLng], 13);
+            <dt class="col-sm-4">Địa chỉ giao:</dt>
+            <dd class="col-sm-8">{{order.address}}</dd>
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(map);
+            <dt class="col-sm-4">Kho lấy hàng:</dt>
+            <dd class="col-sm-8">{{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</dd>
 
-    var warehouseMarker = L.marker([warehouseLat, warehouseLng]).addTo(map)
-      .bindPopup('Kho hàng').openPopup();
+            <dt class="col-sm-4">Địa chỉ kho:</dt>
+            <dd class="col-sm-8">{{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</dd>
 
-    var customerMarker = L.marker([customerLat, customerLng]).addTo(map)
-      .bindPopup('Khách hàng');
+            <dt class="col-sm-4">Trạng thái:</dt>
+            <dd class="col-sm-8">
+              <span class="badge 
+                {{#if (eq order.status 'Đang vận chuyển')}}bg-warning text-dark
+                {{else if (eq order.status 'Đã giao')}}bg-success
+                {{else}}bg-secondary{{/if}}">
+                {{order.status}}
+              </span>
+            </dd>
 
-    var latlngs = [
-      [warehouseLat, warehouseLng],
-      [customerLat, customerLng]
-    ];
-    var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-    map.fitBounds(polyline.getBounds());
-  </script>
-  {{#if order.customerLocation.latitude}}
-  <a
-    class="btn btn-primary mt-2"
-    target="_blank"
-    href="https://www.google.com/maps/dir/?api=1&origin={{order.warehouseId.location.latitude}},{{order.warehouseId.location.longitude}}&destination={{order.customerLocation.latitude}},{{order.customerLocation.longitude}}&travelmode=driving"
-  >
-    Chỉ đường Google Maps
-  </a>
-{{/if}}
-{{else}}
-  <p class="text-danger">Không có vị trí khách hàng để hiển thị bản đồ!</p>
-{{/if}}
-{{#if (eq order.status "Đang vận chuyển")}}
-  <form method="POST" action="/shipper/donhang/mark-delivered/{{order._id}}">
-    <button class="btn btn-success">Đã giao</button>
-  </form>
-{{/if}}
+            <dt class="col-sm-4">Hình thức thanh toán:</dt>
+            <dd class="col-sm-8">{{order.paymentMethod}}</dd>
+            <dt class="col-sm-4">Tổng tiền:</dt>
+<dd class="col-sm-8 fw-bold text-success">{{order.totalPrice}} ₫</dd>
 
-<a href="/admin/qldonhang">Quay lại danh sách</a>
+            <dt class="col-sm-4">Ngày đặt:</dt>
+            <dd class="col-sm-8">{{order.createdAt}}</dd>
+          </dl>
+          <h5 class="mt-4 mb-3">🛒 Danh sách mặt hàng trong đơn</h5>
+<table class="table table-bordered align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Tên sản phẩm</th>
+      <th>Giá</th>
+      <th>Số lượng</th>
+      <th>Thành tiền</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each order.items}}
+      <tr>
+        <td>{{this.name}}</td>
+        <td>{{this.price}} ₫</td>
+        <td>{{this.quantity}}</td>
+        <td class="fw-bold">{{multiply this.price this.quantity}} ₫</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+          {{#if order.customerLocation.latitude}}
+            <div id="map" style="height: 350px; margin-top: 24px; border-radius: 8px; overflow: hidden;"></div>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+            <script>
+              var warehouseLat = {{order.warehouseId.location.latitude}};
+              var warehouseLng = {{order.warehouseId.location.longitude}};
+              var customerLat = {{order.customerLocation.latitude}};
+              var customerLng = {{order.customerLocation.longitude}};
+
+              var map = L.map('map').setView([warehouseLat, warehouseLng], 13);
+
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+              }).addTo(map);
+
+              var warehouseMarker = L.marker([warehouseLat, warehouseLng]).addTo(map)
+                .bindPopup('Kho hàng').openPopup();
+
+              var customerMarker = L.marker([customerLat, customerLng]).addTo(map)
+                .bindPopup('Khách hàng');
+
+              var latlngs = [
+                [warehouseLat, warehouseLng],
+                [customerLat, customerLng]
+              ];
+              var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
+              map.fitBounds(polyline.getBounds());
+            </script>
+            <a
+              class="btn btn-outline-primary mt-3"
+              target="_blank"
+              href="https://www.google.com/maps/dir/?api=1&origin={{order.warehouseId.location.latitude}},{{order.warehouseId.location.longitude}}&destination={{order.customerLocation.latitude}},{{order.customerLocation.longitude}}&travelmode=driving"
+            >
+              <i class="bi bi-geo-alt"></i> Chỉ đường Google Maps
+            </a>
+          {{else}}
+            <p class="text-danger mt-3">Không có vị trí khách hàng để hiển thị bản đồ!</p>
+          {{/if}}
+
+          {{#if (eq order.status "Đang vận chuyển")}}
+            <form method="POST" action="/shipper/donhang/mark-delivered/{{order._id}}" class="mt-4">
+              <button class="btn btn-success w-100"><i class="bi bi-check-circle"></i> Đã giao</button>
+            </form>
+          {{/if}}
+
+          <a href="/shipper/dang_van_chuyen" class="btn btn-link mt-3"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">

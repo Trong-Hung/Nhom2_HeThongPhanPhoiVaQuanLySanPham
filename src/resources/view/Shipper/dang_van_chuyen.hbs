@@ -1,49 +1,62 @@
 <div class="container mt-4">
-  <h3 class="mb-4">🚚 Đơn hàng đang vận chuyển</h3>
-
-  {{#if orders.length}}
-    <div class="row">
-      {{#each orders}}
-        <div class="col-md-6 col-lg-4 mb-4">
-          <div class="card shadow-sm h-100">
-            <div class="card-body">
-              <h5 class="card-title">🆔 Mã đơn: 
-                <a href="/shipper/order/{{this._id}}" class="text-decoration-none">{{this._id}}</a>
-              </h5>
-
-              <p class="mb-1">
-                <strong>📦 Kho xuất hàng:</strong><br>
-                {{#if this.warehouseId}}
-                  {{this.warehouseId.name}}
-                {{else}}
-                  <span class="text-danger">❌ Chưa xác định</span>
-                {{/if}}
-              </p>
-
-              <p class="mb-1">
-                <strong>📍 Địa chỉ kho:</strong><br>
-                {{#if this.warehouseId}}
-                  {{this.warehouseId.address}}
-                {{else}}
-                  <span class="text-danger">❌ Chưa xác định</span>
-                {{/if}}
-              </p>
-
-              <p class="mb-1">
-                <strong>🚚 Giao đến:</strong><br> {{this.address}}
-              </p>
-
-              <p class="mb-3">
-                <strong>🚀 Trạng thái:</strong><br> {{this.status}}
-              </p>
-
-              <a href="/shipper/maps/{{this._id}}" class="btn btn-sm btn-outline-primary w-100">Chỉ đường</a>
-            </div>
-          </div>
-        </div>
-      {{/each}}
-    </div>
-  {{else}}
-    <p class="text-muted">🚫 Hiện chưa có đơn hàng nào đang vận chuyển.</p>
-  {{/if}}
+  <h3 class="mb-4 text-primary text-center"><i class="bi bi-truck"></i> Đơn hàng đang vận chuyển</h3>
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col" style="width: 150px;">Mã đơn</th>
+          <th scope="col">Khách hàng</th>
+          <th scope="col" style="width: 120px;">SĐT</th>
+          <th scope="col">Địa chỉ giao</th>
+          <th scope="col" style="width: 150px;">Kho lấy hàng</th>
+          <th scope="col">Địa chỉ kho</th>
+          <th scope="col" style="width: 120px;">Trạng thái</th>
+          <th scope="col" style="width: 110px;">Chức năng</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+        <tr>
+          <td>
+            <a href="/shipper/order/{{this._id}}" class="text-decoration-none">{{this._id}}</a>
+          </td>
+          <td>{{this.name}}</td>
+          <td>{{this.phone}}</td>
+          <td>{{this.address}}</td>
+          <td>
+            {{#if this.warehouseId}}
+              {{this.warehouseId.name}}
+            {{else}}
+              <span class="text-danger">❌ Chưa xác định</span>
+            {{/if}}
+          </td>
+          <td>
+            {{#if this.warehouseId}}
+              {{this.warehouseId.address}}
+            {{else}}
+              <span class="text-danger">❌ Chưa xác định</span>
+            {{/if}}
+          </td>
+          <td>
+            {{#if (eq this.status "Đang vận chuyển")}}
+              <span class="badge bg-warning text-dark">{{this.status}}</span>
+            {{else if (eq this.status "Đã giao")}}
+              <span class="badge bg-success">{{this.status}}</span>
+            {{else}}
+              <span class="badge bg-secondary">{{this.status}}</span>
+            {{/if}}
+          </td>
+          <td>
+            
+            <a href="/shipper/order/{{this._id}}">Xem</a>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{^orders.length}}
+      <p class="text-muted text-center fs-5 my-4">🚫 Hiện chưa có đơn hàng nào đang vận chuyển.</p>
+    {{/orders.length}}
+  </div>
 </div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">

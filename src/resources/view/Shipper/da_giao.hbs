@@ -10,7 +10,6 @@
             <th scope="col">Khách hàng</th>
             <th scope="col">Địa chỉ giao</th>
             <th scope="col">Kho giao</th>
-            <th scope="col">Ngày giao</th>
           </tr>
         </thead>
         <tbody>
@@ -20,13 +19,13 @@
             <td>{{this.name}}</td>
             <td>{{this.address}}</td>
             <td>{{this.warehouseId.name}}</td>
-            <td>{{formatDate this.updatedAt}}</td>
+
           </tr>
           {{/each}}
         </tbody>
       </table>
     </div>
   {{else}}
-    <p class="text-muted">🚫 Hiện chưa có đơn hàng nào đã giao.</p>
+    <p class="text-muted">Hiện chưa có đơn hàng nào đã giao.</p>
   {{/if}}
 </div>

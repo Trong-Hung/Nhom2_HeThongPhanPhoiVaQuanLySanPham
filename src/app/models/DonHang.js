@@ -31,7 +31,7 @@ const DonHangSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }, 
   customerLocation: {
   latitude: { type: Number },
-  longitude: { type: Number }
+  longitude: { type: Number },
 },
 });
 

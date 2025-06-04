@@ -1,31 +1,79 @@
-<h3>Chi tiết đơn hàng</h3>
-<p><strong>Mã đơn:</strong> {{order._id}}</p>
-<p><strong>Họ tên:</strong> {{order.name}}</p>
-<p><strong>SĐT:</strong> {{order.phone}}</p>
-<p><strong>Địa chỉ giao:</strong> {{order.address}}</p>
-<p><strong>Kho lấy hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
-<p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
-<p><strong>Trạng thái:</strong> {{order.status}}</p>
-<p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
-<p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
-<p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
-<p><strong>Shipper phụ trách:</strong>
-  {{#if order.assignedShipper}}
-    {{order.assignedShipper.name}}
-  {{else}}
-    <span class="text-danger">Chưa gán shipper</span>
-  {{/if}}
-</p>
 
-<form method="POST" action="/admin/donhang/update/{{order._id}}">
-  <label for="status">Cập nhật trạng thái:</label>
-  <select name="status" id="status" class="form-select">
-    <option value="Chờ xác nhận" {{#if (eq order.status "Chờ xác nhận")}}selected{{/if}}>Chờ xác nhận</option>
-    <option value="Đang sắp xếp" {{#if (eq order.status "Đang sắp xếp")}}selected{{/if}}>Đang sắp xếp</option>
-    <option value="Đang vận chuyển" {{#if (eq order.status "Đang vận chuyển")}}selected{{/if}}>Đang vận chuyển</option>
-    <option value="Đã giao" {{#if (eq order.status "Đã giao")}}selected{{/if}}>Đã giao</option>
-    <option value="Đã hủy" {{#if (eq order.status "Đã hủy")}}selected{{/if}}>Đã hủy</option>
-  </select>
-  <button class="btn btn-primary btn-sm mt-1">Cập nhật</button>
-</form>
-<a href="/admin/qldonhang">Quay lại danh sách</a>
+
+<div class="container mt-4">
+  <div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Chi tiết đơn hàng</h4>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Mã đơn:</strong> {{order._id}}</p>
+          <p><strong>Khách hàng:</strong> {{order.name}}</p>
+          <p><strong>SĐT:</strong> {{order.phone}}</p>
+          <p><strong>Địa chỉ giao:</strong> {{order.address}}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Kho lấy hàng:</strong> {{#if order.warehouseId}}{{order.warehouseId.name}}{{/if}}</p>
+          <p><strong>Địa chỉ kho:</strong> {{#if order.warehouseId}}{{order.warehouseId.address}}{{/if}}</p>
+          <p><strong>Shipper phụ trách:</strong>
+            {{#if order.assignedShipper}}
+              {{order.assignedShipper.name}}
+            {{else}}
+              <span class="text-danger">Chưa gán shipper</span>
+            {{/if}}
+          </p>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <p><strong>Trạng thái:</strong> <span class="badge bg-info text-dark">{{order.status}}</span></p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Hình thức thanh toán:</strong> {{paymentMethodText}}</p>
+        </div>
+        <div class="col-md-4">
+          <p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
+          <p><strong>Ngày giao dự kiến:</strong> {{estimatedDeliveryText}}</p>
+        </div>
+      </div>
+      <h5 class="mt-4 mb-3">🛒 Danh sách mặt hàng trong đơn</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Tên sản phẩm</th>
+              <th>Giá</th>
+              <th>Số lượng</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each order.items}}
+              <tr>
+                <td>{{this.name}}</td>
+                <td>{{this.price}} ₫</td>
+                <td>{{this.quantity}}</td>
+                <td class="fw-bold text-success">{{multiply this.price this.quantity}} ₫</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <form method="POST" action="/admin/donhang/update/{{order._id}}" class="d-flex align-items-center gap-2">
+          <label for="status" class="me-2 mb-0">Cập nhật trạng thái:</label>
+          <select name="status" id="status" class="form-select form-select-sm w-auto">
+            <option value="Chờ xác nhận" {{#if (eq order.status "Chờ xác nhận")}}selected{{/if}}>Chờ xác nhận</option>
+            <option value="Đang sắp xếp" {{#if (eq order.status "Đang sắp xếp")}}selected{{/if}}>Đang sắp xếp</option>
+            <option value="Đang vận chuyển" {{#if (eq order.status "Đang vận chuyển")}}selected{{/if}}>Đang vận chuyển</option>
+            <option value="Đã giao" {{#if (eq order.status "Đã giao")}}selected{{/if}}>Đã giao</option>
+            <option value="Đã hủy" {{#if (eq order.status "Đã hủy")}}selected{{/if}}>Đã hủy</option>
+          </select>
+          <button class="btn btn-primary btn-sm">Cập nhật</button>
+        </form>
+        <a href="/admin/qldonhang" class="btn btn-outline-secondary btn-sm">← Quay lại danh sách</a>
+      </div>
+    </div>
+  </div>
+</div>

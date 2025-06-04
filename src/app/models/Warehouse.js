@@ -6,6 +6,7 @@ const warehouseSchema = new mongoose.Schema({
     province: { type: String, required: true }, 
     district: { type: String, required: true },
     ward: { type: String, required: true },
+    region: { type: String, required: true },
     location: { 
         latitude: { type: Number, required: true, default: 0 }, 
         longitude: { type: Number, required: true, default: 0 }

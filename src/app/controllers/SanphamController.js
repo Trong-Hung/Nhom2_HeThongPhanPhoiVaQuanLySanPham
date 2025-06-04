@@ -59,7 +59,7 @@ async create(req, res) {
         return res.status(400).send("Ảnh không hợp lệ hoặc không được chọn.");
     }
 
-    const { name, sku, category, price, stockTotal } = req.body;
+    const { name, sku, category, price, stockTotal, description  } = req.body;
 
     if (!sku || !category || !price) {
         console.error(" Lỗi: SKU, Danh mục và Giá không được để trống!");
@@ -67,7 +67,7 @@ async create(req, res) {
     }
 
     try {
-        const sanpham = new Sanpham({ name, sku, category, price, stockTotal, image: req.file.filename });
+        const sanpham = new Sanpham({ name, sku, category, price, stockTotal, description, image: req.file.filename });
         await sanpham.save();
 
         const warehouses = await Warehouse.find();

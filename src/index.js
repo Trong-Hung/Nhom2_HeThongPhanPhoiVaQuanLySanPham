@@ -43,7 +43,7 @@ const hbs = create({
   extname: ".hbs",
   partialsDir: [
     path.join(__dirname, "resources", "view", "partials"),
-    path.join(__dirname, "resources", "view", "user") // Đăng ký thêm thư mục partials cho user
+    path.join(__dirname, "resources", "view", "user")
   ],
   defaultLayout: "main",
   helpers: {
@@ -63,6 +63,36 @@ const hbs = create({
     select: function (value, selectedValue) {
       return value === selectedValue ? "selected" : "";
     },
+    inc: function(value) {
+      return parseInt(value) + 1;
+    },
+     formatDate: function(date, format) {
+      if (!date) return "";
+      const d = new Date(date);
+      // Đơn giản: DD/MM/YYYY HH:mm
+      const pad = n => n < 10 ? '0' + n : n;
+      if (format === "DD/MM/YYYY HH:mm") {
+        return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+      // Mặc định ISO
+      return d.toLocaleString("vi-VN");
+    },
+     statusBadgeClass: function(status) {
+      switch (status) {
+        case "Chờ xác nhận":
+        case "Đang sắp xếp":
+          return "badge bg-secondary";
+        case "Đang vận chuyển":
+          return "badge bg-warning text-dark";
+        case "Đã giao":
+        case "Hoàn thành":
+          return "badge bg-success";
+        case "Đã hủy":
+          return "badge bg-danger";
+        default:
+          return "badge bg-secondary";
+      }
+    }
   },
   runtimeOptions: {
     allowProtoPropertiesByDefault: true,

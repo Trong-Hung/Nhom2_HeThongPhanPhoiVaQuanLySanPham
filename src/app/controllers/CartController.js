@@ -23,31 +23,40 @@ const { getRegionByProvince } = require("../../util/regions");
 const fs = require("fs");
 const path = require("path");
 
-async function findNearestWarehouse(customerLocation, productId, quantity) {
-  const warehouses = await Warehouse.find();
-  let closestWarehouse = null;
-  let minDistance = Infinity;
+// Giả sử region là "Miền Nam", "Miền Bắc", ...
+async function findNearestWarehouse(customerLocation, productId, quantity, region) {
+  // Xác định thứ tự ưu tiên miền
+  let regionPriority = [];
+  if (region === "Miền Bắc") regionPriority = ["Miền Bắc", "Miền Trung", "Miền Nam"];
+  else if (region === "Miền Trung") regionPriority = ["Miền Trung", "Miền Bắc", "Miền Nam"];
+  else if (region === "Miền Nam") regionPriority = ["Miền Nam", "Miền Trung", "Miền Bắc"];
+  else regionPriority = [region];
 
-  for (const warehouse of warehouses) {
-    const distance = await getDistanceUsingHere(
-      `${warehouse.location.longitude},${warehouse.location.latitude}`,
-      `${customerLocation.longitude},${customerLocation.latitude}`
-    );
+  for (const reg of regionPriority) {
+    let warehouses = await Warehouse.find({ region: reg });
+    let closestWarehouse = null;
+    let minDistance = Infinity;
 
-    const productEntry = warehouse.products.find(
-      (p) => p.productId.toString() === productId
-    );
-    if (
-      productEntry &&
-      productEntry.quantity >= quantity &&
-      distance < minDistance
-    ) {
-      minDistance = distance;
-      closestWarehouse = warehouse;
+    for (const warehouse of warehouses) {
+      const productEntry = warehouse.products.find(
+        (p) => p.productId.toString() === productId
+      );
+      if (productEntry && productEntry.quantity >= quantity) {
+        const distance = await getDistanceUsingHere(
+          `${warehouse.location.longitude},${warehouse.location.latitude}`,
+          `${customerLocation.longitude},${customerLocation.latitude}`
+        );
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestWarehouse = warehouse;
+        }
+      }
     }
+    if (closestWarehouse) return closestWarehouse;
   }
 
-  return closestWarehouse;
+  // Nếu không có kho nào đủ hàng ở các miền, trả về null
+  return null;
 }
 
 function removeVietnameseTones(str) {
@@ -172,7 +181,9 @@ class CartController {
       const selectedWarehouse = await findNearestWarehouse(
         location,
         req.session.cart.items[0]._id,
-        req.session.cart.items[0].quantity
+        req.session.cart.items[0].quantity,
+          region // thêm dòng này!
+
       );
       if (!selectedWarehouse) {
         return res.status(404).send("❌ Không có kho nào đủ hàng!");

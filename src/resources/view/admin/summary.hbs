@@ -1,0 +1,86 @@
+<form class="row g-3 mb-4" method="GET" action="/admin/summary">
+  <div class="col-md-3">
+    <label class="form-label">Từ ngày</label>
+    <input type="date" class="form-control" name="from" value="{{query.from}}">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Đến ngày</label>
+    <input type="date" class="form-control" name="to" value="{{query.to}}">
+  </div>
+  <div class="col-md-3 align-self-end">
+    <button class="btn btn-primary w-100">Lọc</button>
+  </div>
+</form>
+<div class="container mt-4">
+  <h2 class="mb-4">Thống kê doanh thu & số lượng bán</h2>
+  <div class="row mb-4 justify-content-center">
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3 text-center">
+        <div class="card-header">Tổng doanh thu</div>
+        <div class="card-body">
+          <h4 class="card-title">{{totalRevenue}} ₫</h4>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3 text-center">
+        <div class="card-header">Doanh thu tiền mặt</div>
+        <div class="card-body">
+          <h4 class="card-title">{{cashRevenue}} ₫</h4>
+          <div>Số lượng bán: {{cashSold}}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-warning mb-3 text-center">
+        <div class="card-header">Doanh thu Momo</div>
+        <div class="card-body">
+          <h4 class="card-title">{{momoRevenue}} ₫</h4>
+          <div>Số lượng bán: {{momoSold}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h4>Danh sách đơn hàng đã hoàn thành</h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="thead-dark">
+        <tr>
+          <th>Mã đơn</th>
+          <th>Khách hàng</th>
+          <th>Ngày hoàn thành</th>
+          <th>Tổng tiền</th>
+          <th>Số lượng sản phẩm</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each orders}}
+    <tr>
+      <td>
+       <a href="/admin/donhang/{{this._id}}">
+  {{this._id}}
+</a>
+      </td>
+      <td>
+        {{this.name}}<br>
+        {{this.phone}}<br>
+        {{this.address}}
+      </td>
+      <td>{{this.updatedAt}}</td>
+      <td>{{#if this.totalPrice}}{{this.totalPrice}} ₫{{else}}0 ₫{{/if}}</td>
+      <td>
+        {{!-- Tổng số lượng sản phẩm --}}
+        {{#let total=0}}
+        {{#each this.items}}
+          {{inc ../total this.quantity}}
+        {{/each}}
+        {{../total}}
+        {{/let}}
+      </td>
+    </tr>
+  {{/each}}
+      </tbody>
+    </table>
+  </div>
+</div>

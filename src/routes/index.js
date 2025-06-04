@@ -9,6 +9,7 @@ const donhangRouter = require("./donhang");
 const shipperRouter = require("./shipper");
 const categoryRouter = require("./category");
 const bannerRouter = require("./banner");
+const userRouter = require('./user');
 
 function Route(app) {
   app.use("/cart", cartRouter);
@@ -22,6 +23,9 @@ function Route(app) {
   app.use("/sanpham", sanphamRouter);
   app.use("/category", categoryRouter);
   app.use("/banner", bannerRouter);
+app.use('/user', userRouter);
+
+
 
   // Route công khai
   app.use("/", homeRouter);
