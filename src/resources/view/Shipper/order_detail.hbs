@@ -83,17 +83,70 @@
               }).addTo(map);
 
               var warehouseMarker = L.marker([warehouseLat, warehouseLng]).addTo(map)
-                .bindPopup('Kho hàng').openPopup();
+                .bindPopup('🏢 Kho hàng').openPopup();
 
               var customerMarker = L.marker([customerLat, customerLng]).addTo(map)
-                .bindPopup('Khách hàng');
+                .bindPopup('🏠 Khách hàng');
 
-              var latlngs = [
-                [warehouseLat, warehouseLng],
-                [customerLat, customerLng]
-              ];
-              var polyline = L.polyline(latlngs, {color: 'blue'}).addTo(map);
-              map.fitBounds(polyline.getBounds());
+              // 🛣️ Sử dụng OSRM để lấy tuyến đường thực tế
+              async function getOSRMRoute() {
+                try {
+                  const osrmUrl = `http://127.0.0.1:5000/route/v1/driving/${warehouseLng},${warehouseLat};${customerLng},${customerLat}?steps=true&geometries=geojson`;
+                  
+                  const response = await fetch(osrmUrl);
+                  const data = await response.json();
+
+                  if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    
+                    // Vẽ tuyến đường thực tế
+                    const routeCoordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    var routePolyline = L.polyline(routeCoordinates, {
+                      color: 'red', 
+                      weight: 4,
+                      opacity: 0.8
+                    }).addTo(map);
+
+                    // Fit bounds để hiển thị toàn bộ tuyến đường
+                    map.fitBounds(routePolyline.getBounds());
+
+                    // Hiển thị thông tin tuyến đường
+                    const distance = (route.distance / 1000).toFixed(2);
+                    const duration = Math.round(route.duration / 60);
+                    
+                    const routeInfo = L.control({position: 'topright'});
+                    routeInfo.onAdd = function(map) {
+                      const div = L.DomUtil.create('div', 'route-info');
+                      div.innerHTML = `
+                        <div style="background: white; padding: 10px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.2);">
+                          <strong>📊 Thông tin tuyến đường:</strong><br>
+                          🛣️ Khoảng cách: ${distance} km<br>
+                          ⏱️ Thời gian: ${duration} phút<br>
+                          🚛 Tuyến đường tối ưu
+                        </div>
+                      `;
+                      return div;
+                    };
+                    routeInfo.addTo(map);
+
+                  } else {
+                    console.log('⚠️ Không thể lấy tuyến đường từ OSRM, sử dụng đường thẳng');
+                    // Fallback về đường thẳng nếu OSRM không hoạt động
+                    var latlngs = [[warehouseLat, warehouseLng], [customerLat, customerLng]];
+                    var polyline = L.polyline(latlngs, {color: 'blue', dashArray: '5, 10'}).addTo(map);
+                    map.fitBounds(polyline.getBounds());
+                  }
+                } catch (error) {
+                  console.log('❌ Lỗi kết nối OSRM:', error);
+                  // Fallback về đường thẳng nếu có lỗi
+                  var latlngs = [[warehouseLat, warehouseLng], [customerLat, customerLng]];
+                  var polyline = L.polyline(latlngs, {color: 'blue', dashArray: '5, 10'}).addTo(map);
+                  map.fitBounds(polyline.getBounds());
+                }
+              }
+
+              // Gọi hàm lấy tuyến đường
+              getOSRMRoute();
             </script>
             <a
               class="btn btn-outline-primary mt-3"

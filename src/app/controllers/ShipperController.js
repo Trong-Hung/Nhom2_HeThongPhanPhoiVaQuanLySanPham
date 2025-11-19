@@ -392,12 +392,40 @@ class ShipperController {
           success: false,
           message: "Không tìm thấy đơn hàng",
         });
-        S;
+      }
+
+      // Thêm thông tin route từ OSRM nếu có đầy đủ tọa độ
+      let routeData = null;
+      if (order.warehouseId?.location && order.customerLocation) {
+        try {
+          const warehouseCoords = {
+            latitude: order.warehouseId.location.latitude,
+            longitude: order.warehouseId.location.longitude,
+          };
+          const customerCoords = {
+            latitude: order.customerLocation.latitude,
+            longitude: order.customerLocation.longitude,
+          };
+
+          routeData = await getRoute(warehouseCoords, customerCoords);
+          console.log(
+            `🛣️ Đã lấy route data cho đơn ${orderId}:`,
+            routeData?.distance || "N/A"
+          );
+        } catch (routeError) {
+          console.log(
+            `⚠️ Không thể lấy route cho đơn ${orderId}:`,
+            routeError.message
+          );
+        }
       }
 
       res.json({
         success: true,
-        data: order,
+        data: {
+          ...order.toObject(),
+          routeData: routeData, // Thêm thông tin tuyến đường
+        },
         message: "Lấy chi tiết đơn hàng thành công",
       });
     } catch (err) {
