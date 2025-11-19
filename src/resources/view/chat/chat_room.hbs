@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat với {{#if chatPartner}}{{chatPartner.name}}{{else}}Admin{{/if}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 80vh;
+            max-height: 600px;
+        }
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            width: 100%;
+        }
+        .message.sent {
+            justify-content: flex-end !important;
+            flex-direction: row-reverse;
+        }
+        .message.received {
+            justify-content: flex-start !important;
+            flex-direction: row;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+            display: block;
+        }
+        .message.sent .message-content {
+            background: #007bff !important;
+            color: white !important;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.received .message-content {
+            background: white !important;
+            color: #333 !important;
+            border: 1px solid #dee2e6;
+            border-bottom-left-radius: 4px;
+            margin-right: auto;
+            text-align: left;
+        }
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+        .message-sender {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .typing-indicator {
+            display: none;
+            font-style: italic;
+            color: #6c757d;
+            padding: 10px;
+        }
+        .chat-input-area {
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+        .online-status {
+            color: #28a745;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card shadow">
+                    <!-- Chat Header -->
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <a href="javascript:history.back()" class="text-white me-3">
+                                    <i class="fas fa-arrow-left"></i>
+                                </a>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">
+                                            {{#if chatPartner}}
+                                                {{chatPartner.name}}
+                                                <small class="d-block">
+                                                    {{#if (eq chatPartner.role "admin")}}
+                                                        <i class="fas fa-shield-alt"></i> Admin
+                                                    {{else if (eq chatPartner.role "shipper")}}
+                                                        <i class="fas fa-truck"></i> Shipper
+                                                    {{else}}
+                                                        <i class="fas fa-user"></i> Khách hàng
+                                                    {{/if}}
+                                                </small>
+                                            {{else}}
+                                                Admin Support
+                                                <small class="d-block">
+                                                    <i class="fas fa-shield-alt"></i> Hỗ trợ khách hàng
+                                                </small>
+                                            {{/if}}
+                                        </h6>
+                                        <div class="online-status">
+                                            <i class="fas fa-circle"></i> Đang hoạt động
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-light btn-sm" onclick="refreshMessages()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Body -->
+                    <div class="card-body p-0">
+                        <div class="chat-container">
+                            <!-- Messages Area -->
+                            <div id="chatMessages" class="chat-messages">
+                                {{#each messages}}
+                                <div class="message {{#if (eq (toString sender._id) (toString ../currentUser._id))}}sent{{else}}received{{/if}}" data-message-id="{{_id}}" data-sender="{{sender._id}}" data-current="{{../currentUser._id}}">
+                                    <div class="message-content">
+                                        {{#unless (eq (toString sender._id) (toString ../currentUser._id))}}
+                                        <div class="message-sender text-primary">
+                                            {{sender.name}}
+                                            {{#if (eq sender.role "admin")}}
+                                                <i class="fas fa-shield-alt"></i>
+                                            {{else if (eq sender.role "shipper")}}
+                                                <i class="fas fa-truck"></i>
+                                            {{/if}}
+                                        </div>
+                                        {{/unless}}
+                                        <div class="message-text">{{message}}</div>
+                                        <div class="message-time">
+                                            {{formatDate createdAt "DD/MM/YYYY HH:mm"}}
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+
+                                {{#unless messages.length}}
+                                <div class="text-center text-muted py-5">
+                                    <i class="fas fa-comments fa-3x mb-3"></i>
+                                    <p>Chưa có tin nhắn nào. Hãy bắt đầu cuộc trò chuyện!</p>
+                                </div>
+                                {{/unless}}
+                            </div>
+
+                            <!-- Typing Indicator -->
+                            <div id="typingIndicator" class="typing-indicator">
+                                <i class="fas fa-circle"></i>
+                                <i class="fas fa-circle"></i>
+                                <i class="fas fa-circle"></i>
+                                Đang nhập...
+                            </div>
+
+                            <!-- Message Input -->
+                            <div class="chat-input-area px-3 pb-3">
+                                <form id="messageForm">
+                                    <div class="input-group">
+                                        <input 
+                                            type="text" 
+                                            id="messageInput" 
+                                            class="form-control" 
+                                            placeholder="Nhập tin nhắn..." 
+                                            required
+                                            autocomplete="off"
+                                        >
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i> Gửi
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const chatRoomId = '{{chatRoomId}}';
+        const currentUserId = '{{currentUser._id}}';
+        const receiverId = '{{#if chatPartner}}{{chatPartner._id}}{{/if}}';
+        let lastMessageId = null;
+        let pollInterval;
+
+        // Lấy message ID cuối cùng
+        function getLastMessageId() {
+            const messages = document.querySelectorAll('[data-message-id]');
+            if (messages.length > 0) {
+                lastMessageId = messages[messages.length - 1].dataset.messageId;
+            }
+        }
+
+        // Cuộn xuống cuối danh sách tin nhắn
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Gửi tin nhắn
+        document.getElementById('messageForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) return;
+
+            try {
+                const response = await fetch('/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        receiverId: receiverId,
+                        chatRoomId: chatRoomId
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageInput.value = '';
+                    addMessageToChat(data.data, true);
+                    scrollToBottom();
+                } else {
+                    alert('Lỗi: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Không thể gửi tin nhắn. Vui lòng thử lại.');
+            }
+        });
+
+        // Thêm tin nhắn vào giao diện
+        function addMessageToChat(messageData, isSent = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            messageDiv.dataset.messageId = messageData._id;
+            messageDiv.dataset.sender = messageData.sender._id;
+            messageDiv.dataset.current = currentUserId;
+            
+            console.log('🎨 Adding message:', {
+                isSent: isSent,
+                senderId: messageData.sender._id,
+                currentUserId: currentUserId,
+                senderName: messageData.sender.name,
+                className: messageDiv.className
+            });
+            
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            
+            let senderInfo = '';
+            if (!isSent && messageData.sender) {
+                let roleIcon = '';
+                if (messageData.sender.role === 'admin') roleIcon = '<i class="fas fa-shield-alt"></i>';
+                else if (messageData.sender.role === 'shipper') roleIcon = '<i class="fas fa-truck"></i>';
+                
+                senderInfo = `<div class="message-sender text-primary">${messageData.sender.name} ${roleIcon}</div>`;
+            }
+            
+            const messageTime = new Date(messageData.createdAt).toLocaleString('vi-VN');
+            
+            messageContent.innerHTML = `
+                ${senderInfo}
+                <div class="message-text">${messageData.message}</div>
+                <div class="message-time">${messageTime}</div>
+            `;
+            
+            messageDiv.appendChild(messageContent);
+            chatMessages.appendChild(messageDiv);
+            
+            lastMessageId = messageData._id;
+        }
+
+        // Polling để lấy tin nhắn mới
+        async function pollNewMessages() {
+            try {
+                const url = `/chat/messages?chatRoomId=${chatRoomId}${lastMessageId ? '&lastMessageId=' + lastMessageId : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(message => {
+                        const isSent = message.sender._id.toString() === currentUserId.toString();
+                        console.log('Debug message:', {
+                            senderId: message.sender._id,
+                            currentUserId: currentUserId,
+                            senderName: message.sender.name,
+                            isSent: isSent
+                        });
+                        addMessageToChat(message, isSent);
+                    });
+                    scrollToBottom();
+                }
+            } catch (error) {
+                console.error('Error polling messages:', error);
+            }
+        }
+
+        // Làm mới tin nhắn
+        function refreshMessages() {
+            location.reload();
+        }
+
+        // Khởi tạo
+        document.addEventListener('DOMContentLoaded', function() {
+            getLastMessageId();
+            scrollToBottom();
+            
+            // Bắt đầu polling mỗi 3 giây
+            pollInterval = setInterval(pollNewMessages, 3000);
+            
+            // Focus vào input
+            document.getElementById('messageInput').focus();
+        });
+
+        // Dọn dẹp khi rời trang
+        window.addEventListener('beforeunload', function() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
+        });
+    </script>
+</body>
+</html>

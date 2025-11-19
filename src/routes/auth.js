@@ -1,27 +1,37 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const { isAuthenticated } = require("../middlewares/role");
-const authController = require('../app/controllers/AuthController');
-const userController = require('../app/controllers/UserController'); // Thêm dòng này
+const authController = require("../app/controllers/AuthController");
+const userController = require("../app/controllers/UserController"); // Thêm dòng này
 
 // Trang đăng nhập/đăng ký
-router.get('/login', authController.showLogin);
-router.post('/login', authController.login);
+router.get("/login", authController.showLogin);
+router.post("/login", authController.login);
 
-router.get('/register', authController.showRegister);
-router.post('/register', authController.register);
+router.get("/register", authController.showRegister);
+router.post("/register", authController.register);
 
 // Đăng xuất
-router.get('/logout', authController.logout);
+router.get("/logout", authController.logout);
 
 // Trang hồ sơ cá nhân
-router.get('/profile', isAuthenticated, authController.showProfile);
-router.post('/profile', isAuthenticated, userController.updateProfile); // Sửa controller ở đây
+router.get("/profile", isAuthenticated, authController.showProfile);
+router.post("/profile", isAuthenticated, userController.updateProfile); // Sửa controller ở đây
+
+// =================== API CHO MOBILE APP ===================
+// API đăng nhập
+router.post("/api/login", authController.apiLogin);
+
+// API đăng xuất
+router.post("/api/logout", authController.apiLogout);
+
+// API kiểm tra trạng thái đăng nhập
+router.get("/api/check-auth", authController.apiCheckAuth);
 
 // Xác thực email (nếu có)
 router.get("/verify/:token", async (req, res) => {
   const { token } = req.params;
-  const User = require('../app/models/User');
+  const User = require("../app/models/User");
   const user = await User.findOne({ verificationToken: token });
 
   if (!user) {

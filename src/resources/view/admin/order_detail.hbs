@@ -60,6 +60,57 @@
           </tbody>
         </table>
       </div>
+      <!-- Gán Shipper Section -->
+      {{#unless order.assignedShipper}}
+      <div class="alert alert-warning mt-4">
+        <h6><i class="fas fa-exclamation-triangle"></i> Đơn hàng chưa được gán shipper</h6>
+        <div class="row mt-3">
+          <div class="col-md-8">
+            <form method="POST" action="/admin/donhang/assign-shipper/{{order._id}}" class="d-flex align-items-center gap-2">
+              <label for="shipperId" class="me-2 mb-0">Chọn shipper:</label>
+              <select name="shipperId" id="shipperId" class="form-select form-select-sm w-auto" required>
+                <option value="">-- Chọn shipper --</option>
+                {{#each shippers}}
+                  <option value="{{this._id}}">{{this.name}} ({{this.region}})</option>
+                {{/each}}
+              </select>
+              <button type="submit" class="btn btn-success btn-sm">
+                <i class="fas fa-user-plus"></i> Gán shipper
+              </button>
+            </form>
+          </div>
+          <div class="col-md-4 text-end">
+            <form method="POST" action="/admin/donhang/auto-assign-shipper/{{order._id}}" style="display: inline;">
+              <button type="submit" class="btn btn-info btn-sm">
+                <i class="fas fa-magic"></i> Tự động gán tốt nhất
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {{/unless}}
+
+      <!-- Thông tin Shipper hiện tại -->
+      {{#if order.assignedShipper}}
+      <div class="alert alert-success mt-4">
+        <h6><i class="fas fa-shipping-fast"></i> Thông tin shipper phụ trách</h6>
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Shipper:</strong> {{order.assignedShipper.name}}</p>
+            <p><strong>Vùng:</strong> {{order.assignedShipper.region}}</p>
+          </div>
+          <div class="col-md-6 text-end">
+            <form method="POST" action="/admin/donhang/unassign-shipper/{{order._id}}" style="display: inline;">
+              <button type="submit" class="btn btn-outline-danger btn-sm" 
+                      onclick="return confirm('Bạn có chắc muốn hủy gán shipper này?')">
+                <i class="fas fa-user-times"></i> Hủy gán
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
       <div class="d-flex justify-content-between align-items-center mt-4">
         <form method="POST" action="/admin/donhang/update/{{order._id}}" class="d-flex align-items-center gap-2">
           <label for="status" class="me-2 mb-0">Cập nhật trạng thái:</label>

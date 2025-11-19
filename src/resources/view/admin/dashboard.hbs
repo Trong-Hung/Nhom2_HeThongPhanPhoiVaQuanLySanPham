@@ -2,16 +2,21 @@
   <div class="row mb-4">
     <div class="col-12 text-center">
       <h1 class="fw-bold text-primary mb-3">Trang Quản Trị Admin</h1>
-      <p class="lead text-muted">Chào mừng {{user.name}} đến với hệ thống quản trị!</p>
+      <p class="lead text-muted">Chào mừng
+        {{user.name}}
+        đến với hệ thống quản trị!</p>
     </div>
   </div>
-   <div class="row g-4 justify-content-center">
+  <div class="row g-4 justify-content-center">
     <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
       <div class="card shadow-sm border-0 w-100">
         <div class="card-body text-center">
           <i class="bi bi-box-seam fs-1 text-primary mb-2"></i>
           <h5 class="card-title mb-2">Quản lý sản phẩm</h5>
-          <a href="/me/stored/sanpham" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+          <a
+            href="/me/stored/sanpham"
+            class="btn btn-outline-primary btn-sm"
+          >Xem chi tiết</a>
         </div>
       </div>
     </div>
@@ -20,7 +25,10 @@
         <div class="card-body text-center">
           <i class="bi bi-people fs-1 text-success mb-2"></i>
           <h5 class="card-title mb-2">Quản lý tài khoản</h5>
-          <a href="/admin/quanlytaikhoan" class="btn btn-outline-success btn-sm">Xem chi tiết</a>
+          <a
+            href="/admin/quanlytaikhoan"
+            class="btn btn-outline-success btn-sm"
+          >Xem chi tiết</a>
         </div>
       </div>
     </div>
@@ -29,7 +37,30 @@
         <div class="card-body text-center">
           <i class="bi bi-truck fs-1 text-warning mb-2"></i>
           <h5 class="card-title mb-2">Quản lý đơn hàng</h5>
-          <a href="/admin/donhang" class="btn btn-outline-warning btn-sm">Xem chi tiết</a>
+          <a href="/admin/donhang" class="btn btn-outline-warning btn-sm">Xem
+            chi tiết</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card shadow-sm border-0 w-100">
+        <div class="card-body text-center">
+          <i class="bi bi-speedometer2 fs-1 text-info mb-2"></i>
+          <h5 class="card-title mb-2">Dashboard Shipper</h5>
+          <a
+            href="/admin/shipper-dashboard"
+            class="btn btn-outline-info btn-sm"
+          >Xem thống kê</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+      <div class="card shadow-sm border-0 w-100">
+        <div class="card-body text-center">
+          <i class="bi bi-building fs-1 text-secondary mb-2"></i>
+          <h5 class="card-title mb-2">Quản lý kho</h5>
+          <a href="/admin/kho" class="btn btn-outline-secondary btn-sm">Xem chi
+            tiết</a>
         </div>
       </div>
     </div>

@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Zone-Based Route Optimization</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        #map { height: 70vh; }
+        #info { 
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        .zone-info {
+            margin: 10px 0;
+            padding: 8px;
+            border-left: 4px solid;
+            background: #f8f9fa;
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div id="info">
+        <h3>🗺️ Zone Analysis</h3>
+        <div><strong>Total Orders:</strong> 15</div>
+        <div><strong>Detected Zones:</strong> 4</div>
+        
+        <h4>Zone Details:</h4>
+
+        <div class="zone-info" style="border-left-color: #FF6B6B;">
+            <div class="legend">
+                <div class="legend-color" style="background: #FF6B6B;"></div>
+                <strong>Zone 1</strong>
+            </div>
+            <div>📍 4 orders</div>
+            <div>⚖️ 8.3kg total</div>
+            <div>📏 2.2km diameter</div>
+        </div>
+        <div class="zone-info" style="border-left-color: #4ECDC4;">
+            <div class="legend">
+                <div class="legend-color" style="background: #4ECDC4;"></div>
+                <strong>Zone 2</strong>
+            </div>
+            <div>📍 3 orders</div>
+            <div>⚖️ 8.2kg total</div>
+            <div>📏 2.4km diameter</div>
+        </div>
+        <div class="zone-info" style="border-left-color: #45B7D1;">
+            <div class="legend">
+                <div class="legend-color" style="background: #45B7D1;"></div>
+                <strong>Zone 3</strong>
+            </div>
+            <div>📍 4 orders</div>
+            <div>⚖️ 7.7kg total</div>
+            <div>📏 4.1km diameter</div>
+        </div>
+        <div class="zone-info" style="border-left-color: #96CEB4;">
+            <div class="legend">
+                <div class="legend-color" style="background: #96CEB4;"></div>
+                <strong>Zone 4</strong>
+            </div>
+            <div>📍 4 orders</div>
+            <div>⚖️ 7.8kg total</div>
+            <div>📏 2.2km diameter</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map centered on Ho Chi Minh City
+        const map = L.map('map').setView([10.8231, 106.6297], 11);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Warehouse location (908 PVD)
+        const warehouseIcon = L.divIcon({
+            className: 'warehouse-icon',
+            html: '🏭',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        });
+        
+        L.marker([10.8351, 106.7301], {icon: warehouseIcon})
+            .addTo(map)
+            .bindPopup('<b>🏭 Kho 908 PVD</b><br>Điểm xuất phát');
+
+        // Order 1 - Zone 1
+        const order1Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #FF6B6B; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">1</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7748, 106.704], {icon: order1Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 1</b><br>Đồng Khởi, Q1<br>⚖️ 2.5kg<br>🗺️ Zone 1');
+
+        // Order 2 - Zone 1
+        const order2Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #FF6B6B; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">2</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7764, 106.7009], {icon: order2Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 2</b><br>Nguyễn Huệ, Q1<br>⚖️ 1.8kg<br>🗺️ Zone 1');
+
+        // Order 3 - Zone 1
+        const order3Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #FF6B6B; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">3</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7739, 106.6998], {icon: order3Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 3</b><br>Lê Lợi, Q1<br>⚖️ 2.1kg<br>🗺️ Zone 1');
+
+        // Order 4 - Zone 1
+        const order4Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #FF6B6B; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">4</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7823, 106.6934], {icon: order4Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 4</b><br>Pasteur, Q3<br>⚖️ 1.9kg<br>🗺️ Zone 1');
+
+        // Order 5 - Zone 2
+        const order5Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #4ECDC4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">5</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7411, 106.6913], {icon: order5Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 5</b><br>Phú Mỹ Hưng, Q7<br>⚖️ 3.2kg<br>🗺️ Zone 2');
+
+        // Order 6 - Zone 2
+        const order6Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #4ECDC4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">6</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7389, 106.7095], {icon: order6Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 6</b><br>Tân Thuận, Q7<br>⚖️ 2.7kg<br>🗺️ Zone 2');
+
+        // Order 7 - Zone 2
+        const order7Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #4ECDC4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">7</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7354, 106.7019], {icon: order7Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 7</b><br>Nguyễn Thị Thập, Q7<br>⚖️ 2.3kg<br>🗺️ Zone 2');
+
+        // Order 8 - Zone 3
+        const order8Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #45B7D1; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">8</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8503, 106.7717], {icon: order8Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 8</b><br>Võ Văn Ngân, Thủ Đức<br>⚖️ 1.6kg<br>🗺️ Zone 3');
+
+        // Order 9 - Zone 3
+        const order9Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #45B7D1; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">9</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8485, 106.7659], {icon: order9Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 9</b><br>Kha Vạn Cân, Thủ Đức<br>⚖️ 2.4kg<br>🗺️ Zone 3');
+
+        // Order 10 - Zone 3
+        const order10Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #45B7D1; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">10</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8228, 106.7583], {icon: order10Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 10</b><br>Đỗ Xuân Hợp, Q9<br>⚖️ 1.7kg<br>🗺️ Zone 3');
+
+        // Order 11 - Zone 3
+        const order11Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #45B7D1; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">11</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8415, 106.8071], {icon: order11Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 11</b><br>Xa Lộ Hà Nội, Q9<br>⚖️ 2kg<br>🗺️ Zone 3');
+
+        // Order 12 - Zone 4
+        const order12Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #96CEB4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">12</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8012, 106.6557], {icon: order12Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 12</b><br>Cộng Hòa, Tân Bình<br>⚖️ 2.8kg<br>🗺️ Zone 4');
+
+        // Order 13 - Zone 4
+        const order13Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #96CEB4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">13</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.7999, 106.6544], {icon: order13Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 13</b><br>Hoàng Văn Thụ, Tân Bình<br>⚖️ 1.5kg<br>🗺️ Zone 4');
+
+        // Order 14 - Zone 4
+        const order14Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #96CEB4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">14</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8391, 106.6525], {icon: order14Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 14</b><br>Quang Trung, Gò Vấp<br>⚖️ 2.2kg<br>🗺️ Zone 4');
+
+        // Order 15 - Zone 4
+        const order15Icon = L.divIcon({
+            className: 'order-icon',
+            html: '<div style="background: #96CEB4; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">15</div>',
+            iconSize: [25, 25],
+            iconAnchor: [12.5, 12.5]
+        });
+        
+        L.marker([10.8278, 106.6642], {icon: order15Icon})
+            .addTo(map)
+            .bindPopup('<b>📦 Order 15</b><br>Phan Huy Ích, Gò Vấp<br>⚖️ 1.3kg<br>🗺️ Zone 4');
+
+        // Zone 1 circle
+        L.circle([10.7748, 106.704], {
+            color: '#FF6B6B',
+            fillColor: '#FF6B6B',
+            fillOpacity: 0.1,
+            radius: 2200
+        }).addTo(map).bindPopup('<b>🗺️ Zone 1</b><br>📍 4 orders<br>⚖️ 8.3kg');
+
+        // Zone 2 circle
+        L.circle([10.7411, 106.6913], {
+            color: '#4ECDC4',
+            fillColor: '#4ECDC4',
+            fillOpacity: 0.1,
+            radius: 2400
+        }).addTo(map).bindPopup('<b>🗺️ Zone 2</b><br>📍 3 orders<br>⚖️ 8.2kg');
+
+        // Zone 3 circle
+        L.circle([10.8503, 106.7717], {
+            color: '#45B7D1',
+            fillColor: '#45B7D1',
+            fillOpacity: 0.1,
+            radius: 4100
+        }).addTo(map).bindPopup('<b>🗺️ Zone 3</b><br>📍 4 orders<br>⚖️ 7.7kg');
+
+        // Zone 4 circle
+        L.circle([10.8012, 106.6557], {
+            color: '#96CEB4',
+            fillColor: '#96CEB4',
+            fillOpacity: 0.1,
+            radius: 2200
+        }).addTo(map).bindPopup('<b>🗺️ Zone 4</b><br>📍 4 orders<br>⚖️ 7.8kg');
+
+        // Fit map to show all markers
+        const group = new L.featureGroup();
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                group.addLayer(layer);
+            }
+        });
+        map.fitBounds(group.getBounds().pad(0.1));
+        
+        // Add zone connection lines
+        
+        L.polyline([[10.7748, 106.704], [10.7764, 106.7009]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.7748, 106.704], [10.7739, 106.6998]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.7748, 106.704], [10.7823, 106.6934]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.7411, 106.6913], [10.7389, 106.7095]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.7411, 106.6913], [10.7354, 106.7019]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8503, 106.7717], [10.8485, 106.7659]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8503, 106.7717], [10.8228, 106.7583]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8503, 106.7717], [10.8415, 106.8071]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8012, 106.6557], [10.7999, 106.6544]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8012, 106.6557], [10.8391, 106.6525]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        L.polyline([[10.8012, 106.6557], [10.8278, 106.6642]], {
+            color: '#666',
+            weight: 1,
+            opacity: 0.3,
+            dashArray: '5, 5'
+        }).addTo(map);
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+{{#section 'css'}}
+<style>
+.recommendations-sidebar {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 20px;
+}
+
+.recommendation-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.recommendation-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    border-radius: 2px;
+}
+
+.recommendation-subtitle {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.rec-product-item {
+    display: flex;
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.rec-product-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    color: inherit;
+    text-decoration: none;
+}
+
+.rec-product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 0.8rem;
+    flex-shrink: 0;
+}
+
+.rec-product-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.rec-product-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.3rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.rec-product-price {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e74c3c;
+}
+
+.rec-badge {
+    background: linear-gradient(45deg, #ff7675, #e84393);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    text-align: center;
+    display: inline-block;
+    width: fit-content;
+    margin: 0 auto 1rem auto;
+}
+
+.view-all-btn {
+    display: block;
+    width: 100%;
+    padding: 0.6rem;
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+    background: linear-gradient(45deg, #5f3dc4, #6c5ce7);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+.empty-recommendations {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #6c757d;
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.5;
+}
+</style>
+{{/section}}
+
+{{#if recommendations}}
+{{#if recommendations.length}}
+<div class="recommendations-sidebar">
+    <div class="rec-badge">Đề xuất</div>
+    
+    <h3 class="recommendation-title">
+        {{#if ../currentUser}}
+            Dành riêng cho bạn
+        {{else}}
+            Sản phẩm nổi bật
+        {{/if}}
+    </h3>
+    
+    <p class="recommendation-subtitle">
+        {{#if ../currentUser}}
+            Dựa trên sở thích của bạn
+        {{else}}
+            Được yêu thích nhất
+        {{/if}}
+    </p>
+
+    {{#each recommendations}}
+    <a href="/sanpham/{{slug}}" class="rec-product-item">
+        <img src="{{image}}" alt="{{name}}" class="rec-product-image" 
+             onerror="this.src='/uploads/1748778137374.jpg'">
+        
+        <div class="rec-product-info">
+            <div class="rec-product-name">{{name}}</div>
+            <div class="rec-product-price">
+                {{#if price}}
+                    {{formatCurrency price}}
+                {{else}}
+                    Liên hệ
+                {{/if}}
+            </div>
+        </div>
+    </a>
+    {{/each}}
+
+    <a href="/api/recommendations" class="view-all-btn">
+        <i class="fas fa-arrow-right"></i> Xem thêm
+    </a>
+</div>
+{{else}}
+<div class="recommendations-sidebar">
+    <div class="empty-recommendations">
+        <div class="empty-icon">🛍️</div>
+        <p>Chưa có sản phẩm đề xuất</p>
+    </div>
+</div>
+{{/if}}
+{{/if}}
+
+{{#section 'js'}}
+<script>
+// Animation khi scroll đến section
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.product-card').forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+    observer.observe(card);
+});
+
+// Format currency helper nếu chưa có
+if (typeof Handlebars !== 'undefined') {
+    Handlebars.registerHelper('formatCurrency', function(amount) {
+        if (!amount) return '0';
+        return new Intl.NumberFormat('vi-VN').format(amount);
+    });
+}
+</script>
+{{/section}}

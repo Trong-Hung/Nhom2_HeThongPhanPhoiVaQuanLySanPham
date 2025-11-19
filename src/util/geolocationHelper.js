@@ -1,22 +1,96 @@
 const axios = require("axios");
 
 async function geocodeAddress(address) {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+  console.log("🔍 Đang tìm tọa độ cho địa chỉ:", address);
 
-  try {
-    const response = await axios.get(url);
-    if (response.data.length === 0) {
-      console.error(" Không tìm thấy tọa độ! Thử thay đổi địa chỉ.");
-      return null;
+  const geocodingServices = [
+ 
+    {
+      name: "Nominatim",
+      url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=vn`,
+      parseResponse: (data) =>
+        data.length > 0 ? { lat: data[0].lat, lon: data[0].lon } : null,
+    },
+    
+    {
+      name: "Nominatim-Simple",
+      url: `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(getSimplifiedAddress(address))}&limit=1&countrycodes=vn`,
+      parseResponse: (data) =>
+        data.length > 0 ? { lat: data[0].lat, lon: data[0].lon } : null,
+    },
+  ];
+
+  // Thử từng API một cách tuần tự
+  for (const service of geocodingServices) {
+    try {
+      console.log(`🌐 Thử ${service.name}:`, service.url);
+
+      const response = await axios.get(service.url, {
+        headers: {
+          "User-Agent": "EcommerceDemoApp/1.0",
+        },
+        timeout: 5000,
+      });
+
+      const result = service.parseResponse(response.data);
+      if (result) {
+        const { lat, lon } = result;
+        console.log(
+          `✅ ${service.name} thành công! Địa chỉ: ${address} → GPS: (${lat}, ${lon})`
+        );
+        return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+      }
+    } catch (err) {
+      console.error(`❌ ${service.name} lỗi:`, err.message);
+      continue; // Thử service tiếp theo
     }
-
-    const { lat, lon } = response.data[0];
-    console.log(` Địa chỉ: ${address} → GPS: (${lat}, ${lon})`);
-    return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
-  } catch (err) {
-    console.error(" Lỗi khi gọi Geocoding API:", err);
-    return null;
   }
+
+  // Nếu tất cả API đều fail, thử với tọa độ mặc định của các tỉnh/thành phố lớn
+  const fallbackCoordinates = getFallbackCoordinates(address);
+  if (fallbackCoordinates) {
+    console.log(`🏠 Sử dụng tọa độ mặc định cho: ${address}`);
+    return fallbackCoordinates;
+  }
+
+  console.error(
+    "❌ Không tìm thấy tọa độ từ tất cả các nguồn! Địa chỉ:",
+    address
+  );
+  return null;
+}
+
+// Hàm tạo địa chỉ đơn giản hơn để tăng khả năng tìm thấy
+function getSimplifiedAddress(fullAddress) {
+  const parts = fullAddress.split(",").map((part) => part.trim());
+  // Chỉ lấy phần cuối (thường là tỉnh/thành phố) + "Vietnam"
+  const province = parts[parts.length - 1];
+  return `${province}, Vietnam`;
+}
+
+// Tọa độ mặc định cho các tỉnh/thành phố lớn của Việt Nam
+function getFallbackCoordinates(address) {
+  const defaultCoords = {
+    "Hồ Chí Minh": { latitude: 10.8231, longitude: 106.6297 },
+    "TP. Hồ Chí Minh": { latitude: 10.8231, longitude: 106.6297 },
+    "Hà Nội": { latitude: 21.0285, longitude: 105.8542 },
+    "Đà Nẵng": { latitude: 16.0471, longitude: 108.2068 },
+    "Hải Phòng": { latitude: 20.8449, longitude: 106.6881 },
+    "Cần Thơ": { latitude: 10.0452, longitude: 105.7469 },
+    "Biên Hòa": { latitude: 10.9465, longitude: 106.842 },
+    Huế: { latitude: 16.4637, longitude: 107.5909 },
+    "Nha Trang": { latitude: 12.2388, longitude: 109.1967 },
+    "Buôn Ma Thuột": { latitude: 12.6667, longitude: 108.05 },
+  };
+
+  // Tìm kiếm trong địa chỉ
+  for (const [city, coords] of Object.entries(defaultCoords)) {
+    if (address.includes(city)) {
+      return coords;
+    }
+  }
+
+  return null;
 }
 // function calculateEstimatedDelivery(distance) {
 //     try {
@@ -91,10 +165,8 @@ function calculateEstimatedDelivery(
 
   let shippingStartDate;
   if (orderStatus === "Chờ xác nhận") {
-    // Khi đơn hàng chưa xác nhận, bắt đầu tính giao từ ngày tạo đơn + 1 ngày.
     shippingStartDate = addDays(orderCreationDate, 1);
   } else if (orderStatus === "Đang giao hàng") {
-    // Khi đơn hàng đang giao, chia lấy thời điểm chuyển sang "Đang giao hàng"
     shippingStartDate = statusChangedTime
       ? new Date(statusChangedTime)
       : new Date();
@@ -107,8 +179,6 @@ function calculateEstimatedDelivery(
     shippingStartDate.getTime() + travelTimeDays * 24 * 3600000
   );
 
-  // Chuyển đổi thời gian từ UTC sang giờ Việt Nam (Asia/Ho_Chi_Minh)
-  // và định dạng chuỗi "YYYY-MM-DD HH:mm:ssZ" (ví dụ: 2025-05-29 03:45:54+07:00)
   const vietnamTime = moment(estimatedDeliveryUTC)
     .tz("Asia/Ho_Chi_Minh")
     .format("YYYY-MM-DD HH:mm:ssZ");

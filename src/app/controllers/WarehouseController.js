@@ -6,9 +6,26 @@ const {
   getDistrictName,
   getWardName,
 } = require("../../util/addressHelper");
-const { geocode } = require("../../util/mapService");
+
+// === SỬA LỖI: Import đúng tên hàm từ mapService ===
+const { geocodeAddress } = require("../../util/mapService");
 
 class WarehouseController {
+  // API method để lấy danh sách warehouses (cho frontend)
+  async getWarehousesAPI(req, res) {
+    try {
+      const warehouses = await Warehouse.find().select(
+        "name location address province district ward"
+      );
+      res.json(warehouses);
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách kho:", err);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống khi lấy danh sách kho",
+      });
+    }
+  }
   // Hiển thị danh sách kho
   async listWarehouses(req, res) {
     try {
@@ -39,29 +56,43 @@ class WarehouseController {
         return res.status(400).send("Lỗi: Vui lòng nhập đầy đủ thông tin!");
       }
 
-      const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
+      // Tạo địa chỉ đầy đủ để tìm tọa độ
+      const fullAddress = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
+      console.log(`📍 Đang tìm tọa độ cho kho mới: ${fullAddress}`);
+
       let finalLongitude = longitude;
       let finalLatitude = latitude;
 
+      // Nếu người dùng không nhập tọa độ thủ công, thì tự động tìm
       if (!longitude || !latitude) {
-        const coords = await geocode(address);
+        // === SỬA LỖI: Gọi hàm geocodeAddress ===
+        const coords = await geocodeAddress(fullAddress);
+
         if (coords) {
+          console.log("✅ Tìm thấy tọa độ:", coords);
           finalLatitude = coords.latitude;
           finalLongitude = coords.longitude;
         } else {
-          return res.status(400).send("Lỗi: Không thể lấy tọa độ từ địa chỉ.");
+          console.warn("⚠️ Không tìm thấy tọa độ, kho sẽ không có GPS.");
+          // Tùy chọn: Có thể return lỗi nếu bắt buộc phải có tọa độ
+          // return res.status(400).send("Lỗi: Không thể xác định tọa độ từ địa chỉ này.");
         }
       }
+
       const region = getRegionByProvince(provinceName);
 
       const warehouse = new Warehouse({
         name,
-        address,
+        address: detail, // Lưu địa chỉ chi tiết
         province: provinceName,
         district: districtName,
         ward: wardName,
         region,
-        location: { longitude: finalLongitude, latitude: finalLatitude },
+        // Lưu object location (hoặc coordinates tùy model của bạn)
+        location: {
+          longitude: finalLongitude || 0,
+          latitude: finalLatitude || 0,
+        },
       });
 
       await warehouse.save();
@@ -91,27 +122,38 @@ class WarehouseController {
 
       const { name, detail, province, district, ward, longitude, latitude } =
         req.body;
-      const provinceName = await getProvinceName(province);
-      const districtName = await getDistrictName(district);
-      const wardName = await getWardName(ward, district);
 
+      // Cập nhật tên
       warehouse.name = name || warehouse.name;
-      warehouse.address = detail || warehouse.address;
-      warehouse.province = provinceName || warehouse.province;
-      warehouse.district = districtName || warehouse.district;
-      warehouse.ward = wardName || warehouse.ward;
-      warehouse.region = getRegionByProvince(provinceName) || warehouse.region;
+
+      // Cập nhật địa chỉ hành chính (nếu có thay đổi)
+      if (province) warehouse.province = await getProvinceName(province);
+      if (district) warehouse.district = await getDistrictName(district);
+      if (ward) warehouse.ward = await getWardName(ward, district);
+      if (detail) warehouse.address = detail;
+
+      // Cập nhật vùng miền
+      warehouse.region =
+        getRegionByProvince(warehouse.province) || warehouse.region;
 
       let finalLongitude = longitude;
       let finalLatitude = latitude;
 
+      // Nếu không nhập tọa độ thủ công, thử Geocode lại theo địa chỉ mới
       if (!longitude || !latitude) {
-        const coords = await geocode(warehouse.address);
+        const fullAddress = `${warehouse.address}, ${warehouse.ward}, ${warehouse.district}, ${warehouse.province}`;
+        console.log(`📍 Đang cập nhật tọa độ cho: ${fullAddress}`);
+
+        // === SỬA LỖI: Gọi hàm geocodeAddress ===
+        const coords = await geocodeAddress(fullAddress);
+
         if (coords) {
           finalLatitude = coords.latitude;
           finalLongitude = coords.longitude;
         }
       }
+
+      // Cập nhật location
       warehouse.location = {
         longitude: finalLongitude || warehouse.location.longitude,
         latitude: finalLatitude || warehouse.location.latitude,
@@ -163,7 +205,8 @@ class WarehouseController {
   // Nhập hàng vào kho (xử lý)
   async importSanpham(req, res) {
     try {
-      const { warehouseId, productId, quantity } = req.body;
+      const warehouseId = req.params.id || req.body.warehouseId;
+      const { productId, quantity } = req.body;
       const warehouse =
         await Warehouse.findById(warehouseId).populate("products.productId");
       if (!warehouse) return res.status(404).send("Không tìm thấy kho!");

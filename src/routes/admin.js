@@ -9,12 +9,42 @@ const warehouseController = require("../app/controllers/WarehouseController");
 router.get("/qldonhang", isAdmin, DonHangController.index);
 router.post("/donhang/update/:id", isAdmin, DonHangController.updateStatus);
 router.get("/donhang", isAdmin, DonHangController.index);
-router.post("/assign-shipper/:id", isAdmin, DonHangController.assignShipper);
+router.post(
+  "/donhang/assign-shipper/:id",
+  isAdmin,
+  DonHangController.assignShipper
+);
+router.post(
+  "/donhang/auto-assign-shipper/:id",
+  isAdmin,
+  DonHangController.autoAssignShipper
+);
+router.post(
+  "/donhang/unassign-shipper/:id",
+  isAdmin,
+  DonHangController.unassignShipper
+);
+router.post(
+  "/force-optimize-all",
+  isAdmin,
+  DonHangController.forceOptimizeAllShippers
+);
+router.get("/debug/force-optimize", DonHangController.debugForceOptimize);
+router.get(
+  "/debug/force-optimize/:shipperId",
+  DonHangController.debugForceOptimize
+);
 router.get("/donhang/:id", isAdmin, DonHangController.viewOrderDetail);
-router.get("/summary", isAdmin, (req, res, next) => {
-  console.log("Đã vào route /admin/summary");
-  next();
-}, DonHangController.summary);
+router.get(
+  "/summary",
+  isAdmin,
+  (req, res, next) => {
+    console.log("Đã vào route /admin/summary");
+    next();
+  },
+  DonHangController.summary
+);
+router.get("/shipper-dashboard", isAdmin, DonHangController.shipperDashboard);
 
 // Quản lý tài khoản
 router.get("/quanlytaikhoan", isAdmin, UserController.manageAccounts);
@@ -43,6 +73,17 @@ router.put("/kho/:id", isAdmin, warehouseController.updateWarehouse);
 router.delete("/kho/:id", isAdmin, warehouseController.deleteWarehouse);
 
 router.get("/kho", isAdmin, warehouseController.listWarehouses);
+
+// Route Optimization
+router.get("/route-optimization", isAdmin, (req, res) => {
+  res.render("admin/route_optimization", {
+    title: "Tối ưu tuyến đường giao hàng",
+    user: req.session.user,
+  });
+});
+
+// API để lấy danh sách warehouses cho frontend
+router.get("/api/warehouses", isAdmin, warehouseController.getWarehousesAPI);
 
 // Trang dashboard quản trị
 router.get("/", isAdmin, (req, res) => {

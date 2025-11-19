@@ -1,6 +1,7 @@
 const Sanpham = require("../models/Sanpham");
 const DonHang = require("../models/DonHang");
 const Warehouse = require("../models/Warehouse");
+const EmailService = require("../../services/EmailService");
 const { createMomoPaymentUrl } = require("../../util/momoHelper");
 
 const { getDistanceUsingHere } = require("../../util/distanceHelper");
@@ -18,18 +19,32 @@ const {
 } = require("../../util/addressHelper");
 const moment = require("moment-timezone");
 
+// === THÊM GEOCODING VALIDATOR ===
+const {
+  validateAndImproveGeocode,
+  suggestAddressCorrections,
+  standardizeVietnameseAddress,
+} = require("../../util/geocodingValidator");
+
 const { getRegionByProvince } = require("../../util/regions");
 
 const fs = require("fs");
 const path = require("path");
 
 // Giả sử region là "Miền Nam", "Miền Bắc", ...
-async function findNearestWarehouse(customerLocation, productId, quantity, region) {
-  // Xác định thứ tự ưu tiên miền
+async function findNearestWarehouse(
+  customerLocation,
+  productId,
+  quantity,
+  region
+) {
   let regionPriority = [];
-  if (region === "Miền Bắc") regionPriority = ["Miền Bắc", "Miền Trung", "Miền Nam"];
-  else if (region === "Miền Trung") regionPriority = ["Miền Trung", "Miền Bắc", "Miền Nam"];
-  else if (region === "Miền Nam") regionPriority = ["Miền Nam", "Miền Trung", "Miền Bắc"];
+  if (region === "Miền Bắc")
+    regionPriority = ["Miền Bắc", "Miền Trung", "Miền Nam"];
+  else if (region === "Miền Trung")
+    regionPriority = ["Miền Trung", "Miền Bắc", "Miền Nam"];
+  else if (region === "Miền Nam")
+    regionPriority = ["Miền Nam", "Miền Trung", "Miền Bắc"];
   else regionPriority = [region];
 
   for (const reg of regionPriority) {
@@ -54,8 +69,6 @@ async function findNearestWarehouse(customerLocation, productId, quantity, regio
     }
     if (closestWarehouse) return closestWarehouse;
   }
-
-  // Nếu không có kho nào đủ hàng ở các miền, trả về null
   return null;
 }
 
@@ -65,56 +78,56 @@ function removeVietnameseTones(str) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
     .replace(/Đ/g, "D")
-    .replace(/[^a-zA-Z0-9 ]/g, ""); // chỉ giữ chữ, số, dấu cách
+    .replace(/[^a-zA-Z0-9 ]/g, "");
 }
 
 class CartController {
   async addToCart(req, res) {
-  try {
-    // Nếu chưa đăng nhập thì chuyển về trang đăng nhập
-    if (!req.session.user) {
-      req.session.message = "Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!";
-      return res.redirect("/auth/login");
+    try {
+      if (!req.session.user) {
+        req.session.message =
+          "Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!";
+        return res.redirect("/auth/login");
+      }
+
+      const productId = req.params.id;
+      const product = await Sanpham.findById(productId);
+
+      if (!product) {
+        return res.status(404).send("Không tìm thấy sản phẩm");
+      }
+
+      if (!req.session.cart) {
+        req.session.cart = {
+          items: [],
+          totalPrice: 0,
+        };
+      }
+
+      const existingItemIndex = req.session.cart.items.findIndex(
+        (item) => item._id.toString() === productId
+      );
+
+      if (existingItemIndex !== -1) {
+        req.session.cart.items[existingItemIndex].quantity += 1;
+        req.session.cart.totalPrice += product.price;
+      } else {
+        req.session.cart.items.push({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+        });
+        req.session.cart.totalPrice += product.price;
+      }
+
+      req.session.message = `Đã thêm sản phẩm "${product.name}" vào giỏ hàng!`;
+      res.redirect("/");
+    } catch (err) {
+      console.error(" Lỗi khi thêm vào giỏ:", err);
+      res.status(500).send("Lỗi hệ thống");
     }
-
-    const productId = req.params.id;
-    const product = await Sanpham.findById(productId);
-
-    if (!product) {
-      return res.status(404).send("Không tìm thấy sản phẩm");
-    }
-
-    if (!req.session.cart) {
-      req.session.cart = {
-        items: [],
-        totalPrice: 0,
-      };
-    }
-
-    const existingItemIndex = req.session.cart.items.findIndex(
-      (item) => item._id.toString() === productId
-    );
-
-    if (existingItemIndex !== -1) {
-      req.session.cart.items[existingItemIndex].quantity += 1;
-      req.session.cart.totalPrice += product.price;
-    } else {
-      req.session.cart.items.push({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-      });
-      req.session.cart.totalPrice += product.price;
-    }
-
-    req.session.message = `Đã thêm sản phẩm "${product.name}" vào giỏ hàng!`;
-    res.redirect("/");
-  } catch (err) {
-    console.error(" Lỗi khi thêm vào giỏ:", err);
-    res.status(500).send("Lỗi hệ thống");
   }
-}
 
   // Hiển thị giỏ hàng
   viewCart(req, res) {
@@ -155,24 +168,102 @@ class CartController {
   async processCheckout(req, res) {
     try {
       console.log("📦 Nhận yêu cầu thanh toán:", req.body);
-      const { name, phone, province, district, ward, detail, method } =
-        req.body;
+      const {
+        name,
+        phone,
+        email,
+        province,
+        district,
+        ward,
+        detail,
+        method,
+        provinceName,
+        districtName,
+        wardName,
+      } = req.body;
 
       // Xác định địa chỉ khách hàng
-      const provinceName = await getProvinceName(province);
-      const districtName = await getDistrictName(district);
-      const wardName = await getWardName(ward, district);
-      const address = `${detail}, ${wardName}, ${districtName}, ${provinceName}`;
-      const region = getRegionByProvince(provinceName);
+      let finalProvinceName, finalDistrictName, finalWardName;
 
-      // Xác định vị trí khách hàng
+      // Ưu tiên sử dụng tên từ form, nếu không có thì gọi API
+      if (provinceName && districtName && wardName) {
+        finalProvinceName = provinceName;
+        finalDistrictName = districtName;
+        finalWardName = wardName;
+        console.log("✅ Sử dụng tên từ form");
+      } else {
+        console.log("⚠️ Không có tên từ form, gọi API...");
+        finalProvinceName = await getProvinceName(province);
+        finalDistrictName = await getDistrictName(district);
+        finalWardName = await getWardName(ward, district);
+      }
+
+      const address = `${detail}, ${finalWardName}, ${finalDistrictName}, ${finalProvinceName}`;
+      const region = getRegionByProvince(finalProvinceName);
+
+      console.log("📍 Thông tin địa chỉ:");
+      console.log("- Province Code:", province, "→", finalProvinceName);
+      console.log("- District Code:", district, "→", finalDistrictName);
+      console.log("- Ward Code:", ward, "→", finalWardName);
+      console.log("- Full Address:", address);
+
+      // === GEOCODING MỚI VỚI AUTO-VALIDATION & IMPROVEMENT ===
       let location = req.body.location;
+      let geocodingInfo = null;
+
       if (!location || !location.latitude || !location.longitude) {
-        location = await geocodeAddress(address);
-        if (!location) {
-          return res
-            .status(400)
-            .send("❌ Lỗi: Không thể xác định vị trí khách hàng.");
+        console.log("🔄 Bắt đầu geocoding thông minh cho địa chỉ:", address);
+
+        // Sử dụng hệ thống geocoding mới với multiple fallback
+        const geocodingResult = await validateAndImproveGeocode(
+          address,
+          region.toLowerCase()
+        );
+
+        if (!geocodingResult.success) {
+          console.error("❌ Geocoding thất bại:", geocodingResult.error);
+
+          // Trả về lỗi với gợi ý cải thiện địa chỉ
+          return res.status(400).json({
+            error: "Không thể xác định vị trí chính xác của địa chỉ",
+            details: {
+              originalAddress: address,
+              suggestions: geocodingResult.suggestions || [],
+              message:
+                "Vui lòng kiểm tra lại địa chỉ hoặc thử một trong các gợi ý sau:",
+            },
+          });
+        }
+
+        location = {
+          latitude: geocodingResult.result.latitude,
+          longitude: geocodingResult.result.longitude,
+        };
+
+        geocodingInfo = {
+          confidence: geocodingResult.result.confidence,
+          source: geocodingResult.result.source,
+          improved: geocodingResult.improved || false,
+          originalConfidence: geocodingResult.originalConfidence,
+          displayName: geocodingResult.result.displayName,
+        };
+
+        // Log thông tin geocoding
+        if (geocodingResult.improved) {
+          console.log(
+            `✨ Đã cải thiện geocoding! Confidence: ${geocodingResult.originalConfidence} → ${geocodingInfo.confidence}`
+          );
+        } else {
+          console.log(
+            `✅ Geocoding thành công với confidence: ${geocodingInfo.confidence} (${geocodingInfo.source})`
+          );
+        }
+
+        // Cảnh báo nếu confidence thấp
+        if (geocodingInfo.confidence < 0.7) {
+          console.warn(
+            `⚠️ Geocoding có confidence thấp (${geocodingInfo.confidence}). Địa chỉ có thể không chính xác.`
+          );
         }
       }
       console.log("📍 Vị trí khách hàng:", location);
@@ -182,8 +273,7 @@ class CartController {
         location,
         req.session.cart.items[0]._id,
         req.session.cart.items[0].quantity,
-          region // thêm dòng này!
-
+        region // thêm dòng này!
       );
       if (!selectedWarehouse) {
         return res.status(404).send("❌ Không có kho nào đủ hàng!");
@@ -220,7 +310,14 @@ class CartController {
         warehouseId: selectedWarehouse._id,
         name,
         phone,
+        email: email || req.session.user.email,
         address,
+        addressDetail: {
+          province: { code: province, name: finalProvinceName },
+          district: { code: district, name: finalDistrictName },
+          ward: { code: ward, name: finalWardName },
+          detail: detail,
+        },
         region,
         items: req.session.cart.items,
         totalQuantity: req.session.cart.items.reduce(
@@ -232,10 +329,21 @@ class CartController {
         status: orderStatus,
         estimatedDelivery: estimatedDeliveryVietnam,
         customerLocation: location,
+        geocodingInfo: geocodingInfo, // Lưu thông tin geocoding để theo dõi độ chính xác
       });
 
       await newOrder.save();
       console.log("✅ Đơn hàng đã lưu thành công:", newOrder);
+
+      // Gửi email xác nhận đơn hàng
+      try {
+        if (newOrder.email) {
+          await EmailService.sendOrderConfirmation(newOrder._id);
+        }
+      } catch (emailError) {
+        console.error("Lỗi gửi email xác nhận đơn hàng:", emailError);
+        // Không dừng quá trình thanh toán nếu email fail
+      }
 
       // Xử lý thanh toán
       if (method === "momo") {

@@ -81,7 +81,7 @@
 
               <a class="dropdown-item" href="/admin/kho/list">Quản lý kho hàng</a>
               <a class="dropdown-item" href="/admin/kho/create">Tạo kho mới</a>
-              <a class="dropdown-item" href="/admin/summary">Thống kê</a>
+
               {{#each warehouses}}
                 <a class="dropdown-item" href="/admin/kho/{{this._id}}">
                   🏬
@@ -94,7 +94,9 @@
 
               <a class="dropdown-item" href="/banner/list">Quản lý banner</a>
               <a class="dropdown-item" href="/banner/create">Thêm banner mới</a>
+              <a class="dropdown-item" href="/admin/summary">Thống kê</a>
             </div>
+
           </li>
         {{/if}}
 
@@ -124,6 +126,20 @@
                 tài khoản</a>
               <a class="dropdown-item" href="/admin/taotaikhoan">Tạo tài khoản</a>
             </div>
+          </li>
+        {{/if}}
+
+        <!-- Chat -->
+        {{#if user}}
+          <li class="nav-item">
+            <a class="nav-link" href="/chat">
+              <i class="fas fa-comments"></i>
+              {{#if (eq user.role "admin")}}
+                Quản lý Chat
+              {{else}}
+                Chat với Admin
+              {{/if}}
+            </a>
           </li>
         {{/if}}
 

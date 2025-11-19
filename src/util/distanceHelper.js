@@ -3,17 +3,23 @@ const axios = require("axios");
 async function getDistanceUsingHere(origin, destination) {
   // Kiểm tra dữ liệu đầu vào
   if (
-  !origin ||
-  !destination ||
-  origin.latitude == null ||
-  origin.longitude == null ||
-  destination.latitude == null ||
-  destination.longitude == null
-) {
-  console.error("❌ Lỗi: Tọa độ không hợp lệ!");
-  return null;
-}
-
+    !origin ||
+    !destination ||
+    origin.latitude == null ||
+    origin.longitude == null ||
+    destination.latitude == null ||
+    destination.longitude == null ||
+    isNaN(origin.latitude) ||
+    isNaN(origin.longitude) ||
+    isNaN(destination.latitude) ||
+    isNaN(destination.longitude)
+  ) {
+    console.error("❌ Lỗi: Tọa độ không hợp lệ!", {
+      origin,
+      destination,
+    });
+    return null;
+  }
 
   // Log tọa độ để debug
   console.log("HERE API - Vị trí kho (Origin):", origin);
@@ -33,7 +39,9 @@ async function getDistanceUsingHere(origin, destination) {
       !response.data.routes[0].sections ||
       response.data.routes[0].sections.length === 0
     ) {
-      console.error("❌ Không tìm thấy lộ trình từ HERE API. Kiểm tra lại địa chỉ hoặc API key.");
+      console.error(
+        "❌ Không tìm thấy lộ trình từ HERE API. Kiểm tra lại địa chỉ hoặc API key."
+      );
       return null;
     }
 

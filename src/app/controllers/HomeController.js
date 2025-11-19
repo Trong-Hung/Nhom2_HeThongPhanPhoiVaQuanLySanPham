@@ -1,6 +1,7 @@
 const Sanpham = require("../models/Sanpham");
-const Banner = require('../models/banner');
-const Danhmuc = require('../models/Category'); // Thêm dòng này
+const Banner = require("../models/banner");
+const Danhmuc = require("../models/Category");
+const ProductRecommendationService = require("../../services/ProductRecommendationService");
 
 function removeVietnameseTones(str) {
   return str
@@ -46,7 +47,7 @@ class HomeController {
 
     // Nếu có từ khóa tìm kiếm, lọc sản phẩm
     if (keyword) {
-      sanphams = sanphams.filter(sp =>
+      sanphams = sanphams.filter((sp) =>
         removeVietnameseTones(sp.name).includes(removeVietnameseTones(keyword))
       );
     }
@@ -56,6 +57,25 @@ class HomeController {
       sanphams = sanphams.sort((a, b) => a.price - b.price);
     } else if (sort === "desc") {
       sanphams = sanphams.sort((a, b) => b.price - a.price);
+    }
+
+    // Lấy sản phẩm đề xuất
+    let recommendations = [];
+    try {
+      const userId = req.session.user?._id;
+      if (userId) {
+        recommendations =
+          await ProductRecommendationService.getRecommendationsForUser(
+            userId,
+            8
+          );
+      } else {
+        recommendations =
+          await ProductRecommendationService.getGuestRecommendations(8);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy sản phẩm đề xuất:", error);
+      recommendations = [];
     }
 
     const message = req.session.message;
@@ -69,7 +89,8 @@ class HomeController {
       banners,
       danhmucs,
       sort,
-      category
+      category,
+      recommendations,
     });
   }
 }

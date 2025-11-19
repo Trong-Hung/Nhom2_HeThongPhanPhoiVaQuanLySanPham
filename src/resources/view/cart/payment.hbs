@@ -1,4 +1,4 @@
-{{!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\view\cart\payment.hbs --}}
+{{! filepath: c:\Users\trong\JAVASC\blog\src\resources\view\cart\payment.hbs }}
 <div class="mt-4">
   <h3>Thông tin thanh toán</h3>
 
@@ -11,7 +11,6 @@
           <th scope="col">Tên sản phẩm</th>
           <th scope="col">Giá</th>
           <th scope="col">Số lượng</th>
-          <th scope="col">Tổng tiền</th>
         </tr>
       </thead>
       <tbody>
@@ -20,7 +19,6 @@
             <td>{{this.name}}</td>
             <td>{{formatCurrency this.price}}</td>
             <td>{{this.quantity}}</td>
-            <td>{{formatCurrency (multiply this.price this.quantity)}}</td>
           </tr>
         {{/each}}
       </tbody>
@@ -40,46 +38,100 @@
     <form action="/cart/payment" method="POST">
       <div class="form-group">
         <label for="name">Họ tên</label>
-        <input type="text" class="form-control" id="name" name="name" required />
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          required
+        />
       </div>
       <div class="form-group">
         <label for="phone">Số điện thoại</label>
-        <input type="text" class="form-control" id="phone" name="phone" required />
+        <input
+          type="text"
+          class="form-control"
+          id="phone"
+          name="phone"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="email">Email (để nhận thông báo đơn hàng)</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          placeholder="email@example.com"
+        />
       </div>
       <div class="form-group">
         <label for="detail">Địa chỉ chi tiết</label>
-        <input type="text" class="form-control" id="detail" name="detail" placeholder="Số nhà, tên đường..." required />
+        <input
+          type="text"
+          class="form-control"
+          id="detail"
+          name="detail"
+          placeholder="Số nhà, tên đường..."
+          required
+        />
       </div>
 
       <div class="form-group">
         <label for="province">Tỉnh/Thành phố</label>
-        <select class="form-control" id="province" name="province" required></select>
+        <select
+          class="form-control"
+          id="province"
+          name="province"
+          required
+        ></select>
+        <input type="hidden" id="provinceName" name="provinceName" />
       </div>
       <div class="form-group">
         <label for="district">Quận/Huyện</label>
-        <select class="form-control" id="district" name="district" required></select>
+        <select
+          class="form-control"
+          id="district"
+          name="district"
+          required
+        ></select>
+        <input type="hidden" id="districtName" name="districtName" />
       </div>
       <div class="form-group">
         <label for="ward">Phường/Xã</label>
         <select class="form-control" id="ward" name="ward" required></select>
+        <input type="hidden" id="wardName" name="wardName" />
       </div>
-      
 
-    <div class="form-group">
-  <label><strong>Chọn phương thức thanh toán:</strong></label>
-  <div class="form-check">
-    <input class="form-check-input" type="radio" name="method" id="method-cash" value="cash" checked>
-    <label class="form-check-label" for="method-cash">
-      Thanh toán khi nhận hàng
-    </label>
-  </div>
-  <div class="form-check">
-    <input class="form-check-input" type="radio" name="method" id="method-momo" value="momo">
-    <label class="form-check-label" for="method-momo">
-      Thanh toán qua MoMo
-    </label>
-  </div>
-</div>
+      <div class="form-group">
+        <label><strong>Chọn phương thức thanh toán:</strong></label>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="method"
+            id="method-cash"
+            value="cash"
+            checked
+          />
+          <label class="form-check-label" for="method-cash">
+            Thanh toán khi nhận hàng
+          </label>
+        </div>
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="method"
+            id="method-momo"
+            value="momo"
+          />
+          <label class="form-check-label" for="method-momo">
+            Thanh toán qua MoMo
+          </label>
+        </div>
+      </div>
 
       <button type="submit" class="btn btn-primary btn-block">Thanh toán</button>
     </form>
@@ -89,49 +141,51 @@
 </div>
 
 <script>
-  async function loadProvinces() {
-    const res = await fetch("https://provinces.open-api.vn/api/?depth=1");
-    const data = await res.json();
-    const provinceSelect = document.getElementById("province");
-    provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
-    data.forEach(p => {
-      provinceSelect.innerHTML += `<option value="${p.code}">${p.name}</option>`;
-    });
-  }
-
-  async function loadDistricts(provinceCode) {
-    if (!provinceCode) {
-      document.getElementById("district").innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-      document.getElementById("ward").innerHTML = '<option value="">Chọn Phường/Xã</option>';
-      return;
-    }
-    const res = await fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`);
-    const data = await res.json();
-    const districtSelect = document.getElementById("district");
-    districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
-    document.getElementById("ward").innerHTML = '<option value="">Chọn Phường/Xã</option>';
-    data.districts.forEach(d => {
-      districtSelect.innerHTML += `<option value="${d.code}">${d.name}</option>`;
-    });
-  }
-
-  async function loadWards(districtCode) {
-    if (!districtCode) {
-      document.getElementById("ward").innerHTML = '<option value="">Chọn Phường/Xã</option>';
-      return;
-    }
-    const res = await fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`);
-    const data = await res.json();
-    const wardSelect = document.getElementById("ward");
-    wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
-    data.wards.forEach(w => {
-      wardSelect.innerHTML += `<option value="${w.code}">${w.name}</option>`;
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    loadProvinces();
-    document.getElementById("province").addEventListener("change", e => loadDistricts(e.target.value));
-    document.getElementById("district").addEventListener("change", e => loadWards(e.target.value));
-  });
+  async function loadProvinces() { try { const res = await
+  fetch("https://provinces.open-api.vn/api/?depth=1"); const data = await
+  res.json(); const provinceSelect = document.getElementById("province");
+  provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
+  data.forEach(p => { provinceSelect.innerHTML += `<option value="${p.code}"
+  data-name="${p.name}">${p.name}</option>`; }); } catch (err) {
+  console.error("Lỗi tải tỉnh/thành phố:", err); } } async function
+  loadDistricts(provinceCode) { const districtSelect =
+  document.getElementById("district"); const wardSelect =
+  document.getElementById("ward"); if (!provinceCode) { districtSelect.innerHTML
+  = '<option value="">Chọn Quận/Huyện</option>'; wardSelect.innerHTML = '<option
+  value="">Chọn Phường/Xã</option>'; return; } try { const res = await
+  fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`); const
+  data = await res.json(); districtSelect.innerHTML = '<option value="">Chọn
+  Quận/Huyện</option>'; wardSelect.innerHTML = '<option value="">Chọn
+  Phường/Xã</option>'; data.districts.forEach(d => { districtSelect.innerHTML +=
+  `<option value="${d.code}" data-name="${d.name}">${d.name}</option>`; }); }
+  catch (err) { console.error("Lỗi tải quận/huyện:", err); } } async function
+  loadWards(districtCode) { const wardSelect = document.getElementById("ward");
+  if (!districtCode) { wardSelect.innerHTML = '<option value="">Chọn
+  Phường/Xã</option>'; return; } try { const res = await
+  fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`); const
+  data = await res.json(); wardSelect.innerHTML = '<option value="">Chọn
+  Phường/Xã</option>'; data.wards.forEach(w => { wardSelect.innerHTML +=
+  `<option value="${w.code}" data-name="${w.name}">${w.name}</option>`; }); }
+  catch (err) { console.error("Lỗi tải phường/xã:", err); } } function
+  updateHiddenFields() { const provinceSelect =
+  document.getElementById("province"); const districtSelect =
+  document.getElementById("district"); const wardSelect =
+  document.getElementById("ward"); // Cập nhật tên tỉnh const selectedProvince =
+  provinceSelect.options[provinceSelect.selectedIndex]; if (selectedProvince &&
+  selectedProvince.value) { document.getElementById("provinceName").value =
+  selectedProvince.getAttribute("data-name"); } // Cập nhật tên quận/huyện const
+  selectedDistrict = districtSelect.options[districtSelect.selectedIndex]; if
+  (selectedDistrict && selectedDistrict.value) {
+  document.getElementById("districtName").value =
+  selectedDistrict.getAttribute("data-name"); } // Cập nhật tên phường/xã const
+  selectedWard = wardSelect.options[wardSelect.selectedIndex]; if (selectedWard
+  && selectedWard.value) { document.getElementById("wardName").value =
+  selectedWard.getAttribute("data-name"); } }
+  document.addEventListener("DOMContentLoaded", () => { loadProvinces();
+  document.getElementById("province").addEventListener("change", (e) => {
+  loadDistricts(e.target.value); updateHiddenFields(); });
+  document.getElementById("district").addEventListener("change", (e) => {
+  loadWards(e.target.value); updateHiddenFields(); });
+  document.getElementById("ward").addEventListener("change", () => {
+  updateHiddenFields(); }); });
 </script>

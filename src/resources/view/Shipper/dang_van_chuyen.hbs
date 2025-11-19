@@ -4,39 +4,37 @@
     <table class="table table-striped table-hover align-middle">
       <thead class="table-dark">
         <tr>
-          <th scope="col" style="width: 150px;">Mã đơn</th>
+          <th scope="col" style="width: 100px;">Thứ tự</th>
+          <th scope="col" style="width: 130px;">Mã đơn</th>
           <th scope="col">Khách hàng</th>
           <th scope="col" style="width: 120px;">SĐT</th>
           <th scope="col">Địa chỉ giao</th>
-          <th scope="col" style="width: 150px;">Kho lấy hàng</th>
-          <th scope="col">Địa chỉ kho</th>
           <th scope="col" style="width: 120px;">Trạng thái</th>
-          <th scope="col" style="width: 110px;">Chức năng</th>
+          <th scope="col" style="width: 180px;">Chức năng</th>
         </tr>
       </thead>
       <tbody>
         {{#each orders}}
         <tr>
           <td>
-            <a href="/shipper/order/{{this._id}}" class="text-decoration-none">{{this._id}}</a>
+            {{#if this.routeOrder}}
+              {{#if (eq this.routeOrder 0)}}
+                <span class="badge bg-info fs-6">🏠 Kho</span>
+              {{else}}
+                <span class="badge bg-primary fs-6">📍 {{this.routeOrder}}</span>
+              {{/if}}
+            {{else}}
+              <span class="badge bg-secondary">--</span>
+            {{/if}}
           </td>
-          <td>{{this.name}}</td>
+          <td>
+            <a href="/shipper/order/{{this._id}}" class="text-decoration-none">
+              <small>{{this._id}}</small>
+            </a>
+          </td>
+          <td><strong>{{this.name}}</strong></td>
           <td>{{this.phone}}</td>
           <td>{{this.address}}</td>
-          <td>
-            {{#if this.warehouseId}}
-              {{this.warehouseId.name}}
-            {{else}}
-              <span class="text-danger">❌ Chưa xác định</span>
-            {{/if}}
-          </td>
-          <td>
-            {{#if this.warehouseId}}
-              {{this.warehouseId.address}}
-            {{else}}
-              <span class="text-danger">❌ Chưa xác định</span>
-            {{/if}}
-          </td>
           <td>
             {{#if (eq this.status "Đang vận chuyển")}}
               <span class="badge bg-warning text-dark">{{this.status}}</span>
@@ -47,8 +45,19 @@
             {{/if}}
           </td>
           <td>
-            
-            <a href="/shipper/order/{{this._id}}">Xem</a>
+            <div class="btn-group-vertical" role="group">
+              <a href="/shipper/maps/{{this._id}}" class="btn btn-sm btn-primary mb-1" target="_blank">
+                🗺️ Xem bản đồ
+              </a>
+              <a href="/shipper/order/{{this._id}}" class="btn btn-sm btn-outline-secondary">
+                📄 Chi tiết
+              </a>
+              <form action="/shipper/donhang/mark-delivered/{{this._id}}" method="POST" style="display: inline;" onsubmit="return confirm('Xác nhận đã giao hàng thành công?')">
+                <button type="submit" class="btn btn-sm btn-success mt-1">
+                  ✅ Đã giao
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         {{/each}}

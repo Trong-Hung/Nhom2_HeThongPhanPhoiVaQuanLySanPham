@@ -1,42 +1,111 @@
 <div class="container mt-4">
-  <h3 class="mb-4">📦 Đơn hàng đang sắp xếp</h3>
+  {{#if hasOptimizedOrders}}
+    <h3 class="mb-3">�️ Lộ trình Giao hàng Tối ưu</h3>
+    <div class="alert alert-success mb-4" role="alert">
+      ✅
+      <strong>Đã tự động tối ưu!</strong>
+      Admin đã sắp xếp
+      {{optimizedCount}}
+      đơn hàng theo lộ trình ngắn nhất. Hãy giao theo đúng thứ tự để tiết kiệm
+      thời gian! 🚚
+    </div>
+  {{else}}
+    <h3 class="mb-4">📦 Đơn hàng đang sắp xếp</h3>
+  {{/if}}
 
   {{#if orders.length}}
     <div class="table-responsive shadow-sm rounded">
       <table class="table table-striped table-hover align-middle">
         <thead class="thead-dark">
           <tr>
-            <th scope="col">Mã đơn hàng</th>
-            <th scope="col">Địa chỉ giao</th>
+            <th scope="col">Thứ tự giao hàng</th>
+            <th scope="col">Thông tin điểm đến</th>
             <th scope="col">Trạng thái</th>
-            <th scope="col" style="width: 180px;">Hành động</th>
+            <th scope="col" style="width: 220px;">Hành động</th>
           </tr>
         </thead>
         <tbody>
           {{#each orders}}
-          <tr>
-            <td>{{this._id}}</td>
-            <td>{{this.address}}</td>
-            <td>
-              <span class="badge bg-warning text-dark">{{this.status}}</span>
-            </td>
-            <td>
-              <form action="/shipper/confirm/{{this._id}}" method="POST" style="display: inline;">
-                <button 
-                  type="submit" 
-                  class="btn btn-sm btn-outline-success"
-                  onclick="return confirm('Bạn có chắc muốn nhận đơn hàng này để giao không?')"
+            <tr>
+              <td>
+                {{#if this.routeOrder}}
+                  {{#if (eq this.routeOrder 0)}}
+                    <span class="badge bg-info fs-6">🏠 Kho xuất phát</span>
+                  {{else}}
+                    <span class="badge bg-primary fs-6">📍 Điểm
+                      {{this.routeOrder}}</span>
+                  {{/if}}
+                {{else}}
+                  <span class="badge bg-secondary">⏳ Chưa sắp xếp</span>
+                {{/if}}
+              </td>
+              <td>
+                <strong>Mã đơn: {{this._id}}</strong><br />
+                <strong>{{this.name}}</strong>
+                -
+                {{this.phone}}<br />
+                <small class="text-muted">📍 {{this.address}}</small>
+              </td>
+              <td>
+                <span class="badge bg-warning text-dark">{{this.status}}</span>
+                {{#if this.optimizedAt}}
+                  <br /><small class="text-success">⚡ Đã tối ưu</small>
+                {{/if}}
+              </td>
+              <td>
+                <a
+                  href="/shipper/maps/{{this._id}}"
+                  class="btn btn-sm btn-outline-primary mb-1"
+                  target="_blank"
+                  title="Xem bản đồ chỉ đường"
                 >
-                  ✅ Nhận giao hàng
-                </button>
-              </form>
-            </td>
-          </tr>
+                  🗺️ Chỉ đường
+                </a>
+                <form
+                  action="/shipper/confirm/{{this._id}}"
+                  method="POST"
+                  style="display: inline;"
+                >
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-success"
+                    onclick="return confirm('Xác nhận nhận đơn hàng này để bắt đầu giao hàng?')"
+                    title="Nhận đơn và bắt đầu giao hàng"
+                  >
+                    ✅ Nhận đơn
+                  </button>
+                </form>
+              </td>
+            </tr>
           {{/each}}
         </tbody>
       </table>
     </div>
+
+    {{#if hasOptimizedOrders}}
+      <div class="alert alert-info mt-3" role="alert">
+        <i class="fas fa-lightbulb"></i>
+        <strong>Mẹo:</strong>
+        Giao hàng theo đúng thứ tự từ
+        <strong>Điểm 1 → Điểm 2 → Điểm 3...</strong>
+        để đi đường ngắn nhất và tiết kiệm nhiên liệu!
+      </div>
+    {{/if}}
   {{else}}
-    <p class="text-muted">🚫 Hiện không có đơn hàng nào đang sắp xếp.</p>
+    <div class="text-center py-5">
+      <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">🚫 Chưa có đơn hàng nào được gán</h5>
+      <p class="text-muted">Admin sẽ gán đơn hàng cho bạn sớm nhất có thể.</p>
+    </div>
   {{/if}}
 </div>
+
+<!-- Auto-Optimization: Không cần JavaScript phức tạp nữa! -->
+<script>
+  // Thêm tooltips cho UX tốt hơn document.addEventListener('DOMContentLoaded',
+  function() { // Bootstrap tooltips nếu có if (typeof bootstrap !== 'undefined'
+  && bootstrap.Tooltip) { var tooltipTriggerList =
+  [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')); var
+  tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) { return new
+  bootstrap.Tooltip(tooltipTriggerEl); }); } });
+</script>

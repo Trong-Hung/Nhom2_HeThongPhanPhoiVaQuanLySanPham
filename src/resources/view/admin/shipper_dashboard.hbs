@@ -1,0 +1,244 @@
+<div class="container-fluid mt-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shipping-fast"></i> Dashboard Quản Lý Shipper</h2>
+    <div>
+      <button onclick="forceOptimizeAll()" class="btn btn-warning me-2">
+        <i class="fas fa-sync-alt"></i> Tối ưu tất cả
+      </button>
+      <a href="/admin/qldonhang" class="btn btn-outline-primary">
+        <i class="fas fa-list"></i> Quản lý đơn hàng
+      </a>
+    </div>
+  </div>
+
+  <!-- Thống kê tổng quan -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{totalActiveOrders}}</h4>
+              <p>Đơn hàng đang xử lý</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-truck fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{unassignedOrders}}</h4>
+              <p>Đơn chưa gán shipper</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h4>{{shipperStats.length}}</h4>
+              <p>Tổng số shipper</p>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-users fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bảng thống kê shipper -->
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Thống Kê Tải Trọng Shipper</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Shipper</th>
+              <th>Vùng</th>
+              <th>Đơn hàng hiện tại</th>
+              <th>Tổng sản phẩm</th>
+              <th>Giá trị đơn hàng</th>
+              <th>Hiệu quả (₫/đơn)</th>
+              <th class="text-center">Trạng thái đơn hàng</th>
+              <th class="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each shipperStats}}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-circle me-2">
+                    {{substring shipper.name 0 1}}
+                  </div>
+                  <div>
+                    <strong>{{shipper.name}}</strong><br>
+                    <small class="text-muted">{{shipper.email}}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{shipper.region}}</span>
+              </td>
+              <td>
+                <span class="badge {{#if workload.totalOrders}}bg-warning{{else}}bg-light text-dark{{/if}}">
+                  {{workload.totalOrders}} đơn
+                </span>
+              </td>
+              <td>{{workload.totalItems}} sản phẩm</td>
+              <td class="fw-bold text-success">{{formatCurrency workload.totalValue}}</td>
+              <td>
+                <span class="badge {{#if (gt efficiency 500000)}}bg-success{{else if (gt efficiency 200000)}}bg-warning{{else}}bg-secondary{{/if}}">
+                  {{formatCurrency efficiency}}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-1 flex-wrap">
+                  {{#if statusStats.Đang_sắp_xếp}}
+                    <span class="badge bg-info" title="Đang sắp xếp">
+                      {{statusStats.Đang_sắp_xếp.count}} SX
+                    </span>
+                  {{/if}}
+                  {{#if statusStats.Đang_vận_chuyển}}
+                    <span class="badge bg-primary" title="Đang vận chuyển">
+                      {{statusStats.Đang_vận_chuyển.count}} VC
+                    </span>
+                  {{/if}}
+                  {{#unless workload.totalOrders}}
+                    <span class="badge bg-light text-dark">Rảnh</span>
+                  {{/unless}}
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="btn-group" role="group">
+                  <a href="/shipper/orders/{{shipper._id}}" class="btn btn-sm btn-outline-info" title="Xem đơn hàng">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button type="button" class="btn btn-sm btn-outline-success" 
+                          onclick="showShipperDetails('{{shipper._id}}')" 
+                          title="Chi tiết">
+                    <i class="fas fa-info-circle"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gợi ý tối ưu -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="alert alert-info">
+        <h6><i class="fas fa-lightbulb"></i> Gợi ý tối ưu hóa:</h6>
+        <ul class="mb-0">
+          <li><strong>Shipper có hiệu quả cao (>500k/đơn):</strong> Có thể xử lý thêm đơn hàng giá trị lớn</li>
+          <li><strong>Shipper rảnh:</strong> Ưu tiên gán đơn hàng mới để cân bằng tải</li>
+          <li><strong>Đơn chưa gán:</strong> Sử dụng tính năng "Tự động gán tốt nhất" để phân chia đều</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+  font-size: 0.75em;
+}
+
+.btn-group .btn {
+  border-radius: 0.25rem !important;
+  margin: 0 2px;
+}
+</style>
+
+<script>
+function showShipperDetails(shipperId) {
+  // Placeholder cho modal chi tiết shipper
+  alert(`Chi tiết shipper: ${shipperId}\nChức năng này sẽ được phát triển thêm.`);
+}
+
+async function forceOptimizeAll() {
+  if (!confirm('Bạn có chắc muốn tối ưu lại tất cả lộ trình shipper? Quá trình này có thể mất vài phút.')) {
+    return;
+  }
+
+  const btn = event.target;
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tối ưu...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/admin/force-optimize-all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      alert(`✅ ${result.message}`);
+      location.reload(); // Refresh để cập nhật stats
+    } else {
+      alert(`❌ Lỗi: ${result.error}`);
+    }
+  } catch (error) {
+    alert(`❌ Lỗi kết nối: ${error.message}`);
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
+}
+
+// Format currency helper function (nếu chưa có global helper)
+if (typeof formatCurrency === 'undefined') {
+  window.formatCurrency = function(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+}
+</script>
