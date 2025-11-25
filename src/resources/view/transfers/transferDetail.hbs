@@ -1,0 +1,43 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\transferDetail.hbs -->
+<div class="container mt-4">
+  <h3 class="mb-4">Chi tiết đơn điều chuyển</h3>
+
+  <div class="card shadow-sm p-3 mb-4">
+    <h4>Thông tin đơn điều chuyển</h4>
+    <p><strong>Kho nguồn:</strong> {{transfer.sourceWarehouse.name}}</p>
+    <p><strong>Kho đích:</strong> {{transfer.destinationWarehouse.name}}</p>
+    <p><strong>Trạng thái:</strong> {{transfer.status}}</p>
+  </div>
+
+  <div class="card shadow-sm p-3 mb-4">
+    <h4>Danh sách sản phẩm</h4>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Tên sản phẩm</th>
+          <th>Mã SKU</th>
+          <th>Danh mục</th>
+          <th>Số lượng</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each transfer.items}}
+          <tr>
+            <td>{{this.productId.name}}</td>
+            <td>{{this.productId.sku}}</td>
+            <td>{{this.productId.category}}</td>
+            <td>{{this.quantity}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  {{#if (eq transfer.status "Approved")}}
+    <form action="/admin/transfers/{{transfer._id}}/receive" method="POST">
+      <button type="submit" class="btn btn-primary w-100">✔️ Nhận đủ hàng</button>
+    </form>
+  {{else}}
+    <p class="text-muted">Đơn chưa được duyệt.</p>
+  {{/if}}
+</div>

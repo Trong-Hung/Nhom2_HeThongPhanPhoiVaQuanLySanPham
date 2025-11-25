@@ -1,3 +1,4 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\warehouse\editWarehouse.hbs -->
 <div class="container mt-4">
   <h2>📝 Sửa kho</h2>
 
@@ -25,18 +26,45 @@
       <select class="form-control" id="ward" name="ward" required></select>
     </div>
 
+    <div class="form-group">
+      <label for="type">Loại kho:</label>
+      <select class="form-control" id="type" name="type" required>
+        <option value="central" {{#if (eq warehouse.type "central")}}selected{{/if}}>Kho Trung Tâm</option>
+        <option value="regional" {{#if (eq warehouse.type "regional")}}selected{{/if}}>Kho Khác</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="parentWarehouseGroup" style="display: {{#if (eq warehouse.type "regional")}}block{{else}}none{{/if}};">
+      <label for="parentWarehouse">Kho cha:</label>
+      <select class="form-control" id="parentWarehouse" name="parentWarehouse">
+        <option value="">Chọn kho cha</option>
+        {{#each centralWarehouses}}
+          <option value="{{this._id}}" {{#if (eq this._id warehouse.parentWarehouse)}}selected{{/if}}>{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
     <button type="submit" class="btn btn-primary btn-block">💾 Lưu thay đổi</button>
   </form>
 </div>
 
 <script>
+  document.getElementById("type").addEventListener("change", function () {
+    const parentWarehouseGroup = document.getElementById("parentWarehouseGroup");
+    if (this.value === "regional") {
+      parentWarehouseGroup.style.display = "block";
+    } else {
+      parentWarehouseGroup.style.display = "none";
+    }
+  });
+
   async function loadProvinces() {
     const res = await fetch("https://provinces.open-api.vn/api/?depth=1");
     const data = await res.json();
     const provinceSelect = document.getElementById("province");
     provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
     data.forEach(p => {
-      provinceSelect.innerHTML += `<option value="${p.code}">${p.name}</option>`;
+      provinceSelect.innerHTML += `<option value="${p.code}" ${p.name === "{{warehouse.province}}" ? "selected" : ""}>${p.name}</option>`;
     });
   }
 
@@ -52,7 +80,7 @@
     districtSelect.innerHTML = '<option value="">Chọn Quận/Huyện</option>';
     document.getElementById("ward").innerHTML = '<option value="">Chọn Phường/Xã</option>';
     data.districts.forEach(d => {
-      districtSelect.innerHTML += `<option value="${d.code}">${d.name}</option>`;
+      districtSelect.innerHTML += `<option value="${d.code}" ${d.name === "{{warehouse.district}}" ? "selected" : ""}>${d.name}</option>`;
     });
   }
 
@@ -66,7 +94,7 @@
     const wardSelect = document.getElementById("ward");
     wardSelect.innerHTML = '<option value="">Chọn Phường/Xã</option>';
     data.wards.forEach(w => {
-      wardSelect.innerHTML += `<option value="${w.code}">${w.name}</option>`;
+      wardSelect.innerHTML += `<option value="${w.code}" ${w.name === "{{warehouse.ward}}" ? "selected" : ""}>${w.name}</option>`;
     });
   }
 

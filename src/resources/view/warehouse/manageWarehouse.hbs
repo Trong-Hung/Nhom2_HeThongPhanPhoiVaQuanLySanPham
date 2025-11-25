@@ -1,89 +1,89 @@
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Quản lý kho - {{warehouse.name}}</title>
-    <link rel="stylesheet" href="/css/style.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
-    />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  </head>
-  <body>
-    <div class="container mt-4">
-      <!-- 🔥 Tiêu đề kho -->
-      <div class="card bg-light shadow-sm p-3 mb-4">
-        <h2 class="text-primary">🏢 Quản lý kho:
-          <strong>{{warehouse.name}}</strong></h2>
-        <p><strong>📍 Địa chỉ:</strong> {{warehouse.address}}</p>
-      </div>
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\warehouse\manageWarehouse.hbs -->
+<div class="container mt-4">
+  <!-- 🔥 Tiêu đề kho -->
+  <div class="card bg-light shadow-sm p-3 mb-4">
+    <h2 class="text-primary">🏢 Quản lý kho: <strong>{{warehouse.name}}</strong></h2>
+    <p><strong>📍 Địa chỉ:</strong> {{warehouse.address}}</p>
+    <p><strong>Loại kho:</strong> {{warehouse.type}}</p>
+    {{#if warehouse.parentWarehouse}}
+      <p><strong>Kho cha:</strong> {{warehouse.parentWarehouse.name}}</p>
+    {{/if}}
+  </div>
 
-      <!-- 🔥 Nhập hàng vào kho -->
-      <div class="card shadow-sm p-3 mb-4">
-        <h3 class="text-success">📦 Nhập hàng vào kho</h3>
-        <form action="/admin/kho/{{warehouse._id}}/nhaphang" method="POST">
-          <input type="hidden" name="warehouseId" value="{{warehouse._id}}" />
+  <!-- 🔥 Nhập hàng vào kho -->
+  <div class="card shadow-sm p-3 mb-4">
+    <h3 class="text-success">📦 Nhập hàng vào kho</h3>
+    <form action="/admin/kho/{{warehouse._id}}/nhaphang" method="POST">
+      <input type="hidden" name="warehouseId" value="{{warehouse._id}}" />
 
-          <div class="mb-3">
-            <label for="product" class="form-label">Chọn sản phẩm:</label>
-            <select name="productId" class="form-select" required>
-              {{#each allProducts}}
-                <option value="{{this._id}}">
-                  {{this.name}}
-                  - SKU:
-                  {{this.sku}}
-                  - Danh mục:
-                  {{this.category}}
-                </option>
-              {{/each}}
-            </select>
-          </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Tên sản phẩm</th>
+            <th>Mã SKU</th>
+            <th>Danh mục</th>
+            <th>Số lượng nhập</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each allProducts}}
+            <tr>
+              <td>{{this.name}}</td>
+              <td>{{this.sku}}</td>
+              <td>{{this.category}}</td>
+              <td>
+                <input
+                  type="number"
+                  name="products[{{this._id}}]"
+                  class="form-control"
+                  min="0"
+                  placeholder="Nhập số lượng"
+                />
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
 
-          <div class="mb-3">
-            <label for="quantity" class="form-label">Số lượng nhập:</label>
-            <input
-              type="number"
-              name="quantity"
-              class="form-control"
-              min="1"
-              required
-            />
-          </div>
+      <button type="submit" class="btn btn-primary w-100">✔️ Nhập hàng</button>
+    </form>
+  </div>
 
-          <button type="submit" class="btn btn-primary w-100">✔️ Nhập hàng</button>
-        </form>
-      </div>
+  <!-- 🔥 Danh sách sản phẩm trong kho -->
+  <div class="card shadow-sm p-3 mb-4">
+    <h3 class="text-info">📦 Danh sách sản phẩm</h3>
+    {{#if warehouse.products.length}}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tên sản phẩm</th>
+            <th>Mã SKU</th>
+            <th>Danh mục</th>
+            <th>Số lượng tồn kho</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each warehouse.products}}
+            <tr>
+              <td>{{@index}}</td>
+              <td>{{this.productId.name}}</td>
+              <td>{{this.productId.sku}}</td>
+              <td>{{this.productId.category}}</td>
+              <td><strong>{{this.quantity}}</strong> sản phẩm</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    {{else}}
+      <p class="text-danger">❌ Hiện chưa có sản phẩm nào trong kho!</p>
+    {{/if}}
+  </div>
 
-      <!-- 🔥 Danh sách sản phẩm trong kho -->
-      <div class="card shadow-sm p-3 mb-4">
-        <h3 class="text-info">📦 Danh sách sản phẩm</h3>
-        {{#if warehouse.products.length}}
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Tên sản phẩm</th>
-                <th>Mã SKU</th>
-                <th>Danh mục</th>
-                <th>Số lượng tồn kho</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each warehouse.products}}
-                <tr>
-                  <td>{{@index}}</td>
-                  <td>{{this.productId.name}}</td>
-                  <td>{{this.productId.sku}}</td>
-                  <td>{{this.productId.category}}</td>
-                  <td><strong>{{this.quantity}}</strong> sản phẩm</td>
-                </tr>
-              {{/each}}
-            </tbody>
-          </table>
-        {{else}}
-          <p class="text-danger">❌ Hiện chưa có sản phẩm nào trong kho!</p>
-        {{/if}}
-      </div>
-    </div>
-  </body>
-</html>
+  <!-- 🔥 Điều chuyển hàng -->
+  <div class="card shadow-sm p-3 mb-4">
+    <h3 class="text-warning">🚚 Điều chuyển hàng</h3>
+    <p>Quản lý các yêu cầu điều chuyển hàng liên quan đến kho này.</p>
+    <a href="/admin/transfers?warehouseId={{warehouse._id}}" class="btn btn-warning w-100 mb-3">📋 Xem danh sách điều chuyển</a>
+<a href="/admin/transfers/create?warehouseId={{warehouse._id}}" class="btn btn-primary w-100">➕ Tạo phiếu điều chuyển</a>  </div>
+</div>

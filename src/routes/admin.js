@@ -4,6 +4,7 @@ const { isAdmin } = require("../middlewares/role");
 const DonHangController = require("../app/controllers/DonHangController");
 const UserController = require("../app/controllers/UserController");
 const warehouseController = require("../app/controllers/WarehouseController");
+const TransferController = require("../app/controllers/TransferController");
 
 // Quản lý đơn hàng
 router.get("/qldonhang", isAdmin, DonHangController.index);
@@ -46,6 +47,15 @@ router.get(
 );
 router.get("/shipper-dashboard", isAdmin, DonHangController.shipperDashboard);
 
+
+// Route tạo phiếu điều chuyển
+router.get("/transfers", isAdmin, TransferController.listTransfers); // Hiển thị danh sách phiếu điều chuyển
+router.get("/transfers/create", isAdmin, TransferController.createTransferView); // Hiển thị form tạo phiếu điều chuyển
+router.post("/transfers/create", isAdmin, TransferController.createTransferRequest); // Xử lý tạo phiếu điều chuyển
+
+// Route duyệt phiếu điều chuyển
+router.post("/transfers/:id/approve", isAdmin, TransferController.approveTransfer); // Xác nhận yêu cầu điều chuyển
+
 // Quản lý tài khoản
 router.get("/quanlytaikhoan", isAdmin, UserController.manageAccounts);
 router.get("/taotaikhoan", isAdmin, UserController.showCreateAccount);
@@ -55,24 +65,19 @@ router.post("/update", isAdmin, UserController.updateUser);
 router.get("/edit/:id", isAdmin, UserController.viewEditUser);
 
 // Quản lý kho
-router.get("/nhaphang", isAdmin, warehouseController.importView);
-router.post("/nhaphang", isAdmin, warehouseController.importSanpham);
-
-router.get("/kho/add", isAdmin, warehouseController.createWarehouseView);
-router.post("/kho/add", isAdmin, warehouseController.createWarehouse);
-
-router.get("/kho/create", isAdmin, warehouseController.createWarehouseView);
+router.get("/kho/create", isAdmin, warehouseController.createWarehouseView); // Chỉ giữ route này
 router.post("/kho/create", isAdmin, warehouseController.createWarehouse);
 
-router.get("/kho/list", isAdmin, warehouseController.listWarehouses);
+router.get("/kho", isAdmin, warehouseController.listWarehouses); // Chỉ giữ route này
 router.get("/kho/:id", isAdmin, warehouseController.manageWarehouse);
-
+router.get("/kho/list", isAdmin, warehouseController.listWarehouses);
 router.post("/kho/:id/nhaphang", isAdmin, warehouseController.importSanpham);
 router.get("/kho/:id/edit", isAdmin, warehouseController.editWarehouseView);
 router.put("/kho/:id", isAdmin, warehouseController.updateWarehouse);
 router.delete("/kho/:id", isAdmin, warehouseController.deleteWarehouse);
 
-router.get("/kho", isAdmin, warehouseController.listWarehouses);
+// API để lấy danh sách warehouses cho frontend
+router.get("/api/warehouses", isAdmin, warehouseController.getWarehousesAPI);
 
 // Route Optimization
 router.get("/route-optimization", isAdmin, (req, res) => {

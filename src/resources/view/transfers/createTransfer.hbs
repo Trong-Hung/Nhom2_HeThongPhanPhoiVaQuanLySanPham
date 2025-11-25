@@ -1,0 +1,61 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\createTransfer.hbs -->
+<div class="container mt-4">
+  <h3 class="mb-4">Tạo phiếu điều chuyển hàng</h3>
+  <form action="/admin/transfers/create" method="POST">
+    <!-- Chọn kho nguồn -->
+    <div class="form-group">
+      <label for="sourceWarehouse">Kho nguồn:</label>
+      <select name="sourceWarehouse" id="sourceWarehouse" class="form-control" required>
+        {{#each warehouses}}
+          <option value="{{this._id}}">{{this.name}} - {{this.address}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <!-- Chọn kho đích -->
+    <div class="form-group">
+      <label for="destinationWarehouse">Kho đích:</label>
+      <select name="destinationWarehouse" id="destinationWarehouse" class="form-control" required>
+        {{#each warehouses}}
+          <option value="{{this._id}}">{{this.name}} - {{this.address}}</option>
+        {{/each}}
+      </select>
+    </div>
+
+    <!-- Danh sách mặt hàng -->
+    <div class="form-group">
+      <label for="items">Chọn mặt hàng:</label>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Tên sản phẩm</th>
+            <th>Mã SKU</th>
+            <th>Số lượng tồn kho</th>
+            <th>Số lượng điều chuyển</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each warehouses.[0].products}}
+            <tr>
+              <td>{{this.productId.name}}</td>
+              <td>{{this.productId.sku}}</td>
+              <td>{{this.quantity}}</td>
+              <td>
+                <input
+                  type="number"
+                  name="items[{{this.productId._id}}]"
+                  class="form-control"
+                  min="0"
+                  max="{{this.quantity}}"
+                  placeholder="Nhập số lượng"
+                />
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">✔️ Tạo phiếu</button>
+  </form>
+</div>

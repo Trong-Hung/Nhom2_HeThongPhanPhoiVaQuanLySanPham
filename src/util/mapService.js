@@ -182,8 +182,7 @@ function cleanVietnameseAddress(address) {
     .replace(/\b(số|s)\b/gi, "")
     .replace(/\b(phường|p\.?)\s*(\d+|\w+)/gi, "Ward $2")
     .replace(/\b(quận|q\.?)\s*(\d+|\w+)/gi, "District $2")
-    .replace(/\b(đường|đ\.?)\s*/gi, "")
-    .replace(/tp\.?\s*hcm|ho\s*chi\s*minh/gi, "Ho Chi Minh City")
+    .replace(/\b(đường|đ\.)\s*/gi, "")
     .trim();
 }
 
@@ -241,24 +240,32 @@ async function tryMapboxGeocoding(address) {
   // Clean and normalize address
   const cleanAddress = cleanVietnameseAddress(address);
 
+  // Detect city from address
+  const detectedCity = detectCityFromAddress(address);
+
   // Multiple query formats optimized for Vietnam
   const queryFormats = [
-    // Format 1: Original + Vietnam context
-    cleanAddress + ", Ho Chi Minh City, Vietnam",
-    cleanAddress + ", TP.HCM, Vietnam",
+    // Format 1: Original + detected city context
+    cleanAddress + ", " + detectedCity + ", Vietnam",
     cleanAddress + ", Vietnam",
+    address + ", " + detectedCity + ", Vietnam", // Use original address
 
     // Format 2: Enhanced street address
-    enhanceStreetAddress(cleanAddress) + ", Ho Chi Minh City, Vietnam",
+    enhanceStreetAddress(cleanAddress) + ", " + detectedCity + ", Vietnam",
 
     // Format 3: Street-focused
-    extractStreetName(cleanAddress) + ", Ho Chi Minh City, Vietnam",
+    extractStreetName(cleanAddress) + ", " + detectedCity + ", Vietnam",
 
     // Format 4: District fallback
-    extractDistrictFromAddress(cleanAddress) + ", Ho Chi Minh City, Vietnam",
+    extractDistrictFromAddress(cleanAddress) +
+      ", " +
+      detectedCity +
+      ", Vietnam",
 
     // Format 5: Simplified clean
     cleanAddress.replace(/phường|p\.|quận|q\.|đường/gi, "").trim() +
+      ", " +
+      detectedCity +
       ", Vietnam",
   ];
 
@@ -334,6 +341,48 @@ async function tryMapboxGeocoding(address) {
 
   console.log(`❌ Mapbox: No results found for "${address}"`);
   return null;
+}
+
+/**
+ * Phát hiện thành phố từ địa chỉ
+ */
+function detectCityFromAddress(address) {
+  const lowerAddr = address.toLowerCase();
+
+  // Detect major Vietnamese cities
+  if (
+    lowerAddr.includes("hà nội") ||
+    lowerAddr.includes("hanoi") ||
+    lowerAddr.includes("thành phố hà nội")
+  ) {
+    return "Hanoi";
+  }
+
+  if (
+    lowerAddr.includes("hồ chí minh") ||
+    lowerAddr.includes("ho chi minh") ||
+    lowerAddr.includes("tp.hcm") ||
+    lowerAddr.includes("tphcm") ||
+    lowerAddr.includes("sài gòn") ||
+    lowerAddr.includes("saigon")
+  ) {
+    return "Ho Chi Minh City";
+  }
+
+  if (lowerAddr.includes("đà nẵng") || lowerAddr.includes("da nang")) {
+    return "Da Nang";
+  }
+
+  if (lowerAddr.includes("hải phòng") || lowerAddr.includes("hai phong")) {
+    return "Hai Phong";
+  }
+
+  if (lowerAddr.includes("cần thơ") || lowerAddr.includes("can tho")) {
+    return "Can Tho";
+  }
+
+  // Default to Vietnam if no specific city detected
+  return "Vietnam";
 }
 
 /**

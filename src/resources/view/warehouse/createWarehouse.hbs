@@ -1,3 +1,4 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\warehouse\createWarehouse.hbs -->
 <div class="container mt-4">
   <h2>🛠️ Tạo kho mới</h2>
 
@@ -25,11 +26,38 @@
       <select class="form-control" id="ward" name="ward" required></select>
     </div>
 
+    <div class="form-group">
+      <label for="type">Loại kho:</label>
+      <select class="form-control" id="type" name="type" required>
+        <option value="central">Kho Trung Tâm</option>
+        <option value="regional">Kho Khác</option>
+      </select>
+    </div>
+
+    <div class="form-group" id="parentWarehouseGroup" style="display: none;">
+      <label for="parentWarehouse">Kho cha:</label>
+      <select class="form-control" id="parentWarehouse" name="parentWarehouse">
+        <option value="">Chọn kho cha</option>
+        {{#each centralWarehouses}}
+          <option value="{{this._id}}">{{this.name}}</option>
+        {{/each}}
+      </select>
+    </div>
+
     <button type="submit" class="btn btn-primary btn-block">✔️ Lưu kho</button>
   </form>
 </div>
 
 <script>
+  document.getElementById("type").addEventListener("change", function () {
+    const parentWarehouseGroup = document.getElementById("parentWarehouseGroup");
+    if (this.value === "regional") {
+      parentWarehouseGroup.style.display = "block";
+    } else {
+      parentWarehouseGroup.style.display = "none";
+    }
+  });
+
   async function loadProvinces() {
     const res = await fetch("https://provinces.open-api.vn/api/?depth=1");
     const data = await res.json();

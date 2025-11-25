@@ -1,0 +1,44 @@
+<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\listTransfers.hbs -->
+<div class="container mt-4">
+  <h3 class="mb-4">Danh sách yêu cầu điều chuyển hàng</h3>
+
+  <!-- 🔥 Nút tạo phiếu điều chuyển -->
+  <div class="mb-4">
+<a href="/admin/transfers/create" class="btn btn-primary">➕ Tạo phiếu điều chuyển</a>  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Kho nguồn</th>
+        <th>Kho đích</th>
+        <th>Sản phẩm</th>
+        <th>Số lượng</th>
+        <th>Trạng thái</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each transfers}}
+        <tr>
+          <td>{{@index}}</td>
+          <td>{{this.sourceWarehouse.name}}</td>
+          <td>{{this.destinationWarehouse.name}}</td>
+          <td>
+            {{#each this.items}}
+              <p>{{this.productId.name}} - {{this.quantity}}</p>
+            {{/each}}
+          </td>
+          <td>{{this.status}}</td>
+          <td>
+            {{#if (eq this.status "Pending")}}
+              <form action="/admin/transfers/{{this._id}}/approve" method="POST">
+                <button type="submit" class="btn btn-success btn-sm">✔️ Xác nhận</button>
+              </form>
+            {{else}}
+              <span class="text-muted">Đã xử lý</span>
+            {{/if}}
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>

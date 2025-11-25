@@ -7,6 +7,8 @@
         <thead class="thead-dark">
           <tr>
             <th scope="col">Tên kho</th>
+            <th scope="col">Loại kho</th>
+            <th scope="col">Kho cha</th>
             <th scope="col">Địa chỉ</th>
             <th scope="col">Vĩ độ</th>
             <th scope="col">Kinh độ</th>
@@ -20,6 +22,8 @@
             <td>
               <a href="/admin/kho/{{this._id}}" class="text-decoration-none">{{this.name}}</a>
             </td>
+            <td>{{this.type}}</td>
+            <td>{{#if this.parentWarehouse}}{{this.parentWarehouse.name}}{{else}}N/A{{/if}}</td>
             <td>{{this.address}}</td>
             <td>{{this.location.latitude}}</td>
             <td>{{this.location.longitude}}</td>
@@ -27,11 +31,11 @@
               <a href="/admin/kho/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">Sửa</a>
             </td>
             <td>
-  <form action="/admin/kho/{{this._id}}?_method=DELETE" method="POST" style="display:inline;">
-    <button type="submit" class="btn btn-sm btn-outline-danger"
-      onclick="return confirm('Bạn có chắc muốn xóa kho này?')">Xóa</button>
-  </form>
-</td>
+              <form action="/admin/kho/{{this._id}}?_method=DELETE" method="POST" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-outline-danger"
+                  onclick="return confirm('Bạn có chắc muốn xóa kho này?')">Xóa</button>
+              </form>
+            </td>
           </tr>
           {{/each}}
         </tbody>
