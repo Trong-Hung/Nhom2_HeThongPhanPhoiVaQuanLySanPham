@@ -101,19 +101,25 @@ class DonHangController {
   // Tự động gợi ý shipper tốt nhất cho đơn hàng
   async suggestBestShipper(orderId) {
     try {
-      const order = await DonHang.findById(orderId);
+      const order = await DonHang.findById(orderId).populate("warehouseId");
       if (!order) return null;
 
-      // 1. Lấy tất cả shipper trong cùng vùng
+      // 1. Lấy tất cả shipper của KHO LẤY HÀNG (không phải theo vùng đơn hàng)
       const availableShippers = await User.find({
         role: "shipper",
-        region: order.region,
+        warehouseId: order.warehouseId._id, // GÁN THEO KHO HÀNG
       });
 
       if (availableShippers.length === 0) {
-        console.warn(`⚠️ Không có shipper nào trong vùng ${order.region}`);
+        console.warn(
+          `⚠️ Không có shipper nào cho kho ${order.warehouseId?.name || "Unknown"}`
+        );
         return null;
       }
+
+      console.log(
+        `📍 Tìm thấy ${availableShippers.length} shipper cho kho ${order.warehouseId.name}`
+      );
 
       // 2. Phân tích tải trọng từng shipper
       const shipperAnalysis = await Promise.all(
@@ -156,9 +162,20 @@ class DonHangController {
 
       const bestShipper = shipperAnalysis[0];
 
-      console.log(`🎯 Gợi ý shipper tốt nhất cho đơn ${orderId}:`);
+      console.log(
+        `🎯 Gợi ý shipper tốt nhất cho đơn ${orderId} (Kho: ${order.warehouseId.name}):`
+      );
       console.log(
         `- Shipper: ${bestShipper.shipper.name} (${bestShipper.shipper._id})`
+      );
+      console.log(
+        `- Kho làm việc: ${
+          bestShipper.shipper.warehouseId
+            ? await User.findById(bestShipper.shipper._id)
+                .populate("warehouseId")
+                .then((u) => u.warehouseId?.name)
+            : "Chưa gán"
+        }`
       );
       console.log(`- Đơn hiện tại: ${bestShipper.workload.totalOrders}`);
       console.log(`- Tổng sản phẩm: ${bestShipper.workload.totalItems}`);
@@ -271,10 +288,10 @@ class DonHangController {
         return false;
       }
 
-      // 3. Lấy tất cả đơn hàng active của shipper (bao gồm cả đang vận chuyển)
+      // 3. CHỈ TỐI ƯU ĐƠN HÀNG "ĐANG VẬN CHUYỂN" - KHÔNG TỐI ƯU "ĐANG SẮP XẾP"
       const ordersToOptimize = await DonHang.find({
         assignedShipper: shipperId,
-        status: { $in: ["Đang sắp xếp", "Đang vận chuyển"] },
+        status: "Đang vận chuyển", // CHỈ tối ưu đơn đang vận chuyển
       });
 
       console.log(
@@ -620,11 +637,9 @@ class DonHangController {
       }
     }
     return closestWarehouse;
-  } // === HÀM ĐÃ NÂNG CẤP ===
-  // Hàm phụ trợ tính khoảng cách (sử dụng OSRM)
+  } 
 
   async getDistance(from, to) {
-    // from và to là { latitude, longitude }
 
     // OSRM dùng format: {lon},{lat}
     const coords = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;

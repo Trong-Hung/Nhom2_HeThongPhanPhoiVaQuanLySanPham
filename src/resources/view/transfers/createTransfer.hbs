@@ -1,11 +1,20 @@
-<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\createTransfer.hbs -->
+{{! filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\createTransfer.hbs }}
 <div class="container mt-4">
   <h3 class="mb-4">Tạo phiếu điều chuyển hàng</h3>
-  <form action="/admin/transfers/create" method="POST">
+  <form
+    action="/admin/transfers/create"
+    method="POST"
+    onsubmit="return validateForm()"
+  >
     <!-- Chọn kho nguồn -->
     <div class="form-group">
       <label for="sourceWarehouse">Kho nguồn:</label>
-      <select name="sourceWarehouse" id="sourceWarehouse" class="form-control" required>
+      <select
+        name="sourceWarehouse"
+        id="sourceWarehouse"
+        class="form-control"
+        required
+      >
         {{#each warehouses}}
           <option value="{{this._id}}">{{this.name}} - {{this.address}}</option>
         {{/each}}
@@ -15,7 +24,12 @@
     <!-- Chọn kho đích -->
     <div class="form-group">
       <label for="destinationWarehouse">Kho đích:</label>
-      <select name="destinationWarehouse" id="destinationWarehouse" class="form-control" required>
+      <select
+        name="destinationWarehouse"
+        id="destinationWarehouse"
+        class="form-control"
+        required
+      >
         {{#each warehouses}}
           <option value="{{this._id}}">{{this.name}} - {{this.address}}</option>
         {{/each}}
@@ -25,7 +39,23 @@
     <!-- Danh sách mặt hàng -->
     <div class="form-group">
       <label for="items">Chọn mặt hàng:</label>
-      <table class="table table-striped">
+      <div id="loading-message" class="alert alert-info" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i>
+        Đang tải danh sách sản phẩm...
+      </div>
+      <div
+        id="no-products-message"
+        class="alert alert-warning"
+        style="display: none;"
+      >
+        <i class="fas fa-exclamation-triangle"></i>
+        Vui lòng chọn kho nguồn để xem danh sách sản phẩm.
+      </div>
+      <table
+        id="products-table"
+        class="table table-striped"
+        style="display: none;"
+      >
         <thead>
           <tr>
             <th>Tên sản phẩm</th>
@@ -34,24 +64,8 @@
             <th>Số lượng điều chuyển</th>
           </tr>
         </thead>
-        <tbody>
-          {{#each warehouses.[0].products}}
-            <tr>
-              <td>{{this.productId.name}}</td>
-              <td>{{this.productId.sku}}</td>
-              <td>{{this.quantity}}</td>
-              <td>
-                <input
-                  type="number"
-                  name="items[{{this.productId._id}}]"
-                  class="form-control"
-                  min="0"
-                  max="{{this.quantity}}"
-                  placeholder="Nhập số lượng"
-                />
-              </td>
-            </tr>
-          {{/each}}
+        <tbody id="products-tbody">
+          <!-- Products will be loaded here dynamically -->
         </tbody>
       </table>
     </div>
@@ -59,3 +73,61 @@
     <button type="submit" class="btn btn-primary w-100">✔️ Tạo phiếu</button>
   </form>
 </div>
+
+<script>
+  // Load products when source warehouse changes
+  document.getElementById('sourceWarehouse').addEventListener('change',
+  function() { const warehouseId = this.value; if (warehouseId) {
+  loadProducts(warehouseId); } else { showNoProducts(); } }); // Load products
+  when destination warehouse changes
+  document.getElementById('destinationWarehouse').addEventListener('change',
+  function() { validateWarehouses(); }); function loadProducts(warehouseId) {
+  const loadingMsg = document.getElementById('loading-message'); const
+  noProductsMsg = document.getElementById('no-products-message'); const
+  productsTable = document.getElementById('products-table'); const tbody =
+  document.getElementById('products-tbody'); // Show loading
+  loadingMsg.style.display = 'block'; noProductsMsg.style.display = 'none';
+  productsTable.style.display = 'none'; // Fetch warehouse products
+  fetch(`/admin/api/warehouse/${warehouseId}`) .then(response =>
+  response.json()) .then(data => { console.log('API Response:', data); // Debug
+  log loadingMsg.style.display = 'none'; if (data.success && data.warehouse &&
+  data.warehouse.products && data.warehouse.products.length > 0) { // Clear
+  existing products tbody.innerHTML = ''; // Add products
+  data.warehouse.products.forEach(item => { if (item.productId && item.quantity
+  > 0) { const row = document.createElement('tr'); row.innerHTML = `
+  <td>${item.productId.name}</td> <td>${item.productId.sku || 'N/A'}</td>
+  <td><span class="badge badge-info">${item.quantity}</span></td> <td> <input
+  type="number" name="items[${item.productId._id}]" class="form-control" min="0"
+  max="${item.quantity}" placeholder="Nhập số lượng" style="width: 120px;" />
+  </td> `; tbody.appendChild(row); } }); if (tbody.children.length > 0) {
+  productsTable.style.display = 'table'; } else { noProductsMsg.style.display =
+  'block'; noProductsMsg.innerHTML = '<i class="fas
+  fa-exclamation-triangle"></i> Kho này chưa có sản phẩm nào có tồn kho.'; } }
+  else { noProductsMsg.style.display = 'block'; noProductsMsg.innerHTML = '<i
+  class="fas fa-exclamation-triangle"></i> Kho này chưa có sản phẩm nào.'; } })
+  .catch(error => { console.error('Error loading products:', error);
+  loadingMsg.style.display = 'none'; noProductsMsg.style.display = 'block';
+  noProductsMsg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Lỗi khi
+  tải danh sách sản phẩm: ' + error.message; }); } function showNoProducts() {
+  document.getElementById('loading-message').style.display = 'none';
+  document.getElementById('no-products-message').style.display = 'block';
+  document.getElementById('products-table').style.display = 'none'; } function
+  validateWarehouses() { const sourceWarehouse =
+  document.getElementById('sourceWarehouse').value; const destWarehouse =
+  document.getElementById('destinationWarehouse').value; if (sourceWarehouse &&
+  destWarehouse && sourceWarehouse === destWarehouse) { alert('Kho nguồn và kho
+  đích không được trùng nhau!');
+  document.getElementById('destinationWarehouse').value = ''; } } function
+  validateForm() { const sourceWarehouse =
+  document.getElementById('sourceWarehouse').value; const destWarehouse =
+  document.getElementById('destinationWarehouse').value; if (!sourceWarehouse) {
+  alert("Vui lòng chọn kho nguồn."); return false; } if (!destWarehouse) {
+  alert("Vui lòng chọn kho đích."); return false; } if (sourceWarehouse ===
+  destWarehouse) { alert("Kho nguồn và kho đích không được trùng nhau!"); return
+  false; } const inputs = document.querySelectorAll('input[type="number"]'); let
+  hasItem = false; inputs.forEach(input => { if (parseInt(input.value) > 0) {
+  hasItem = true; } }); if (!hasItem) { alert("Vui lòng chọn ít nhất một sản
+  phẩm để điều chuyển."); return false; } return true; } // Initialize
+  document.addEventListener('DOMContentLoaded', function() { showNoProducts();
+  console.log('Create Transfer form initialized'); // Debug log });
+</script>

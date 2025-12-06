@@ -27,6 +27,13 @@ const UserSchema = new Schema({
     type: String,
     enum: ["Miền Bắc", "Miền Trung", "Miền Nam"],
     required: function() { return this.role === "shipper"; }, 
+  },
+  
+  // Kho được gán cho shipper
+  warehouseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Warehouse",
+    required: function() { return this.role === "shipper"; }
   }
 });
 

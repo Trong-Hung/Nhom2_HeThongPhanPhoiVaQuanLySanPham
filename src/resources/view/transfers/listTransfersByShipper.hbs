@@ -1,13 +1,11 @@
-{{!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\listTransfers.hbs --}}
 <div class="container mt-4">
-  <h3 class="mb-4">Danh sách phiếu điều chuyển</h3>
+  <h3 class="mb-4">Danh sách phiếu điều chuyển của Shipper</h3>
   <table class="table table-striped">
     <thead>
       <tr>
         <th>Mã phiếu</th>
         <th>Kho nguồn</th>
         <th>Kho đích</th>
-        <th>Shipper</th>
         <th>Trạng thái</th>
         <th>Hành động</th>
       </tr>
@@ -18,7 +16,6 @@
           <td>{{this.transferId}}</td>
           <td>{{this.sourceWarehouse.name}}</td>
           <td>{{this.destinationWarehouse.name}}</td>
-          <td>{{this.assignedShipper.name}}</td>
           <td>{{this.status}}</td>
           <td>
             <a href="/admin/transfers/{{this._id}}" class="btn btn-info">Xem chi tiết</a>

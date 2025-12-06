@@ -1,115 +1,180 @@
 const Transfer = require("../models/Transfer");
 const Warehouse = require("../models/Warehouse");
-const mongoose = require("mongoose");
+const User = require("../models/User");
+const { v4: uuidv4 } = require("uuid"); // Sử dụng UUID để tạo giá trị unique
 
-class TransferController {
-  // Hiển thị form tạo phiếu điều chuyển
-  async createTransferView(req, res) {
-    try {
-      // Lấy danh sách kho
-      const warehouses = await Warehouse.find().populate("products.productId");
 
-      // Logging để kiểm tra danh sách kho
-      console.log("Danh sách kho:", warehouses);
-
-      res.render("transfers/createTransfer", { warehouses });
-    } catch (err) {
-      console.error("Lỗi khi hiển thị form tạo phiếu điều chuyển:", err);
-      res.status(500).send("Lỗi hệ thống!");
-    }
+exports.renderCreateTransferForm = async (req, res) => {
+  try {
+    const warehouses = await Warehouse.find().populate("products.productId"); // Lấy danh sách kho và sản phẩm
+    res.render("transfers/createTransfer", { warehouses }); // Truyền danh sách kho và sản phẩm vào view
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách kho:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
   }
+};
 
-  // Xử lý tạo phiếu điều chuyển
-  async createTransferRequest(req, res) {
-    try {
-      const { sourceWarehouse, destinationWarehouse, items } = req.body;
+exports.createTransfer = async (req, res) => {
+  try {
+    const { sourceWarehouse, destinationWarehouse, items } = req.body;
 
-      // Kiểm tra dữ liệu đầu vào
-      if (!sourceWarehouse || !destinationWarehouse || !items) {
-        return res.status(400).send("Dữ liệu không hợp lệ!");
-      }
+    // Lọc các sản phẩm có số lượng > 0
+    const filteredItems = Object.entries(items)
+      .filter(([productId, quantity]) => parseInt(quantity) > 0)
+      .map(([productId, quantity]) => ({
+        productId,
+        quantity: parseInt(quantity),
+      }));
 
-      // Tạo phiếu điều chuyển
-      const newTransfer = new Transfer({
-        sourceWarehouse,
-        destinationWarehouse,
-        items: Object.entries(items).map(([productId, quantity]) => ({
-          productId,
-          quantity: parseInt(quantity, 10),
-        })),
-        status: "Pending",
-      });
-
-      await newTransfer.save();
-      res.redirect("/admin/transfers");
-    } catch (err) {
-      console.error("Lỗi khi tạo phiếu điều chuyển:", err);
-      res.status(500).send("Lỗi hệ thống!");
+    if (filteredItems.length === 0) {
+      return res.status(400).send("Vui lòng chọn ít nhất một sản phẩm để điều chuyển.");
     }
-  }
 
-  // Xác nhận yêu cầu điều chuyển
-  async approveTransfer(req, res) {
-    try {
-      const transfer = await Transfer.findById(req.params.id).populate("items.productId");
-      if (!transfer) return res.status(404).send("Không tìm thấy yêu cầu điều chuyển!");
-
-      const sourceWarehouse = await Warehouse.findById(transfer.sourceWarehouse).populate("products.productId");
-      const destinationWarehouse = await Warehouse.findById(transfer.destinationWarehouse).populate("products.productId");
-
-      for (const item of transfer.items) {
-        const productEntry = sourceWarehouse.products.find(
-          (p) => p.productId._id.toString() === item.productId._id.toString()
-        );
-
-        if (!productEntry || productEntry.quantity < item.quantity) {
-          return res.status(400).send(`Không đủ hàng tồn kho cho sản phẩm: ${item.productId.name}`);
-        }
-
-        // Giảm số lượng ở kho nguồn
-        productEntry.quantity -= item.quantity;
-
-        // Tăng số lượng ở kho đích
-        const destProductEntry = destinationWarehouse.products.find(
-          (p) => p.productId._id.toString() === item.productId._id.toString()
-        );
-        if (destProductEntry) {
-          destProductEntry.quantity += item.quantity;
-        } else {
-          destinationWarehouse.products.push({
-            productId: item.productId._id,
-            quantity: item.quantity,
-          });
-        }
-      }
-
-      // Lưu thay đổi
-      await sourceWarehouse.save();
-      await destinationWarehouse.save();
-
-      // Cập nhật trạng thái yêu cầu
-      transfer.status = "Approved";
-      await transfer.save();
-
-      res.redirect("/admin/transfers");
-    } catch (err) {
-      console.error("Lỗi khi xác nhận yêu cầu điều chuyển:", err);
-      res.status(500).send("Lỗi hệ thống!");
+    // Đề xuất shipper từ kho nguồn
+    const suggestedShipper = await User.findOne({ role: "shipper", warehouseId: sourceWarehouse });
+    if (!suggestedShipper) {
+      return res.status(400).send("Không tìm thấy shipper phù hợp.");
     }
-  }
-  async listTransfers(req, res) {
-    try {
-      const transfers = await Transfer.find()
-        .populate("sourceWarehouse", "name")
-        .populate("destinationWarehouse", "name")
-        .populate("items.productId", "name sku category");
 
-      res.render("transfers/listTransfers", { transfers });
-    } catch (err) {
-      console.error("Lỗi khi lấy danh sách phiếu điều chuyển:", err);
-      res.status(500).send("Lỗi hệ thống!");
+    // Tạo phiếu điều chuyển với transferId unique
+    const transfer = new Transfer({
+      transferId: uuidv4(), // Tạo giá trị transferId unique
+      sourceWarehouse,
+      destinationWarehouse,
+      items: filteredItems,
+      assignedShipper: suggestedShipper._id,
+      status: "Đang sắp xếp",
+    });
+
+    await transfer.save();
+    res.status(201).send(`Tạo phiếu điều chuyển thành công: ${transfer.transferId}`);
+  } catch (error) {
+    console.error("Lỗi khi tạo phiếu điều chuyển:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+
+exports.listTransfers = async (req, res) => {
+  try {
+    const transfers = await Transfer.find()
+      .populate("sourceWarehouse")
+      .populate("destinationWarehouse")
+      .populate("assignedShipper");
+
+    res.render("transfers/listTransfers", { transfers }); // Render view và truyền dữ liệu
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách phiếu điều chuyển:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+
+exports.updateTransferStatus = async (req, res) => {
+  try {
+    const { transferId, status } = req.body;
+
+    const transfer = await Transfer.findById(transferId);
+    if (!transfer) {
+      return res.status(404).send("Không tìm thấy phiếu điều chuyển.");
     }
-  }
-}
 
-module.exports = new TransferController();
+    transfer.status = status;
+    await transfer.save();
+
+    res.status(200).send(`Cập nhật trạng thái thành công: ${transfer.status}`);
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái phiếu điều chuyển:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+exports.getTransferDetail = async (req, res) => {
+  try {
+    const transfer = await Transfer.findById(req.params.id)
+      .populate("sourceWarehouse")
+      .populate("destinationWarehouse")
+      .populate("assignedShipper")
+      .populate("items.productId"); // Populate từ model Sanpham
+
+    if (!transfer) {
+      return res.status(404).send("Không tìm thấy phiếu điều chuyển.");
+    }
+
+    // Lấy danh sách shipper từ database
+    const shippers = await User.find({ role: "shipper" });
+
+    res.render("transfers/transferDetail", { transfer, shippers }); // Truyền danh sách shipper vào view
+  } catch (error) {
+    console.error("Lỗi khi lấy chi tiết phiếu điều chuyển:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+
+exports.assignShipper = async (req, res) => {
+  try {
+    const { id } = req.params; // ID của phiếu điều chuyển
+    const { shipperId } = req.body; // ID của shipper được gán
+
+    const transfer = await Transfer.findById(id);
+    if (!transfer) {
+      return res.status(404).send("Không tìm thấy phiếu điều chuyển.");
+    }
+
+    const shipper = await User.findById(shipperId);
+    if (!shipper || shipper.role !== "shipper") {
+      return res.status(400).send("Shipper không hợp lệ.");
+    }
+
+    // Gán shipper và cập nhật trạng thái
+    transfer.assignedShipper = shipperId;
+    transfer.status = "Đang vận chuyển";
+    await transfer.save();
+
+    res.redirect(`/admin/transfers/${id}`); // Quay lại trang chi tiết phiếu điều chuyển
+  } catch (error) {
+    console.error("Lỗi khi gán shipper:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+
+
+exports.listTransfersByShipper = async (req, res) => {
+  try {
+    const { shipperId } = req.params; // ID của shipper
+
+    const transfers = await Transfer.find({ assignedShipper: shipperId })
+      .populate("sourceWarehouse")
+      .populate("destinationWarehouse")
+      .populate("assignedShipper");
+
+    res.render("transfers/listTransfersByShipper", { transfers });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách phiếu điều chuyển:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};
+
+exports.assignShipper = async (req, res) => {
+  try {
+    const { id } = req.params; // ID của phiếu điều chuyển
+    const { shipperId } = req.body; // ID của shipper được gán
+
+    const transfer = await Transfer.findById(id);
+    if (!transfer) {
+      return res.status(404).send("Không tìm thấy phiếu điều chuyển.");
+    }
+
+    const shipper = await User.findById(shipperId);
+    if (!shipper || shipper.role !== "shipper") {
+      return res.status(400).send("Shipper không hợp lệ.");
+    }
+
+    // Gán shipper và cập nhật trạng thái
+    transfer.assignedShipper = shipperId;
+    transfer.status = "Đang vận chuyển";
+    await transfer.save();
+
+    res.redirect(`/admin/transfers/${id}`); // Quay lại trang chi tiết phiếu điều chuyển
+  } catch (error) {
+    console.error("Lỗi khi gán shipper:", error.message);
+    res.status(500).send("Có lỗi xảy ra.");
+  }
+};

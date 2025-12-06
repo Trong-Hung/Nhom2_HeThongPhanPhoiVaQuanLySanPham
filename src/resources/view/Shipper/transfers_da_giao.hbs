@@ -1,0 +1,47 @@
+<div class="container mt-4">
+  <h3 class="mb-4 text-success text-center"><i class="bi bi-check-circle"></i> Phiếu Điều Chuyển Đã Giao</h3>
+  
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-success">
+        <tr>
+          <th scope="col" style="width: 130px;">Mã phiếu</th>
+          <th scope="col">Kho nguồn</th>
+          <th scope="col">Kho đích</th>
+          <th scope="col">Ngày tạo</th>
+          <th scope="col">Ngày hoàn thành</th>
+          <th scope="col" style="width: 120px;">Trạng thái</th>
+          <th scope="col" style="width: 100px;">Chi tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each transfers}}
+        <tr>
+          <td>
+            <a href="/shipper/transfers/{{this._id}}" class="text-decoration-none">
+              <small>{{this.transferId}}</small>
+            </a>
+          </td>
+          <td><strong>{{this.sourceWarehouse.name}}</strong></td>
+          <td><strong>{{this.destinationWarehouse.name}}</strong></td>
+          <td>{{formatDate this.createdAt}}</td>
+          <td>{{formatDate this.deliveredAt}}</td>
+          <td>
+            <span class="badge bg-success">{{this.status}}</span>
+          </td>
+          <td>
+            <a href="/shipper/transfers/{{this._id}}" class="btn btn-sm btn-outline-success">
+              📄 Chi tiết
+            </a>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{^transfers.length}}
+      <p class="text-muted text-center fs-5 my-4">🚫 Chưa có phiếu điều chuyển nào đã hoàn thành.</p>
+    {{/transfers.length}}
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">

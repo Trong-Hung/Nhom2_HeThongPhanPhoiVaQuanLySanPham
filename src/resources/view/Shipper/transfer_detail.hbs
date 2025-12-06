@@ -1,0 +1,304 @@
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow rounded">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0"><i class="bi bi-truck"></i> Chi tiết phiếu điều chuyển</h4>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4">Mã phiếu:</dt>
+            <dd class="col-sm-8">{{transfer.transferId}}</dd>
+
+            <dt class="col-sm-4">Kho nguồn:</dt>
+            <dd class="col-sm-8">{{transfer.sourceWarehouse.name}}</dd>
+
+            <dt class="col-sm-4">Địa chỉ kho nguồn:</dt>
+            <dd class="col-sm-8">{{transfer.sourceWarehouse.address}}</dd>
+
+            <dt class="col-sm-4">Kho đích:</dt>
+            <dd class="col-sm-8">{{transfer.destinationWarehouse.name}}</dd>
+
+            <dt class="col-sm-4">Địa chỉ kho đích:</dt>
+            <dd class="col-sm-8">{{transfer.destinationWarehouse.address}}</dd>
+
+            <dt class="col-sm-4">Trạng thái:</dt>
+            <dd class="col-sm-8">
+              <span class="badge 
+                {{#if (eq transfer.status 'Đang vận chuyển')}}bg-warning text-dark
+                {{else if (eq transfer.status 'Đã giao')}}bg-success
+                {{else}}bg-secondary{{/if}}">
+                {{transfer.status}}
+              </span>
+            </dd>
+
+            <dt class="col-sm-4">Ngày tạo:</dt>
+            <dd class="col-sm-8">{{transfer.createdAt}}</dd>
+          </dl>
+          <h5 class="mt-4 mb-3">🛒 Danh sách sản phẩm điều chuyển</h5>
+<table class="table table-bordered align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>Tên sản phẩm</th>
+      <th>Số lượng</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each transfer.items}}
+      <tr>
+        <td>{{this.productId.name}}</td>
+        <td>{{this.quantity}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+          {{#if transfer.sourceWarehouse.location}}
+            <div id="map" style="height: 350px; margin-top: 24px; border-radius: 8px; overflow: hidden;"></div>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+            <script>
+              var sourceLat = {{transfer.sourceWarehouse.location.latitude}};
+              var sourceLng = {{transfer.sourceWarehouse.location.longitude}};
+              var destLat = {{transfer.destinationWarehouse.location.latitude}};
+              var destLng = {{transfer.destinationWarehouse.location.longitude}};
+
+              var map = L.map('map').setView([sourceLat, sourceLng], 10);
+
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+              }).addTo(map);
+
+              var sourceMarker = L.marker([sourceLat, sourceLng]).addTo(map)
+                .bindPopup('🏢 Kho nguồn: {{transfer.sourceWarehouse.name}}').openPopup();
+
+              var destMarker = L.marker([destLat, destLng]).addTo(map)
+                .bindPopup('🏬 Kho đích: {{transfer.destinationWarehouse.name}}');
+
+              // 🛣️ Sử dụng OSRM để lấy tuyến đường thực tế
+              async function getOSRMRoute() {
+                try {
+                  const osrmUrl = `http://127.0.0.1:5000/route/v1/driving/${sourceLng},${sourceLat};${destLng},${destLat}?steps=true&geometries=geojson`;
+                  
+                  const response = await fetch(osrmUrl);
+                  const data = await response.json();
+
+                  if (data.routes && data.routes.length > 0) {
+                    const route = data.routes[0];
+                    
+                    // Vẽ tuyến đường thực tế
+                    const routeCoordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+                    var routePolyline = L.polyline(routeCoordinates, {
+                      color: 'red', 
+                      weight: 4,
+                      opacity: 0.8
+                    }).addTo(map);
+
+                    // Fit bounds để hiển thị toàn bộ tuyến đường
+                    map.fitBounds(routePolyline.getBounds());
+
+                    // Hiển thị thông tin tuyến đường
+                    const distance = (route.distance / 1000).toFixed(2);
+                    const duration = Math.round(route.duration / 60);
+                    
+                    const routeInfo = L.control({position: 'topright'});
+                    routeInfo.onAdd = function(map) {
+                      const div = L.DomUtil.create('div', 'route-info');
+                      div.innerHTML = `
+                        <div style="background: white; padding: 10px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.2);">
+                          <strong>📊 Thông tin tuyến đường:</strong><br>
+                          🛣️ Khoảng cách: ${distance} km<br>
+                          ⏱️ Thời gian: ${duration} phút<br>
+                          🚛 Tuyến đường tối ưu
+                        </div>
+                      `;
+                      return div;
+                    };
+                    routeInfo.addTo(map);
+
+                  } else {
+                    console.log('⚠️ Không thể lấy tuyến đường từ OSRM, sử dụng đường thẳng');
+                    // Fallback về đường thẳng nếu OSRM không hoạt động
+                    var latlngs = [[sourceLat, sourceLng], [destLat, destLng]];
+                    var polyline = L.polyline(latlngs, {color: 'blue', dashArray: '5, 10'}).addTo(map);
+                    map.fitBounds(polyline.getBounds());
+                  }
+                } catch (error) {
+                  console.log('❌ Lỗi kết nối OSRM:', error);
+                  // Fallback về đường thẳng nếu có lỗi
+                  var latlngs = [[sourceLat, sourceLng], [destLat, destLng]];
+                  var polyline = L.polyline(latlngs, {color: 'blue', dashArray: '5, 10'}).addTo(map);
+                  map.fitBounds(polyline.getBounds());
+                }
+              }
+
+              // Gọi hàm lấy tuyến đường
+              getOSRMRoute();
+            </script>
+            <a
+              class="btn btn-outline-primary mt-3"
+              target="_blank"
+              href="https://www.google.com/maps/dir/?api=1&origin={{transfer.sourceWarehouse.location.latitude}},{{transfer.sourceWarehouse.location.longitude}}&destination={{transfer.destinationWarehouse.location.latitude}},{{transfer.destinationWarehouse.location.longitude}}&travelmode=driving"
+            >
+              <i class="bi bi-geo-alt"></i> Chỉ đường Google Maps
+            </a>
+          {{else}}
+            <p class="text-danger mt-3">Không có vị trí kho để hiển thị bản đồ!</p>
+          {{/if}}
+
+          {{#if (eq transfer.status "Đang vận chuyển")}}
+            <form method="POST" action="/shipper/transfer/mark-delivered/{{transfer._id}}" class="mt-4">
+              <button class="btn btn-success w-100"><i class="bi bi-check-circle"></i> Đã giao</button>
+            </form>
+          {{/if}}
+
+          <a href="/shipper/transfers/dang-van-chuyen" class="btn btn-link mt-3"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+              <div class="mb-3">
+                <label class="form-label font-weight-bold">Ngày tạo:</label>
+                <p class="form-control-plaintext">{{formatDate
+                    transfer.createdAt
+                    "DD/MM/YYYY HH:mm"
+                  }}</p>
+              </div>
+              {{#if transfer.deliveredAt}}
+                <div class="mb-3">
+                  <label class="form-label font-weight-bold">Ngày hoàn thành:</label>
+                  <p class="form-control-plaintext">{{#if
+                      transfer.deliveredAt
+                    }}{{formatDate
+                        transfer.deliveredAt
+                        "DD/MM/YYYY HH:mm"
+                      }}{{else}}Chưa giao{{/if}}</p>
+                </div>
+              {{/if}}
+              {{#if transfer.assignedShipper}}
+                <div class="mb-3">
+                  <label class="form-label font-weight-bold">Shipper phụ trách:</label>
+                  <p class="form-control-plaintext">
+                    <strong>{{transfer.assignedShipper.name}}</strong><br />
+                    <small class="text-muted">📞
+                      {{transfer.assignedShipper.phone}}</small>
+                  </p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+
+          <!-- Danh sách sản phẩm -->
+          <h5 class="text-info mb-3">📦 Danh Sách Sản Phẩm Điều Chuyển</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">STT</th>
+                  <th scope="col">Tên sản phẩm</th>
+                  <th scope="col">Số lượng</th>
+                  <th scope="col">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each transfer.items}}
+                  <tr>
+                    <td>{{@index}}</td>
+                    <td>
+                      <strong>{{this.productId.name}}</strong>
+                      {{#if this.productId.price}}
+                        <br /><small class="text-muted">Giá:
+                          {{formatCurrency this.productId.price}}đ</small>
+                      {{/if}}
+                    </td>
+                    <td><span class="badge bg-primary">{{this.quantity}}
+                        sp</span></td>
+                    <td>
+                      {{#if this.note}}
+                        {{this.note}}
+                      {{else}}
+                        <small class="text-muted">-</small>
+                      {{/if}}
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Action buttons based on status -->
+          <div class="mt-4 text-center">
+            {{#if (eq transfer.status "Đang sắp xếp")}}
+              <form
+                action="/shipper/transfers/confirm/{{transfer._id}}"
+                method="POST"
+                style="display: inline;"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-success btn-lg"
+                  onclick="return confirm('Xác nhận nhận phiếu điều chuyển này?')"
+                >
+                  ✅ Xác Nhận Nhận Phiếu
+                </button>
+              </form>
+            {{else if (eq transfer.status "Đang vận chuyển")}}
+              <form
+                action="/shipper/transfers/mark-delivered/{{transfer._id}}"
+                method="POST"
+                style="display: inline;"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-success btn-lg"
+                  onclick="return confirm('Xác nhận đã vận chuyển thành công tới kho đích?')"
+                >
+                  ✅ Xác Nhận Đã Giao
+                </button>
+              </form>
+            {{else if (eq transfer.status "Đã giao")}}
+              <span class="badge bg-success fs-6 p-3">
+                ✅ Phiếu điều chuyển đã hoàn thành
+              </span>
+            {{/if}}
+          </div>
+
+          <!-- Navigation buttons -->
+          <div class="mt-4">
+            <a href="javascript:history.back()" class="btn btn-secondary">
+              ← Quay lại
+            </a>
+
+            {{#if (eq transfer.status "Đang sắp xếp")}}
+              <a
+                href="/shipper/transfers/dang-sap-xep"
+                class="btn btn-warning ms-2"
+              >
+                📋 Danh sách đang sắp xếp
+              </a>
+            {{else if (eq transfer.status "Đang vận chuyển")}}
+              <a
+                href="/shipper/transfers/dang-van-chuyen"
+                class="btn btn-info ms-2"
+              >
+                🚛 Danh sách đang vận chuyển
+              </a>
+            {{else}}
+              <a href="/shipper/transfers/da-giao" class="btn btn-success ms-2">
+                ✅ Danh sách đã hoàn thành
+              </a>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+/>

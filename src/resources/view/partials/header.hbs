@@ -158,16 +158,53 @@
 
         <!-- Các menu dành cho shipper -->
         {{#if (eq user.role "shipper")}}
-          <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_sap_xep">Đơn hàng đang sắp
-              xếp</a>
+          <!-- Đơn hàng -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="orderDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              📦 Đơn Hàng
+            </a>
+            <div class="dropdown-menu" aria-labelledby="orderDropdown">
+              <a class="dropdown-item" href="/shipper/dang_sap_xep">📋 Đang sắp
+                xếp</a>
+              <a class="dropdown-item" href="/shipper/dang_van_chuyen">🚛 Đang
+                vận chuyển</a>
+              <a class="dropdown-item" href="/shipper/da-giao">✅ Đã giao</a>
+            </div>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/shipper/da-giao">Đơn hàng đã giao</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/shipper/dang_van_chuyen">Đơn hàng đang
-              vận chuyển</a>
+
+          <!-- Phiếu điều chuyển -->
+          <li class="nav-item dropdown">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="transferDropdown"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              🚛 Điều Chuyển
+            </a>
+            <div class="dropdown-menu" aria-labelledby="transferDropdown">
+              <a class="dropdown-item" href="/shipper/transfers/dang-sap-xep">📋
+                Đang sắp xếp</a>
+              <a
+                class="dropdown-item"
+                href="/shipper/transfers/dang-van-chuyen"
+              >🚚 Đang vận chuyển</a>
+              <a class="dropdown-item" href="/shipper/transfers/da-giao">✅ Đã
+                giao</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/shipper/debug/transfers">🐛 Debug</a>
+            </div>
           </li>
         {{/if}}
       {{/if}}

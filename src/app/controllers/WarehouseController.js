@@ -283,6 +283,33 @@ class WarehouseController {
       res.status(500).send("Lỗi hệ thống!");
     }
   }
+
+  // API endpoint để lấy chi tiết kho cho AJAX
+  async getWarehouseAPI(req, res) {
+    try {
+      const warehouseId = req.params.id;
+      const warehouse =
+        await Warehouse.findById(warehouseId).populate("products.productId");
+
+      if (!warehouse) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy kho",
+        });
+      }
+
+      res.json({
+        success: true,
+        warehouse: warehouse,
+      });
+    } catch (error) {
+      console.error("Lỗi API get warehouse:", error);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi hệ thống",
+      });
+    }
+  }
 }
 
 module.exports = new WarehouseController();

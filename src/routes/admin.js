@@ -5,6 +5,7 @@ const DonHangController = require("../app/controllers/DonHangController");
 const UserController = require("../app/controllers/UserController");
 const warehouseController = require("../app/controllers/WarehouseController");
 const TransferController = require("../app/controllers/TransferController");
+const Transfer = require("../app/models/Transfer");
 
 // Quản lý đơn hàng
 router.get("/qldonhang", isAdmin, DonHangController.index);
@@ -47,14 +48,45 @@ router.get(
 );
 router.get("/shipper-dashboard", isAdmin, DonHangController.shipperDashboard);
 
+// === TRANSFER ROUTES (SPECIFIC ROUTES FIRST TO AVOID CONFLICTS) ===
+// Route danh sách phiếu điều chuyển
+router.get("/transfers", isAdmin, TransferController.listTransfers);
 
-// Route tạo phiếu điều chuyển
-router.get("/transfers", isAdmin, TransferController.listTransfers); // Hiển thị danh sách phiếu điều chuyển
-router.get("/transfers/create", isAdmin, TransferController.createTransferView); // Hiển thị form tạo phiếu điều chuyển
-router.post("/transfers/create", isAdmin, TransferController.createTransferRequest); // Xử lý tạo phiếu điều chuyển
+// Route tạo phiếu điều chuyển (GET - hiển thị form)
+router.get(
+  "/transfers/create",
+  isAdmin,
+  TransferController.renderCreateTransferForm
+);
+
+// Route tạo phiếu điều chuyển (POST - xử lý form)
+router.post("/transfers/create", isAdmin, TransferController.createTransfer);
+
+// Route cập nhật trạng thái phiếu điều chuyển
+router.post(
+  "/transfers/update-status",
+  isAdmin,
+  TransferController.updateTransferStatus
+);
+
+// Route lấy transfers theo shipper
+router.get(
+  "/transfers/shipper/:shipperId",
+  isAdmin,
+  TransferController.listTransfersByShipper
+);
+
+// Route gán shipper cho transfer (phải có :id trước /assign-shipper)
+router.post(
+  "/transfers/:id/assign-shipper",
+  isAdmin,
+  TransferController.assignShipper
+);
+
+// Route chi tiết phiếu điều chuyển (parameterized route cuối cùng)
+router.get("/transfers/:id", isAdmin, TransferController.getTransferDetail);
 
 // Route duyệt phiếu điều chuyển
-router.post("/transfers/:id/approve", isAdmin, TransferController.approveTransfer); // Xác nhận yêu cầu điều chuyển
 
 // Quản lý tài khoản
 router.get("/quanlytaikhoan", isAdmin, UserController.manageAccounts);
@@ -78,6 +110,9 @@ router.delete("/kho/:id", isAdmin, warehouseController.deleteWarehouse);
 
 // API để lấy danh sách warehouses cho frontend
 router.get("/api/warehouses", isAdmin, warehouseController.getWarehousesAPI);
+
+// API để lấy chi tiết warehouse cho AJAX
+router.get("/api/warehouses/:id", isAdmin, warehouseController.getWarehouseAPI);
 
 // Route Optimization
 router.get("/route-optimization", isAdmin, (req, res) => {

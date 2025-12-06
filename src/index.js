@@ -86,6 +86,12 @@ const hbs = create({
       // Mặc định ISO
       return d.toLocaleString("vi-VN");
     },
+    formatDateTime: function (date) {
+      if (!date) return "Chưa có";
+      const d = new Date(date);
+      const pad = (n) => (n < 10 ? "0" + n : n);
+      return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    },
     substring: function (str, start, length) {
       return str ? str.substring(start, start + length) : "";
     },

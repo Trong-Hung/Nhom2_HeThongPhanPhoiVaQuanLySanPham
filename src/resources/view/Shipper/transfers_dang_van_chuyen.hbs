@@ -1,14 +1,14 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h3 class="text-primary mb-0"><i class="bi bi-truck"></i> Đơn hàng đang vận chuyển</h3>
+    <h3 class="text-primary mb-0"><i class="bi bi-truck"></i> Phiếu Điều Chuyển Đang Vận Chuyển</h3>
     
-    {{#if orders.length}}
+    {{#if transfers.length}}
     <div class="d-flex gap-2">
       <button 
         id="optimizeBtn" 
         class="btn btn-warning btn-sm"
-        onclick="optimizeRoute()"
-        title="Tối ưu lại thứ tự giao hàng để tiết kiệm thời gian">
+        onclick="optimizeTransferRoute()"
+        title="Tối ưu lại thứ tự vận chuyển để tiết kiệm thời gian">
         <i class="bi bi-geo-alt"></i> Tối ưu lộ trình
       </button>
       <div id="optimizeSpinner" class="spinner-border spinner-border-sm text-warning d-none" role="status">
@@ -18,10 +18,10 @@
     {{/if}}
   </div>
 
-  {{#if orders.length}}
+  {{#if transfers.length}}
   <div id="optimizeAlert" class="alert alert-info d-none" role="alert">
     <i class="bi bi-info-circle"></i>
-    <span id="optimizeMessage">Đang tối ưu lộ trình giao hàng...</span>
+    <span id="optimizeMessage">Đang tối ưu lộ trình vận chuyển...</span>
   </div>
   {{/if}}
 
@@ -30,16 +30,16 @@
       <thead class="table-dark">
         <tr>
           <th scope="col" style="width: 100px;">Thứ tự</th>
-          <th scope="col" style="width: 130px;">Mã đơn</th>
-          <th scope="col">Khách hàng</th>
-          <th scope="col" style="width: 120px;">SĐT</th>
-          <th scope="col">Địa chỉ giao</th>
+          <th scope="col" style="width: 130px;">Mã phiếu</th>
+          <th scope="col">Kho nguồn</th>
+          <th scope="col">Kho đích</th>
+          <th scope="col">Địa chỉ đến</th>
           <th scope="col" style="width: 120px;">Trạng thái</th>
           <th scope="col" style="width: 180px;">Chức năng</th>
         </tr>
       </thead>
       <tbody>
-        {{#each orders}}
+        {{#each transfers}}
         <tr>
           <td>
             {{#if this.routeOrder}}
@@ -53,13 +53,13 @@
             {{/if}}
           </td>
           <td>
-            <a href="/shipper/order/{{this._id}}" class="text-decoration-none">
-              <small>{{this._id}}</small>
+            <a href="/shipper/transfers/{{this._id}}" class="text-decoration-none">
+              <small>{{this.transferId}}</small>
             </a>
           </td>
-          <td><strong>{{this.name}}</strong></td>
-          <td>{{this.phone}}</td>
-          <td>{{this.address}}</td>
+          <td><strong>{{this.sourceWarehouse.name}}</strong></td>
+          <td><strong>{{this.destinationWarehouse.name}}</strong></td>
+          <td>{{this.destinationWarehouse.address}}</td>
           <td>
             {{#if (eq this.status "Đang vận chuyển")}}
               <span class="badge bg-warning text-dark">{{this.status}}</span>
@@ -71,13 +71,10 @@
           </td>
           <td>
             <div class="btn-group-vertical" role="group">
-              <a href="/shipper/maps/{{this._id}}" class="btn btn-sm btn-primary mb-1" target="_blank">
-                🗺️ Xem bản đồ
-              </a>
-              <a href="/shipper/order/{{this._id}}" class="btn btn-sm btn-outline-secondary">
+              <a href="/shipper/transfers/{{this._id}}" class="btn btn-sm btn-outline-secondary">
                 📄 Chi tiết
               </a>
-              <form action="/shipper/donhang/mark-delivered/{{this._id}}" method="POST" style="display: inline;" onsubmit="return confirm('Xác nhận đã giao hàng thành công?')">
+              <form action="/shipper/transfers/mark-delivered/{{this._id}}" method="POST" style="display: inline;" onsubmit="return confirm('Xác nhận đã vận chuyển thành công?')">
                 <button type="submit" class="btn btn-sm btn-success mt-1">
                   ✅ Đã giao
                 </button>
@@ -88,15 +85,16 @@
         {{/each}}
       </tbody>
     </table>
-    {{^orders.length}}
-      <p class="text-muted text-center fs-5 my-4">🚫 Hiện chưa có đơn hàng nào đang vận chuyển.</p>
-    {{/orders.length}}
+    {{^transfers.length}}
+      <p class="text-muted text-center fs-5 my-4">🚫 Hiện chưa có phiếu điều chuyển nào đang vận chuyển.</p>
+    {{/transfers.length}}
   </div>
 </div>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
 <script>
-async function optimizeRoute() {
+async function optimizeTransferRoute() {
   const btn = document.getElementById('optimizeBtn');
   const spinner = document.getElementById('optimizeSpinner');
   const alert = document.getElementById('optimizeAlert');
@@ -107,10 +105,10 @@ async function optimizeRoute() {
   spinner.classList.remove('d-none');
   alert.classList.remove('d-none', 'alert-success', 'alert-danger');
   alert.classList.add('alert-info');
-  message.textContent = 'Đang tối ưu lộ trình giao hàng...';
+  message.textContent = 'Đang tối ưu lộ trình vận chuyển...';
   
   try {
-    const response = await fetch('/shipper/optimize-routes', {
+    const response = await fetch('/shipper/optimize-transfer-routes', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -139,7 +137,7 @@ async function optimizeRoute() {
     }
     
   } catch (error) {
-    console.error('Optimization error:', error);
+    console.error('Transfer optimization error:', error);
     alert.classList.remove('alert-info');
     alert.classList.add('alert-danger');
     message.innerHTML = `<i class="bi bi-exclamation-circle"></i> Lỗi kết nối. Vui lòng thử lại.`;

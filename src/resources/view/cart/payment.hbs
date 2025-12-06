@@ -141,51 +141,98 @@
 </div>
 
 <script>
-  async function loadProvinces() { try { const res = await
-  fetch("https://provinces.open-api.vn/api/?depth=1"); const data = await
-  res.json(); const provinceSelect = document.getElementById("province");
-  provinceSelect.innerHTML = '<option value="">Chọn Tỉnh/Thành phố</option>';
-  data.forEach(p => { provinceSelect.innerHTML += `<option value="${p.code}"
-  data-name="${p.name}">${p.name}</option>`; }); } catch (err) {
-  console.error("Lỗi tải tỉnh/thành phố:", err); } } async function
-  loadDistricts(provinceCode) { const districtSelect =
-  document.getElementById("district"); const wardSelect =
-  document.getElementById("ward"); if (!provinceCode) { districtSelect.innerHTML
-  = '<option value="">Chọn Quận/Huyện</option>'; wardSelect.innerHTML = '<option
-  value="">Chọn Phường/Xã</option>'; return; } try { const res = await
-  fetch(`https://provinces.open-api.vn/api/p/${provinceCode}?depth=2`); const
-  data = await res.json(); districtSelect.innerHTML = '<option value="">Chọn
-  Quận/Huyện</option>'; wardSelect.innerHTML = '<option value="">Chọn
-  Phường/Xã</option>'; data.districts.forEach(d => { districtSelect.innerHTML +=
-  `<option value="${d.code}" data-name="${d.name}">${d.name}</option>`; }); }
-  catch (err) { console.error("Lỗi tải quận/huyện:", err); } } async function
-  loadWards(districtCode) { const wardSelect = document.getElementById("ward");
-  if (!districtCode) { wardSelect.innerHTML = '<option value="">Chọn
-  Phường/Xã</option>'; return; } try { const res = await
-  fetch(`https://provinces.open-api.vn/api/d/${districtCode}?depth=2`); const
-  data = await res.json(); wardSelect.innerHTML = '<option value="">Chọn
-  Phường/Xã</option>'; data.wards.forEach(w => { wardSelect.innerHTML +=
-  `<option value="${w.code}" data-name="${w.name}">${w.name}</option>`; }); }
-  catch (err) { console.error("Lỗi tải phường/xã:", err); } } function
-  updateHiddenFields() { const provinceSelect =
-  document.getElementById("province"); const districtSelect =
-  document.getElementById("district"); const wardSelect =
-  document.getElementById("ward"); // Cập nhật tên tỉnh const selectedProvince =
-  provinceSelect.options[provinceSelect.selectedIndex]; if (selectedProvince &&
-  selectedProvince.value) { document.getElementById("provinceName").value =
-  selectedProvince.getAttribute("data-name"); } // Cập nhật tên quận/huyện const
-  selectedDistrict = districtSelect.options[districtSelect.selectedIndex]; if
-  (selectedDistrict && selectedDistrict.value) {
-  document.getElementById("districtName").value =
-  selectedDistrict.getAttribute("data-name"); } // Cập nhật tên phường/xã const
-  selectedWard = wardSelect.options[wardSelect.selectedIndex]; if (selectedWard
-  && selectedWard.value) { document.getElementById("wardName").value =
-  selectedWard.getAttribute("data-name"); } }
-  document.addEventListener("DOMContentLoaded", () => { loadProvinces();
-  document.getElementById("province").addEventListener("change", (e) => {
-  loadDistricts(e.target.value); updateHiddenFields(); });
-  document.getElementById("district").addEventListener("change", (e) => {
-  loadWards(e.target.value); updateHiddenFields(); });
-  document.getElementById("ward").addEventListener("change", () => {
-  updateHiddenFields(); }); });
+  const host = "https://esgoo.net/api-tinhthanh";
+
+  // Hàm gọi API chung
+  async function callAPI(api) {
+    try {
+      const response = await fetch(api);
+      const data = await response.json();
+      // API esgoo trả về: { error: 0, data: [...] }
+      if (data.error === 0) {
+        return data.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Lỗi gọi API:", error);
+      return [];
+    }
+  }
+
+  // Render options vào thẻ Select
+  function renderData(array, selectId, type) {
+    let row = `<option value="" disabled selected>Chọn ${type}</option>`;
+    array.forEach(element => {
+      // id: mã số, full_name: tên đầy đủ
+      row += `<option value="${element.id}" data-name="${element.full_name}">${element.full_name}</option>`;
+    });
+    document.querySelector("#" + selectId).innerHTML = row;
+  }
+
+  // Load Tỉnh/Thành
+  async function loadProvinces() {
+    const data = await callAPI(host + "/1/0.htm");
+    renderData(data, "province", "Tỉnh/Thành phố");
+  }
+
+  // Load Quận/Huyện
+  async function loadDistricts(provinceId) {
+    if (!provinceId) return;
+    const data = await callAPI(host + "/2/" + provinceId + ".htm");
+    renderData(data, "district", "Quận/Huyện");
+    // Reset phường xã
+    renderData([], "ward", "Phường/Xã");
+  }
+
+  // Load Phường/Xã
+  async function loadWards(districtId) {
+    if (!districtId) return;
+    const data = await callAPI(host + "/3/" + districtId + ".htm");
+    renderData(data, "ward", "Phường/Xã");
+  }
+
+  // Cập nhật các input hidden để gửi tên về server
+  function updateHiddenFields() {
+    const provinceSel = document.getElementById("province");
+    const districtSel = document.getElementById("district");
+    const wardSel = document.getElementById("ward");
+
+    // Lấy text từ option đang chọn (data-name)
+    if (provinceSel.selectedIndex > 0) {
+      const pOption = provinceSel.options[provinceSel.selectedIndex];
+      document.getElementById("provinceName").value = pOption.getAttribute("data-name");
+    }
+
+    if (districtSel.selectedIndex > 0) {
+      const dOption = districtSel.options[districtSel.selectedIndex];
+      document.getElementById("districtName").value = dOption.getAttribute("data-name");
+    }
+
+    if (wardSel.selectedIndex > 0) {
+      const wOption = wardSel.options[wardSel.selectedIndex];
+      document.getElementById("wardName").value = wOption.getAttribute("data-name");
+    }
+  }
+
+  // Sự kiện khi trang tải xong
+  document.addEventListener("DOMContentLoaded", () => {
+    loadProvinces();
+
+    // Khi chọn Tỉnh -> Load Huyện
+    document.getElementById("province").addEventListener("change", function() {
+      loadDistricts(this.value);
+      updateHiddenFields();
+    });
+
+    // Khi chọn Huyện -> Load Xã
+    document.getElementById("district").addEventListener("change", function() {
+      loadWards(this.value);
+      updateHiddenFields();
+    });
+
+    // Khi chọn Xã -> Cập nhật tên
+    document.getElementById("ward").addEventListener("change", function() {
+      updateHiddenFields();
+    });
+  });
 </script>

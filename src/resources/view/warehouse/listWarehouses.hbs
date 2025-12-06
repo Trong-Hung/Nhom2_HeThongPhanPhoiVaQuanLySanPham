@@ -1,5 +1,21 @@
 <div class="container mt-4">
-  <h3 class="mb-4">Danh sách kho hàng</h3>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0">📦 Danh sách kho hàng</h3>
+    <div class="btn-group" role="group">
+      <a href="/admin/transfers/create" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Tạo phiếu điều chuyển
+      </a>
+      <a href="/admin/transfers" class="btn btn-outline-info">
+        <i class="fas fa-list"></i>
+        Danh sách điều chuyển
+      </a>
+      <a href="/admin/kho/create" class="btn btn-outline-success">
+        <i class="fas fa-warehouse"></i>
+        Tạo kho mới
+      </a>
+    </div>
+  </div>
 
   {{#if warehouses.length}}
     <div class="table-responsive shadow-sm rounded">
@@ -18,25 +34,40 @@
         </thead>
         <tbody>
           {{#each warehouses}}
-          <tr>
-            <td>
-              <a href="/admin/kho/{{this._id}}" class="text-decoration-none">{{this.name}}</a>
-            </td>
-            <td>{{this.type}}</td>
-            <td>{{#if this.parentWarehouse}}{{this.parentWarehouse.name}}{{else}}N/A{{/if}}</td>
-            <td>{{this.address}}</td>
-            <td>{{this.location.latitude}}</td>
-            <td>{{this.location.longitude}}</td>
-            <td>
-              <a href="/admin/kho/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">Sửa</a>
-            </td>
-            <td>
-              <form action="/admin/kho/{{this._id}}?_method=DELETE" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-sm btn-outline-danger"
-                  onclick="return confirm('Bạn có chắc muốn xóa kho này?')">Xóa</button>
-              </form>
-            </td>
-          </tr>
+            <tr>
+              <td>
+                <a
+                  href="/admin/kho/{{this._id}}"
+                  class="text-decoration-none"
+                >{{this.name}}</a>
+              </td>
+              <td>{{this.type}}</td>
+              <td>{{#if
+                  this.parentWarehouse
+                }}{{this.parentWarehouse.name}}{{else}}N/A{{/if}}</td>
+              <td>{{this.address}}</td>
+              <td>{{this.location.latitude}}</td>
+              <td>{{this.location.longitude}}</td>
+              <td>
+                <a
+                  href="/admin/kho/{{this._id}}/edit"
+                  class="btn btn-sm btn-outline-primary"
+                >Sửa</a>
+              </td>
+              <td>
+                <form
+                  action="/admin/kho/{{this._id}}?_method=DELETE"
+                  method="POST"
+                  style="display:inline;"
+                >
+                  <button
+                    type="submit"
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Bạn có chắc muốn xóa kho này?')"
+                  >Xóa</button>
+                </form>
+              </td>
+            </tr>
           {{/each}}
         </tbody>
       </table>

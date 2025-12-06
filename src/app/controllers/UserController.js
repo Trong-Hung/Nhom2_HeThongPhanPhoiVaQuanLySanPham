@@ -11,16 +11,24 @@ class UserController {
   async manageAccounts(req, res) {
     try {
       const admins = await User.find({ role: "admin" });
-      const shippers = await User.find({ role: "shipper" });
+      const shippers = await User.find({ role: "shipper" }).populate('warehouseId', 'name address');
       const users = await User.find({ role: "user" });
       res.render("admin/quanlytaikhoan", { admins, shippers, users });
-    } catch {
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách tài khoản:', error);
       res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");
     }
   }
 
-  showCreateAccount(req, res) {
-    res.render("admin/taotaikhoan");
+  async showCreateAccount(req, res) {
+    try {
+      const Warehouse = require('../models/Warehouse');
+      const warehouses = await Warehouse.find().sort({ name: 1 });
+      res.render("admin/taotaikhoan", { warehouses });
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách kho:', error);
+      res.render("admin/taotaikhoan", { warehouses: [] });
+    }
   }
 
   async createAccount(req, res) {
@@ -28,23 +36,41 @@ class UserController {
       if (!req.session.user || req.session.user.role !== "admin") {
         return res.status(403).send("❌ Bạn không có quyền tạo tài khoản.");
       }
-      const { name, email, password, role, region } = req.body;
+      const { name, email, password, role, region, warehouseId } = req.body;
       const assignedRole = role || "user";
+      
       if (assignedRole === "shipper" && !region) {
         return res.status(400).send("❌ Region là bắt buộc đối với Shipper!");
       }
+      
+      if (assignedRole === "shipper" && !warehouseId) {
+        return res.status(400).send("❌ Vui lòng chọn kho cho Shipper!");
+      }
+      
       const existingUser = await User.findOne({ email: email.trim() });
       if (existingUser) return res.status(400).send("❌ Email đã tồn tại.");
+      
       const hashedPassword = await bcrypt.hash(password.trim(), 10);
-      const newUser = new User({
+      const userData = {
         name: name.trim(),
         email: email.trim(),
         password: hashedPassword,
         role: assignedRole,
         status: "Hoạt động",
-        region: assignedRole === "shipper" ? region : undefined,
-      });
+      };
+      
+      // Thêm thông tin cho shipper
+      if (assignedRole === "shipper") {
+        userData.region = region;
+        userData.warehouseId = new ObjectId(warehouseId);
+        
+        console.log(`🏪 Tạo shipper mới: ${name} - Kho: ${warehouseId}`);
+      }
+      
+      const newUser = new User(userData);
       await newUser.save();
+      
+      console.log(`✅ Tạo tài khoản thành công: ${email} (${assignedRole})`);
       res.redirect("/admin/quanlytaikhoan");
     } catch {
       res.status(500).send("Lỗi hệ thống, vui lòng thử lại sau.");

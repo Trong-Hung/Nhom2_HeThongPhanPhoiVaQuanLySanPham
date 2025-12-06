@@ -1,11 +1,12 @@
-<!-- filepath: c:\Users\trong\JAVASC\blog\src\resources\views\transfers\transferDetail.hbs -->
 <div class="container mt-4">
-  <h3 class="mb-4">Chi tiết đơn điều chuyển</h3>
+  <h3 class="mb-4">Chi tiết phiếu điều chuyển</h3>
 
   <div class="card shadow-sm p-3 mb-4">
-    <h4>Thông tin đơn điều chuyển</h4>
+    <h4>Thông tin phiếu điều chuyển</h4>
+    <p><strong>Mã phiếu:</strong> {{transfer.transferId}}</p>
     <p><strong>Kho nguồn:</strong> {{transfer.sourceWarehouse.name}}</p>
     <p><strong>Kho đích:</strong> {{transfer.destinationWarehouse.name}}</p>
+    <p><strong>Shipper:</strong> {{#if transfer.assignedShipper}}{{transfer.assignedShipper.name}}{{else}}Chưa gán{{/if}}</p>
     <p><strong>Trạng thái:</strong> {{transfer.status}}</p>
   </div>
 
@@ -15,8 +16,7 @@
       <thead>
         <tr>
           <th>Tên sản phẩm</th>
-          <th>Mã SKU</th>
-          <th>Danh mục</th>
+          <th>SKU</th>
           <th>Số lượng</th>
         </tr>
       </thead>
@@ -25,7 +25,6 @@
           <tr>
             <td>{{this.productId.name}}</td>
             <td>{{this.productId.sku}}</td>
-            <td>{{this.productId.category}}</td>
             <td>{{this.quantity}}</td>
           </tr>
         {{/each}}
@@ -33,11 +32,16 @@
     </table>
   </div>
 
-  {{#if (eq transfer.status "Approved")}}
-    <form action="/admin/transfers/{{transfer._id}}/receive" method="POST">
-      <button type="submit" class="btn btn-primary w-100">✔️ Nhận đủ hàng</button>
+  <div class="card shadow-sm p-3 mb-4">
+    <h4>Gán shipper</h4>
+    <form action="/admin/transfers/{{transfer._id}}/assign-shipper" method="POST">
+      <select name="shipperId" class="form-control" required>
+        <option value="">-- Chọn shipper --</option>
+        {{#each shippers}}
+          <option value="{{this._id}}">{{this.name}} ({{this.region}})</option>
+        {{/each}}
+      </select>
+      <button type="submit" class="btn btn-primary mt-3">Gán shipper</button>
     </form>
-  {{else}}
-    <p class="text-muted">Đơn chưa được duyệt.</p>
-  {{/if}}
+  </div>
 </div>

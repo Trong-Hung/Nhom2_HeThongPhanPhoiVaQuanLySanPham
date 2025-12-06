@@ -34,6 +34,16 @@
     </select>
   </div>
 
+  <div class="mb-3" id="warehouseContainer" style="display: none;">
+    <label for="warehouseId" class="form-label">🏪 Kho được phân công</label>
+    <select id="warehouseId" name="warehouseId" class="form-select">
+      <option value="">-- Chọn kho --</option>
+      {{#each warehouses}}
+        <option value="{{this._id}}">{{this.name}} ({{this.address}})</option>
+      {{/each}}
+    </select>
+  </div>
+
   <button type="submit" class="btn btn-primary w-100">Tạo tài khoản</button>
 </form>
 
@@ -41,7 +51,15 @@
   function toggleRegion() {
     const role = document.getElementById("role").value;
     const regionContainer = document.getElementById("regionContainer");
-    regionContainer.style.display = role === "shipper" ? "block" : "none";
+    const warehouseContainer = document.getElementById("warehouseContainer");
+    
+    if (role === "shipper") {
+      regionContainer.style.display = "block";
+      warehouseContainer.style.display = "block";
+    } else {
+      regionContainer.style.display = "none";
+      warehouseContainer.style.display = "none";
+    }
   }
   // Gọi một lần khi trang tải để đảm bảo trạng thái đúng
   document.addEventListener("DOMContentLoaded", toggleRegion);
