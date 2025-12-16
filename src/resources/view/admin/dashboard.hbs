@@ -7,6 +7,35 @@
         đến với hệ thống quản trị!</p>
     </div>
   </div>
+
+  <!-- Thống kê đơn hàng -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm border-warning">
+        <div class="card-body text-center">
+          <h2 class="text-warning">{{orderStats.choXacNhan}}</h2>
+          <h5 class="card-title">Chờ Xác Nhận</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-info">
+        <div class="card-body text-center">
+          <h2 class="text-info">{{orderStats.dangVanChuyen}}</h2>
+          <h5 class="card-title">Đang Vận Chuyển</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-success">
+        <div class="card-body text-center">
+          <h2 class="text-success">{{orderStats.daGiao}}</h2>
+          <h5 class="card-title">Đã Giao</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="row g-4 justify-content-center">
     <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
       <div class="card shadow-sm border-0 w-100">

@@ -13,8 +13,79 @@ class ChatController {
       const currentUser = req.session.user;
 
       if (currentUser.role === "admin") {
-        // Admin xem tất cả chat rooms
-        return await this.showAdminChatList(req, res);
+        // Admin xem tất cả chat rooms - inline implementation
+        try {
+          const chatRooms = await Chat.aggregate([
+            {
+              $match: {
+                $or: [
+                  { sender: new mongoose.Types.ObjectId(currentUser._id) },
+                  { receiver: new mongoose.Types.ObjectId(currentUser._id) },
+                ],
+              },
+            },
+            {
+              $group: {
+                _id: "$chatRoomId",
+                lastMessage: { $last: "$message" },
+                lastMessageTime: { $last: "$createdAt" },
+                lastSender: { $last: "$sender" },
+                unreadCount: {
+                  $sum: {
+                    $cond: [
+                      {
+                        $and: [
+                          {
+                            $eq: [
+                              "$receiver",
+                              new mongoose.Types.ObjectId(currentUser._id),
+                            ],
+                          },
+                          { $eq: ["$isRead", false] },
+                        ],
+                      },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+            { $sort: { lastMessageTime: -1 } },
+          ]);
+
+          // Populate thông tin user
+          const chatRoomsWithUsers = [];
+          for (const room of chatRooms) {
+            try {
+              const userIds = room._id.split("_");
+              const otherUserId = userIds.find(
+                (id) => id !== currentUser._id.toString()
+              );
+              if (otherUserId && mongoose.Types.ObjectId.isValid(otherUserId)) {
+                const otherUser =
+                  await User.findById(otherUserId).select("name email role");
+                if (otherUser) {
+                  chatRoomsWithUsers.push({
+                    ...room,
+                    otherUser,
+                  });
+                }
+              }
+            } catch (error) {
+              console.error("Lỗi khi populate user cho room:", room._id, error);
+              continue;
+            }
+          }
+
+          return res.render("chat/admin_chat", {
+            chatRooms: chatRoomsWithUsers,
+            currentUser,
+          });
+        } catch (error) {
+          console.error("Lỗi khi hiển thị admin chat:", error);
+          return res.status(500).send("Lỗi hệ thống");
+        }
       } else {
         // User/Shipper chat với admin - inline logic
         const admin = await User.findOne({ role: "admin" });
@@ -107,19 +178,24 @@ class ChatController {
       // Populate thông tin user
       const chatRoomsWithUsers = [];
       for (const room of chatRooms) {
-        const userIds = room._id.split("_");
-        const otherUserId = userIds.find(
-          (id) => id !== currentUser._id.toString()
-        );
-        if (otherUserId) {
-          const otherUser =
-            await User.findById(otherUserId).select("name email role");
-          if (otherUser) {
-            chatRoomsWithUsers.push({
-              ...room,
-              otherUser,
-            });
+        try {
+          const userIds = room._id.split("_");
+          const otherUserId = userIds.find(
+            (id) => id !== currentUser._id.toString()
+          );
+          if (otherUserId && mongoose.Types.ObjectId.isValid(otherUserId)) {
+            const otherUser =
+              await User.findById(otherUserId).select("name email role");
+            if (otherUser) {
+              chatRoomsWithUsers.push({
+                ...room,
+                otherUser,
+              });
+            }
           }
+        } catch (error) {
+          console.error("Lỗi khi populate user cho room:", room._id, error);
+          continue;
         }
       }
 
@@ -129,81 +205,6 @@ class ChatController {
       });
     } catch (error) {
       console.error("Lỗi khi hiển thị admin chat:", error);
-      res.status(500).send("Lỗi hệ thống");
-    }
-  }
-
-  // Trang quản lý chat của admin
-  async showAdminChatPage(req, res) {
-    try {
-      const currentUser = req.session.user;
-
-      // Lấy danh sách chat rooms của admin
-      const chatRooms = await Chat.aggregate([
-        {
-          $match: {
-            $or: [
-              { sender: new mongoose.Types.ObjectId(currentUser._id) },
-              { receiver: new mongoose.Types.ObjectId(currentUser._id) },
-            ],
-          },
-        },
-        {
-          $group: {
-            _id: "$chatRoomId",
-            lastMessage: { $last: "$message" },
-            lastMessageTime: { $last: "$createdAt" },
-            lastSender: { $last: "$sender" },
-            unreadCount: {
-              $sum: {
-                $cond: [
-                  {
-                    $and: [
-                      {
-                        $eq: [
-                          "$receiver",
-                          new mongoose.Types.ObjectId(currentUser._id),
-                        ],
-                      },
-                      { $eq: ["$isRead", false] },
-                    ],
-                  },
-                  1,
-                  0,
-                ],
-              },
-            },
-          },
-        },
-        { $sort: { lastMessageTime: -1 } },
-      ]);
-
-      // Populate thông tin user cho mỗi chat room
-      const chatRoomsWithUsers = [];
-      for (const room of chatRooms) {
-        const userIds = room._id.split("_");
-        const otherUserId = userIds.find(
-          (id) => id !== currentUser._id.toString()
-        );
-        if (otherUserId) {
-          const otherUser = await User.findById(
-            new mongoose.Types.ObjectId(otherUserId)
-          ).select("name email role");
-          if (otherUser) {
-            chatRoomsWithUsers.push({
-              ...room,
-              otherUser,
-            });
-          }
-        }
-      }
-
-      return res.render("chat/admin_chat", {
-        chatRooms: chatRoomsWithUsers,
-        currentUser,
-      });
-    } catch (error) {
-      console.error("Lỗi khi hiển thị chat admin:", error);
       res.status(500).send("Lỗi hệ thống");
     }
   }

@@ -129,16 +129,40 @@
           </li>
         {{/if}}
 
-        <!-- Chat -->
+        <!-- Chat với notification -->
         {{#if user}}
-          <li class="nav-item">
-            <a class="nav-link" href="/chat">
+          <li class="nav-item position-relative">
+            <a class="nav-link" href="/chat" id="chatLink">
               <i class="fas fa-comments"></i>
               {{#if (eq user.role "admin")}}
                 Quản lý Chat
               {{else}}
                 Chat với Admin
               {{/if}}
+              <span
+                id="chatBadge"
+                class="badge badge-danger position-absolute"
+                style="top: 0; right: 0; font-size: 0.6em; display: none;"
+              ></span>
+            </a>
+          </li>
+        {{/if}}
+
+        <!-- Thông báo đơn hàng mới (dành cho admin) -->
+        {{#if (eq user.role "admin")}}
+          <li class="nav-item position-relative">
+            <a
+              class="nav-link"
+              href="/admin/qldonhang"
+              id="orderNotificationLink"
+            >
+              <i class="fas fa-bell"></i>
+              Thông báo
+              <span
+                id="orderBadge"
+                class="badge badge-danger position-absolute"
+                style="top: 0; right: 0; font-size: 0.6em; display: none;"
+              ></span>
             </a>
           </li>
         {{/if}}

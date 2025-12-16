@@ -5,6 +5,7 @@ const DonHangController = require("../app/controllers/DonHangController");
 const UserController = require("../app/controllers/UserController");
 const warehouseController = require("../app/controllers/WarehouseController");
 const TransferController = require("../app/controllers/TransferController");
+const AdminController = require("../app/controllers/AdminController");
 const Transfer = require("../app/models/Transfer");
 
 // Quản lý đơn hàng
@@ -125,12 +126,20 @@ router.get("/route-optimization", isAdmin, (req, res) => {
 // API để lấy danh sách warehouses cho frontend
 router.get("/api/warehouses", isAdmin, warehouseController.getWarehousesAPI);
 
+// API cho notification system
+router.get("/api/new-orders-count", isAdmin, AdminController.getNewOrdersCount);
+router.get(
+  "/api/new-orders-details",
+  isAdmin,
+  AdminController.getNewOrdersDetails
+);
+router.post(
+  "/api/mark-notification-seen",
+  isAdmin,
+  AdminController.markNotificationSeen
+);
+
 // Trang dashboard quản trị
-router.get("/", isAdmin, (req, res) => {
-  res.render("admin/dashboard", {
-    title: "Trang Quản Trị",
-    user: req.session.user,
-  });
-});
+router.get("/", isAdmin, AdminController.dashboard);
 
 module.exports = router;
