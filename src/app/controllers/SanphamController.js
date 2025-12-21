@@ -59,7 +59,7 @@ async create(req, res) {
         return res.status(400).send("Ảnh không hợp lệ hoặc không được chọn.");
     }
 
-    const { name, sku, category, price, stockTotal, description  } = req.body;
+    const { name, sku, category, price, stockTotal, description, length, width, height, weight } = req.body;
 
     if (!sku || !category || !price) {
         console.error(" Lỗi: SKU, Danh mục và Giá không được để trống!");
@@ -67,7 +67,11 @@ async create(req, res) {
     }
 
     try {
-        const sanpham = new Sanpham({ name, sku, category, price, stockTotal, description, image: req.file.filename });
+        const sanpham = new Sanpham({
+  name, sku, category, price, stockTotal, description,
+  image: req.file.filename,
+  length, width, height, weight
+});
         await sanpham.save();
 
         const warehouses = await Warehouse.find();
@@ -117,7 +121,10 @@ async create(req, res) {
     console.log(" Nhận request cập nhật:", req.body);
     console.log(" File ảnh nhận được:", req.file);
 
-    let updateFields = { ...req.body };
+    let updateFields = {};
+['name', 'sku', 'category', 'price', 'stockTotal', 'description', 'length', 'width', 'height', 'weight'].forEach(field => {
+  if (req.body[field] !== undefined) updateFields[field] = req.body[field];
+});
 
     if (req.file) {
       if (req.body.oldImage) {

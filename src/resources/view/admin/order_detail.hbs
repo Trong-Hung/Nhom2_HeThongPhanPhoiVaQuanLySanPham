@@ -1,5 +1,4 @@
-
-
+<!-- filepath: src/resources/view/admin/order_detail.hbs -->
 <div class="container mt-4">
   <div class="card shadow mb-4">
     <div class="card-header bg-primary text-white">
@@ -34,7 +33,13 @@
         </div>
         <div class="col-md-4">
           <p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
-          <p><strong>Ngày giao dự kiến:</strong> {{estimatedDeliveryText}}</p>
+          <p><strong>Khung giờ giao hàng dự kiến:</strong> 
+  {{#if order.deliveryTimeWindow}}
+    {{order.deliveryTimeWindow}}
+  {{else}}
+    <span class="text-danger">Chưa xác định</span>
+  {{/if}}
+</p>
         </div>
       </div>
       <h5 class="mt-4 mb-3">🛒 Danh sách mặt hàng trong đơn</h5>
@@ -60,35 +65,72 @@
           </tbody>
         </table>
       </div>
-      <!-- Gán Shipper Section -->
-      {{#unless order.assignedShipper}}
-      <div class="alert alert-warning mt-4">
-        <h6><i class="fas fa-exclamation-triangle"></i> Đơn hàng chưa được gán shipper</h6>
-        <div class="row mt-3">
-          <div class="col-md-8">
-            <form method="POST" action="/admin/donhang/assign-shipper/{{order._id}}" class="d-flex align-items-center gap-2">
-              <label for="shipperId" class="me-2 mb-0">Chọn shipper:</label>
-              <select name="shipperId" id="shipperId" class="form-select form-select-sm w-auto" required>
-                <option value="">-- Chọn shipper --</option>
-                {{#each shippers}}
-                  <option value="{{this._id}}">{{this.name}} ({{this.region}})</option>
-                {{/each}}
-              </select>
-              <button type="submit" class="btn btn-success btn-sm">
-                <i class="fas fa-user-plus"></i> Gán shipper
-              </button>
-            </form>
-          </div>
-          <div class="col-md-4 text-end">
-            <form method="POST" action="/admin/donhang/auto-assign-shipper/{{order._id}}" style="display: inline;">
-              <button type="submit" class="btn btn-info btn-sm">
-                <i class="fas fa-magic"></i> Tự động gán tốt nhất
-              </button>
-            </form>
-          </div>
-        </div>
+
+      <!-- Gán Shipper & Xe Section -->
+     <div class="alert alert-warning mt-4">
+  <h6><i class="fas fa-exclamation-triangle"></i> Gán shipper và xe cho đơn hàng</h6>
+  <form method="POST" action="/admin/donhang/{{order._id}}/assign-shipper-truck" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <label for="shipperId" class="form-label mb-0">Chọn shipper:</label>
+      <select name="shipperId" id="shipperId" class="form-select form-select-sm" required onchange="autoSelectTruck()">
+        <option value="">-- Chọn shipper --</option>
+        {{#each shippers}}
+          <option value="{{this._id}}" data-truck="{{this.truck}}">
+            {{this.name}} ({{this.region}})
+          </option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label for="truckId" class="form-label mb-0">Chọn xe:</label>
+      <select name="truckId" id="truckId" class="form-select form-select-sm">
+        <option value="">-- Chọn xe --</option>
+        {{#each trucks}}
+          <option value="{{this._id}}">
+            {{this.licensePlate}} - {{this.type}} ({{this.maxWeight}}kg, {{this.boxVolumeM3}} m³)
+          </option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end gap-2">
+      <button type="submit" class="btn btn-primary w-100">Cập nhật</button>
+    </div>
+  </form>
+  <form method="POST" action="/admin/donhang/{{order._id}}/auto-assign-best" class="mt-2">
+    <button type="submit" class="btn btn-info w-100">Tự động gán tốt nhất</button>
+  </form>
+</div>
+<script>
+  function autoSelectTruck() {
+    var shipperSelect = document.getElementById('shipperId');
+    var truckSelect = document.getElementById('truckId');
+    var selectedOption = shipperSelect.options[shipperSelect.selectedIndex];
+    var truckId = selectedOption.getAttribute('data-truck');
+    if (truckId) {
+      for (var i = 0; i < truckSelect.options.length; i++) {
+        if (truckSelect.options[i].value === truckId) {
+          truckSelect.selectedIndex = i;
+          return;
+        }
+      }
+    }
+    truckSelect.selectedIndex = 0;
+  }
+</script>
+
+      <!-- Thông tin xe đã gán -->
+      {{#if order.assignedTruck}}
+      <div class="alert alert-info mt-4">
+        <h6><i class="fas fa-truck"></i> Xe vận chuyển đã gán</h6>
+        <p>
+          <strong>Biển số:</strong> {{order.assignedTruck.licensePlate}}<br>
+          <strong>Loại xe:</strong> {{order.assignedTruck.type}}<br>
+          <strong>Tải trọng:</strong> {{order.assignedTruck.maxWeight}} kg<br>
+          <strong>Thể tích:</strong> {{order.assignedTruck.boxVolumeM3}} m³
+        </p>
+
       </div>
-      {{/unless}}
+      {{/if}}
 
       <!-- Thông tin Shipper hiện tại -->
       {{#if order.assignedShipper}}
@@ -100,7 +142,8 @@
             <p><strong>Vùng:</strong> {{order.assignedShipper.region}}</p>
           </div>
           <div class="col-md-6 text-end">
-            <form method="POST" action="/admin/donhang/unassign-shipper/{{order._id}}" style="display: inline;">
+            <form method="POST" action="/admin/donhang/{{order._id}}/unassign-shipper-truck
+" style="display: inline;">
               <button type="submit" class="btn btn-outline-danger btn-sm" 
                       onclick="return confirm('Bạn có chắc muốn hủy gán shipper này?')">
                 <i class="fas fa-user-times"></i> Hủy gán

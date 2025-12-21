@@ -38,6 +38,11 @@
           {{else}}
             <br><small class="text-warning">⚠️ Chưa gán kho</small>
           {{/if}}
+          {{#if this.truck}}
+  <br><small class="text-success">🚚 Xe: {{this.truck.licensePlate}} ({{this.truck.type}})</small>
+{{else}}
+  <br><small class="text-warning">🚚 Chưa gán xe</small>
+{{/if}}
         </div>
         <form action="/admin/delete-user/{{this._id}}" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
           <button type="submit" class="btn btn-sm btn-danger">Xóa</button>

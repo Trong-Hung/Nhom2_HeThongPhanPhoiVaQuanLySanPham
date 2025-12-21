@@ -1,0 +1,83 @@
+<div class="container mt-4" style="max-width: 600px;">
+  <h3>+ Thêm xe mới</h3>
+  <form method="POST" action="/truck/store">
+    <div class="form-group">
+      <label>Biển số xe</label>
+      <input type="text" name="licensePlate" class="form-control" required />
+    </div>
+    <div class="form-group">
+      <label>Loại xe</label>
+      <input
+        type="text"
+        name="type"
+        class="form-control"
+        placeholder="VD: small, 1t, 5t"
+        required
+      />
+    </div>
+    <div class="form-group">
+      <label>Tải trọng tối đa (kg)</label>
+      <input
+        type="number"
+        name="maxWeight"
+        class="form-control"
+        min="0"
+        required
+      />
+    </div>
+    <div class="form-row">
+      <div class="form-group col-4">
+        <label>Chiều dài thùng (cm)</label>
+        <input
+          type="number"
+          name="boxLength"
+          class="form-control"
+          min="0"
+          required
+        />
+      </div>
+      <div class="form-group col-4">
+        <label>Chiều rộng thùng (cm)</label>
+        <input
+          type="number"
+          name="boxWidth"
+          class="form-control"
+          min="0"
+          required
+        />
+      </div>
+      <div class="form-group col-4">
+        <label>Chiều cao thùng (cm)</label>
+        <input
+          type="number"
+          name="boxHeight"
+          class="form-control"
+          min="0"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+  <label>Kho</label>
+  <select name="warehouseId" class="form-control" required>
+    <option value="">-- Chọn kho --</option>
+    {{#each warehouses}}
+      <option value="{{this._id}}">{{this.name}} - {{this.address}}</option>
+    {{/each}}
+  </select>
+</div>
+
+    <div class="form-group">
+  <label>Tài xế</label>
+  <select name="driver" class="form-control">
+    <option value="">-- Chưa gán tài xế --</option>
+    {{#each drivers}}
+      <option value="{{this._id}}">{{this.name}} ({{this.email}})</option>
+    {{/each}}
+  </select>
+</div>
+    <button type="submit" class="btn btn-success btn-block mt-3">Thêm xe</button>
+    <a href="/truck" class="btn btn-secondary btn-block mt-2">Quay lại</a>
+  </form>
+</div>

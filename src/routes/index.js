@@ -15,12 +15,15 @@ const chatRouter = require("./chat");
 const recommendationRouter = require("./recommendation");
 const geocodingRouter = require("./geocoding");
 const routeOptimizationRouter = require("./routeOptimization");
+const truckRouter = require("./truck");
+
 
 function Route(app) {
   app.use("/cart", cartRouter);
   app.use("/auth", authRouter);
   app.use("/donhang", donhangRouter);
   app.use("/shipper", shipperRouter);
+  app.use("/truck", truckRouter);
 
   //phân quyền
   app.use("/admin", adminRouter);

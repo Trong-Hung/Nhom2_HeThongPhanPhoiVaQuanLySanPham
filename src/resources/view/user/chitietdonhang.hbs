@@ -17,6 +17,13 @@
           </p>
           <p><strong>Ngày đặt:</strong> {{order.createdAt}}</p>
           <p><strong>Ngày giao hàng dự kiến:</strong> {{estimatedDeliveryText}}</p>
+          <p><strong>Xe vận chuyển:</strong>
+  {{#if order.assignedTruck}}
+    {{order.assignedTruck.licensePlate}} - {{order.assignedTruck.type}}
+  {{else}}
+    <span class="text-danger">Chưa gán xe</span>
+  {{/if}}
+</p>
         </div>
 
         <div class="col-md-6">

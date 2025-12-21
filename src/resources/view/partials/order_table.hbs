@@ -2,38 +2,27 @@
 <div class="container mt-4">
   <h3 class="mb-4">Quản lý đơn hàng</h3>
 
-  <div class="mb-3">
-    <label for="statusFilter" class="form-label fw-bold">Lọc theo trạng thái:</label>
-    <select id="statusFilter" class="form-select" style="width: 250px; display: inline-block;">
-      <option value="all">Tất cả</option>
-      <option value="Chờ xác nhận">Chờ xác nhận</option>
-      <option value="Đang sắp xếp">Đang sắp xếp</option>
-      <option value="Đang vận chuyển">Đang vận chuyển</option>
-      <option value="Hoàn thành">Hoàn thành</option>
-    </select>
-  </div>
-
   <div class="table-responsive shadow-sm rounded">
-    <table class="table table-striped table-hover align-middle" id="ordersTable">
+    <table class="table table-striped table-hover align-middle">
       <thead class="thead-dark">
         <tr>
-          <th style="width: 150px;">Mã đơn</th>
-          <th>Họ tên</th>
-          <th style="width: 120px;">SĐT</th>
-          <th>Địa chỉ</th>
-          <th style="width: 150px;">Kho lấy hàng</th>
-          <th>Địa chỉ kho</th>
-          <th style="width: 120px;">Trạng thái</th>
-          <th style="width: 160px;">Giao dự kiến</th>
-          <th style="width: 100px;">Chi tiết</th>
+          <th scope="col" style="width: 150px;">Mã đơn</th>
+          <th scope="col">Họ tên</th>
+          <th scope="col" style="width: 120px;">SĐT</th>
+          <th scope="col">Địa chỉ</th>
+          <th scope="col" style="width: 150px;">Kho lấy hàng</th>
+          <th scope="col">Địa chỉ kho</th>
+          <th scope="col" style="width: 120px;">Trạng thái</th>
+          <th scope="col" style="width: 160px;">Giao dự kiến</th>
+          <th scope="col" style="width: 100px;">Chi tiết</th>
         </tr>
       </thead>
       <tbody>
         {{#each orders}}
           {{#if (isUrgent this.estimatedDelivery)}}
-            <tr style="background-color: #d32f2f; color: #fff; font-weight: bold;" data-status="{{this.status}}">
+            <tr style="background-color: #d32f2f; color: #fff; font-weight: bold;">
           {{else}}
-            <tr data-status="{{this.status}}">
+            <tr>
           {{/if}}
             <td>
               <a href="/admin/donhang/{{this._id}}" style="color:inherit; text-decoration:underline;">{{this._id}}</a>
@@ -64,16 +53,16 @@
               {{/if}}
             </td>
             <td>
-              <span class="{{statusBadgeClass this.status}}">
-                {{this.status}}
-              </span>
-            </td>
-            <td>
               {{#if this.estimatedDelivery}}
                 {{formatDate this.estimatedDelivery}}
               {{else}}
                 <span class="text-muted">Chưa có</span>
               {{/if}}
+            </td>
+            <td>
+              <span class="{{statusBadgeClass this.status}}">
+                {{this.status}}
+              </span>
             </td>
             <td>
               <a href="/admin/donhang/{{this._id}}" class="btn btn-sm btn-outline-primary">Xem</a>
@@ -84,17 +73,3 @@
     </table>
   </div>
 </div>
-
-<script>
-  document.getElementById('statusFilter').addEventListener('change', function() {
-    var selected = this.value;
-    var rows = document.querySelectorAll('#ordersTable tbody tr');
-    rows.forEach(function(row) {
-      if (selected === 'all' || row.getAttribute('data-status') === selected) {
-        row.style.display = '';
-      } else {
-        row.style.display = 'none';
-      }
-    });
-  });
-</script>

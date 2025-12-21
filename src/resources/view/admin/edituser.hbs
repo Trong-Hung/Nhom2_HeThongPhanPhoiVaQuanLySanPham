@@ -26,6 +26,18 @@
   </select>
 </div>
 
+{{#if user.truck}}
+  <div class="form-group">
+    <label>Xe đang được gán</label>
+    <input type="text" class="form-control" value="Biển số: {{user.truck.licensePlate}} - Loại: {{user.truck.type}}" readonly>
+  </div>
+{{else}}
+  <div class="form-group">
+    <label>Xe đang được gán</label>
+    <input type="text" class="form-control" value="Chưa gán xe" readonly>
+  </div>
+{{/if}}
+
   <div class="form-group">
     <label for="province">Tỉnh/Thành phố</label>
     <select class="form-control" id="province" name="province" required>

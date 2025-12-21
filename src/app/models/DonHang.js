@@ -26,6 +26,7 @@ const DonHangSchema = new Schema({
   phone: { type: String, required: true },
   email: { type: String, required: false },
   address: { type: String, required: true },
+  assignedTruck: { type: mongoose.Schema.Types.ObjectId, ref: "Truck", default: null },
   addressDetail: {
     province: {
       code: { type: String },
@@ -52,6 +53,8 @@ const DonHangSchema = new Schema({
   ],
   totalQuantity: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
+  totalWeight: { type: Number, required: true }, // kg
+totalVolume: { type: Number }, // m3, optional
   status: {
     type: String,
     enum: [
@@ -74,6 +77,10 @@ const DonHangSchema = new Schema({
     latitude: { type: Number },
     longitude: { type: Number },
   },
+  deliveryTimeWindow: {
+  type: String,
+  default: "",
+},
   // === THÔNG TIN GEOCODING ===
   geocodingInfo: {
     confidence: { type: Number }, // Độ tin cậy 0-1

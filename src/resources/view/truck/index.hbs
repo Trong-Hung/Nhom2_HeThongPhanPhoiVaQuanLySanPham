@@ -1,0 +1,45 @@
+<h3>Danh sách xe</h3>
+<a href="/truck/create" class="btn btn-success mb-2">Thêm xe mới</a>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Biển số</th>
+      <th>Loại xe</th>
+      <th>Tải trọng (kg)</th>
+      <th>Kích thước (cm)</th>
+      <th>Kho</th>
+      <th>Tài xế</th>
+      <th>Hành động</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each trucks}}
+    <tr>
+      <td>{{this.licensePlate}}</td>
+      <td>{{this.type}}</td>
+      <td>{{this.maxWeight}}</td>
+      <td>{{this.boxLength}} x {{this.boxWidth}} x {{this.boxHeight}}</td>
+      <td>
+      {{#if this.warehouseId}}
+        {{this.warehouseId.name}}
+      {{else}}
+        Chưa gán
+      {{/if}}
+    </td>
+      <td>
+  {{#if this.driver}}
+    {{this.driver.name}}
+  {{else}}
+    Chưa gán
+  {{/if}}
+</td>
+      <td>
+        <a href="/truck/{{this._id}}/edit" class="btn btn-sm btn-primary">Sửa</a>
+        <form action="/truck/{{this._id}}/delete" method="POST" style="display:inline;">
+          <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa xe này?')">Xóa</button>
+        </form>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

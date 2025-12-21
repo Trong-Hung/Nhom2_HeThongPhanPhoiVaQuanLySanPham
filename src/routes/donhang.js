@@ -5,6 +5,7 @@ const { isAuthenticated } = require("../middlewares/role");
 const DonHangController = require("../app/controllers/DonHangController");
 
 // ADMIN
+router.post("/admin/donhang/:id/assign-truck", DonHangController.assignTruck);
 router.get("/admin/donhang", DonHangController.index);
 router.post("/admin/donhang/update/:id", DonHangController.updateStatus);
 // USER

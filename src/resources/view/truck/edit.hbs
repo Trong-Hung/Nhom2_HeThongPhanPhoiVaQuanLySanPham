@@ -1,0 +1,67 @@
+<div class="container mt-4" style="max-width: 600px;">
+  <h3>Cập nhật thông tin xe</h3>
+  <form method="POST" action="/truck/{{truck._id}}/update">
+    <div class="form-group">
+      <label>Biển số xe</label>
+      <input type="text" name="licensePlate" class="form-control" value="{{truck.licensePlate}}" required>
+    </div>
+    <div class="form-group">
+      <label>Loại xe</label>
+      <input type="text" name="type" class="form-control" value="{{truck.type}}" required>
+    </div>
+    <div class="form-group">
+      <label>Tải trọng tối đa (kg)</label>
+      <input type="number" name="maxWeight" class="form-control" value="{{truck.maxWeight}}" min="0" required>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-4">
+        <label>Chiều dài thùng (cm)</label>
+        <input type="number" name="boxLength" class="form-control" value="{{truck.boxLength}}" min="0" required>
+      </div>
+      <div class="form-group col-4">
+        <label>Chiều rộng thùng (cm)</label>
+        <input type="number" name="boxWidth" class="form-control" value="{{truck.boxWidth}}" min="0" required>
+      </div>
+      <div class="form-group col-4">
+        <label>Chiều cao thùng (cm)</label>
+        <input type="number" name="boxHeight" class="form-control" value="{{truck.boxHeight}}" min="0" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+  <label>Kho</label>
+  <select name="warehouseId" class="form-control" required>
+    <option value="">-- Chọn kho --</option>
+    {{#each warehouses}}
+      <option value="{{this._id}}" {{#if (eq this._id ../truck.warehouseId._id)}}selected{{/if}}>
+        {{this.name}} - {{this.address}}
+      </option>
+    {{/each}}
+  </select>
+</div>
+
+
+    <div class="form-group">
+      <label>Tài xế</label>
+      <select name="driver" class="form-control">
+  {{#if truck.driver}}
+    <option value="{{truck.driver._id}}" selected>
+      {{truck.driver.name}} ({{truck.driver.email}})
+    </option>
+  {{else}}
+    <option value="">-- Chưa gán tài xế --</option>
+  {{/if}}
+  {{#each drivers}}
+    {{!-- Chỉ hiển thị các tài xế chưa được gán hoặc khác tài xế hiện tại --}}
+    {{#unless (eq this._id ../truck.driver._id)}}
+      <option value="{{this._id}}">
+        {{this.name}} ({{this.email}})
+      </option>
+    {{/unless}}
+  {{/each}}
+</select>
+    </div>
+    <button type="submit" class="btn btn-primary btn-block mt-3">Cập nhật xe</button>
+    <a href="/truck" class="btn btn-secondary btn-block mt-2">Quay lại</a>
+  </form>
+</div>

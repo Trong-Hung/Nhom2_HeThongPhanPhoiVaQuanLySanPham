@@ -10,6 +10,11 @@ const UserSchema = new Schema({
     enum: ["admin", "shipper", "user"],
     default: "user",
   },
+  truck: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Truck",
+  default: null
+},
   status: {
     type: String,
     enum: ["Chờ xác nhận", "Hoạt động"],

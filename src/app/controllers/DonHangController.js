@@ -5,6 +5,7 @@ const User = require("../models/User");
 const Product = require("../models/Sanpham");
 const EmailService = require("../../services/EmailService");
 const axios = require("axios");
+const Truck = require("../models/Truck");
 
 // === THÊM IMPORT MỚI CHO AUTO-OPTIMIZATION ===
 const mapService = require("../../util/mapService");
@@ -17,12 +18,147 @@ const {
   standardizeVietnameseAddress,
 } = require("../../util/geocodingValidator");
 
+function getDeliveryTimeWindowByWeight(weightKg) {
+  if (weightKg < 950) return "24/24";
+  if (weightKg < 2500) return "09:00-16:00 & 20:00-06:00";
+  return "22:00-06:00";
+}
+
 class DonHangController {
+  async assignShipperAndTruck(req, res) {
+    try {
+      const { shipperId, truckId } = req.body;
+      const orderId = req.params.id;
+      const order = await DonHang.findById(orderId);
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+
+      // Nếu chỉ chọn shipper, tự động lấy xe của shipper (nếu có)
+      let finalTruckId = truckId;
+      if (!finalTruckId && shipperId) {
+        const shipper = await User.findById(shipperId);
+        if (shipper && shipper.truck) {
+          finalTruckId = shipper.truck;
+        }
+      }
+
+      // Kiểm tra xe
+      if (finalTruckId) {
+        const truck = await Truck.findById(finalTruckId);
+        if (!truck) return res.status(400).send("Không tìm thấy xe.");
+        // Kiểm tra xe có thuộc kho xuất hàng không
+        if (
+          order.warehouseId &&
+          truck.warehouseId &&
+          order.warehouseId.toString() !== truck.warehouseId.toString()
+        ) {
+          return res
+            .status(400)
+            .send("Xe không thuộc kho xuất hàng của đơn này.");
+        }
+        // Kiểm tra tải trọng/thể tích
+        if (
+          order.totalWeight > truck.maxWeight ||
+          order.totalVolume > truck.boxVolumeM3
+        ) {
+          return res
+            .status(400)
+            .send("Đơn hàng vượt quá tải trọng hoặc thể tích xe.");
+        }
+        order.assignedTruck = finalTruckId;
+      } else {
+        order.assignedTruck = null;
+      }
+
+      // Gán shipper
+      order.assignedShipper = shipperId || null;
+      await order.save();
+      res.redirect(`/admin/donhang/${orderId}`);
+    } catch (err) {
+      res.status(500).send("Lỗi hệ thống!");
+    }
+  }
+
+  // ...existing code...
+
+  // Hủy gán cả shipper và xe cho đơn hàng (admin)
+  async unassignShipperAndTruck(req, res) {
+    try {
+      const orderId = req.params.id;
+      const order = await DonHang.findById(orderId);
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+
+      const previousShipperId = order.assignedShipper;
+
+      // Xóa shipper, xe, reset route optimization
+      order.assignedShipper = null;
+      order.assignedTruck = null;
+      order.routeOrder = 0;
+      order.optimizedAt = null;
+      order.status = "Chờ xác nhận";
+
+      await order.save();
+
+      // Nếu có shipper trước đó, tối ưu lại các đơn còn lại của shipper đó
+      if (previousShipperId) {
+        await this.autoOptimizeShipperRoute(previousShipperId);
+      }
+
+      res.redirect(`/admin/donhang/${orderId}`);
+    } catch (error) {
+      res.status(500).send("Lỗi hệ thống!");
+    }
+  }
+
+  async assignTruck(req, res) {
+    try {
+      const { truckId } = req.body;
+      const orderId = req.params.id;
+      const order = await DonHang.findById(orderId);
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+      order.assignedTruck = truckId;
+      await order.save();
+      res.redirect(`/admin/donhang/${orderId}`);
+    } catch (err) {
+      res.status(500).send("Lỗi hệ thống!");
+    }
+  }
+
+  async suggestTrucksForOrder(req, res) {
+    try {
+      const orderId = req.params.id;
+      const order = await DonHang.findById(orderId);
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+
+      // Lấy tất cả xe
+      const trucks = await Truck.find();
+
+      // Lọc các xe phù hợp về trọng lượng và thể tích
+      const suitableTrucks = trucks.filter((truck) => {
+        // Nếu thiếu dữ liệu thì bỏ qua
+        if (!truck.maxWeight || !truck.boxVolumeM3) return false;
+        // So sánh với đơn hàng
+        return (
+          order.totalWeight <= truck.maxWeight &&
+          order.totalVolume <= truck.boxVolumeM3
+        );
+      });
+
+      res.render("admin/suggest_trucks", {
+        order,
+        suitableTrucks,
+        title: "Đề xuất xe phù hợp cho đơn hàng",
+      });
+    } catch (err) {
+      console.error("Lỗi gợi ý xe:", err);
+      res.status(500).send("Lỗi hệ thống!");
+    }
+  }
+
   // Lấy danh sách đơn hàng (admin)
   async index(req, res) {
     try {
       const orders = await DonHang.find()
-        .sort({ createdAt: -1 })
+        .sort({ estimatedDelivery: 1 }) // Ưu tiên đơn giao sớm lên đầu
         .populate("warehouseId");
       res.render("admin/qldonhang", { orders });
     } catch (err) {
@@ -35,11 +171,23 @@ class DonHangController {
     try {
       const order = await DonHang.findById(req.params.id)
         .populate("warehouseId")
-        .populate("assignedShipper");
+        .populate("assignedShipper")
+        .populate("assignedTruck");
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+
+      // Lấy shipper thuộc kho xuất hàng
       const shippers = await User.find({
         role: "shipper",
-        region: order.region,
+        warehouseId: order.warehouseId?._id,
       });
+
+      // Lấy xe thuộc kho xuất hàng và đủ tải trọng/thể tích
+      const trucks = await Truck.find({
+        warehouseId: order.warehouseId?._id,
+        maxWeight: { $gte: order.totalWeight },
+        boxVolumeM3: { $gte: order.totalVolume },
+      });
+
       let paymentMethodText = "Không xác định";
       if (order.paymentMethod === "cash")
         paymentMethodText = "Thanh toán khi nhận hàng";
@@ -48,14 +196,96 @@ class DonHangController {
       const estimatedDeliveryText = order.estimatedDelivery
         ? order.estimatedDelivery.toLocaleString("vi-VN")
         : "Chưa có";
+
       res.render("admin/order_detail", {
         order,
         shippers,
+        trucks,
         paymentMethodText,
         estimatedDeliveryText,
       });
     } catch (err) {
       console.error("Lỗi khi xem chi tiết đơn hàng:", err);
+      res.status(500).send("Lỗi hệ thống!");
+    }
+  }
+
+  // Hàm tự động gán tốt nhất
+  async autoAssignBestShipperAndTruck(req, res) {
+    try {
+      const orderId = req.params.id;
+      const order = await DonHang.findById(orderId).populate("warehouseId");
+      if (!order) return res.status(404).send("Không tìm thấy đơn hàng.");
+
+      // Lấy shipper thuộc kho xuất hàng
+      const shippers = await User.find({
+        role: "shipper",
+        warehouseId: order.warehouseId?._id,
+      });
+
+      // Lấy xe thuộc kho xuất hàng và đủ tải trọng/thể tích
+      const trucks = await Truck.find({
+        warehouseId: order.warehouseId?._id,
+        maxWeight: { $gte: order.totalWeight },
+        boxVolumeM3: { $gte: order.totalVolume },
+      });
+
+      // Ưu tiên shipper có ít đơn nhất
+      let bestShipper = null;
+      let minOrders = Infinity;
+      for (const shipper of shippers) {
+        const count = await DonHang.countDocuments({
+          assignedShipper: shipper._id,
+          status: { $in: ["Đang sắp xếp", "Đang vận chuyển"] },
+        });
+        if (count < minOrders) {
+          minOrders = count;
+          bestShipper = shipper;
+        }
+      }
+
+      // Ưu tiên xe chưa được gán cho đơn nào đang hoạt động, và có tải trọng nhỏ nhất đủ tải
+      let availableTrucks = [];
+      for (const truck of trucks) {
+        const count = await DonHang.countDocuments({
+          assignedTruck: truck._id,
+          status: { $in: ["Đang sắp xếp", "Đang vận chuyển"] },
+        });
+        if (count === 0) {
+          availableTrucks.push(truck);
+        }
+      }
+      let bestTruck = null;
+      if (availableTrucks.length > 0) {
+        bestTruck = availableTrucks.reduce(
+          (min, t) => (t.maxWeight < min.maxWeight ? t : min),
+          availableTrucks[0]
+        );
+      } else if (trucks.length > 0) {
+        bestTruck = trucks.reduce(
+          (min, t) => (t.maxWeight < min.maxWeight ? t : min),
+          trucks[0]
+        );
+      }
+
+      // Kiểm tra nếu không tìm thấy shipper hoặc truck phù hợp
+      if (!bestShipper) {
+        console.error("Không tìm thấy shipper phù hợp!");
+        return res.status(400).send("Không tìm thấy shipper phù hợp!");
+      }
+      if (!bestTruck) {
+        console.error("Không tìm thấy xe phù hợp!");
+        return res.status(400).send("Không tìm thấy xe phù hợp!");
+      }
+
+      // Gán vào đơn hàng
+      order.assignedShipper = bestShipper._id;
+      order.assignedTruck = bestTruck._id;
+      await order.save();
+
+      res.redirect(`/admin/donhang/${orderId}`);
+    } catch (err) {
+      console.error("Lỗi autoAssignBestShipperAndTruck:", err);
       res.status(500).send("Lỗi hệ thống!");
     }
   }
@@ -637,10 +867,9 @@ class DonHangController {
       }
     }
     return closestWarehouse;
-  } 
+  }
 
   async getDistance(from, to) {
-
     // OSRM dùng format: {lon},{lat}
     const coords = `${from.longitude},${from.latitude};${to.longitude},${to.latitude}`;
     // Đảm bảo "bộ não" OSRM của bạn đang chạy ở 127.0.0.1:5000

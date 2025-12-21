@@ -51,6 +51,13 @@ const hbs = create({
   ],
   defaultLayout: "main",
   helpers: {
+    isUrgent: function (estimatedDelivery) {
+      if (!estimatedDelivery) return false;
+      const now = new Date();
+      const delivery = new Date(estimatedDelivery);
+      const diff = (delivery - now) / (1000 * 60 * 60);
+      return diff <= 4 && diff >= 0;
+    },
     eq: (a, b) => a === b,
     // Helper mới cho Auto-Optimization
     routeOrderText: function (routeOrder) {

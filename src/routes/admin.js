@@ -12,6 +12,12 @@ const Transfer = require("../app/models/Transfer");
 router.get("/qldonhang", isAdmin, DonHangController.index);
 router.post("/donhang/update/:id", isAdmin, DonHangController.updateStatus);
 router.get("/donhang", isAdmin, DonHangController.index);
+router.post("/donhang/:id/assign-shipper-truck", isAdmin, DonHangController.assignShipperAndTruck);
+router.post("/donhang/:id/auto-assign-best", isAdmin, DonHangController.autoAssignBestShipperAndTruck);
+// ...existing code...
+router.post("/donhang/:id/assign-shipper-truck", isAdmin,DonHangController.assignShipperAndTruck);
+router.post("/donhang/:id/unassign-shipper-truck", isAdmin,DonHangController.unassignShipperAndTruck);
+// ...existing code...
 router.post(
   "/donhang/assign-shipper/:id",
   isAdmin,

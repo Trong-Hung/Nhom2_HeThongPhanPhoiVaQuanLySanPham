@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const { ObjectId } = require("mongodb");
+const Truck = require('../models/Truck');
+
 const {
   getProvinceName,
   getDistrictName,
@@ -11,7 +13,9 @@ class UserController {
   async manageAccounts(req, res) {
     try {
       const admins = await User.find({ role: "admin" });
-      const shippers = await User.find({ role: "shipper" }).populate('warehouseId', 'name address');
+      const shippers = await User.find({ role: "shipper" })
+  .populate('warehouseId', 'name address')
+  .populate('truck', 'licensePlate type');
       const users = await User.find({ role: "user" });
       res.render("admin/quanlytaikhoan", { admins, shippers, users });
     } catch (error) {
@@ -111,7 +115,9 @@ class UserController {
       if (!req.session.user || req.session.user.role !== "admin") {
         return res.status(403).send("❌ Bạn không có quyền chỉnh sửa tài khoản.");
       }
-      const user = await User.findById(req.params.id);
+      const user = await User.findById(req.params.id)
+  .populate('warehouseId', 'name address')
+  .populate('truck', 'licensePlate type');
       if (!user) return res.status(404).send("❌ Không tìm thấy người dùng.");
       const provincesRes = await fetch("https://provinces.open-api.vn/api/?depth=1");
       const provinces = await provincesRes.json();
